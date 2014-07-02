@@ -28,7 +28,7 @@
 
 struct JsonToken
 {
-	JSON_type	type;
+	JSON_event	type;
 	std::string	value;
 };
 
@@ -40,12 +40,12 @@ std::ostream& operator<<(std::ostream& os, const JsonToken& t)
 		"JSON_array_end",
 		"JSON_object_start",
 		"JSON_object_key",	// string as object key
+		"JSON_object_end",
 		"JSON_string",		// string as object
 		"JSON_number",		// number
 		"JSON_null",
 		"JSON_true",
-		"JSON_false",
-		"JSON_object_end"
+		"JSON_false"
 	};
 	
 	return os << "{" << state[t.type] << ", \"" << t.value << "\"}";
@@ -56,7 +56,7 @@ bool operator==(const JsonToken& t1, const JsonToken& t2)
 	return t1.type == t2.type && t1.value == t2.value;
 }
 
-void Callback(void *pvec, JSON_type type, const char *data, int len)
+void Callback(void *pvec, JSON_event type, const char *data, int len)
 {
 	std::vector<JsonToken>	*vec = reinterpret_cast<std::vector<JsonToken>*>(pvec);
 	vec->push_back({type, data != nullptr ? std::string(data, len) : ""});

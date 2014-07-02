@@ -254,7 +254,7 @@ typedef struct JSON_token_
 	void			*user;
 } JSON_token;
 
-static void emit_token(JSON_checker jc, JSON_token *token, const char *pos, JSON_type type)
+static void emit_token(JSON_checker jc, JSON_token *token, const char *pos, JSON_event type)
 {
 	int len = pos - token->start;
 	if (jc->token_len > 0 && sizeof(jc->token) - jc->token_len > len )
@@ -271,7 +271,7 @@ static void emit_token(JSON_checker jc, JSON_token *token, const char *pos, JSON
 	token->start = 0;
 }
 
-static void emit_permitive(JSON_checker jc, JSON_token *token, JSON_type type)
+static void emit_permitive(JSON_checker jc, JSON_token *token, JSON_event type)
 {
 	jc->token_len	= 0;
 	emit_token(jc, token, 0, type);
