@@ -44,13 +44,13 @@ endif (GTEST_FOUND)
 
 # build documentation by doxygen
 if (DOXYGEN_FOUND)
-#	configure_file(
-#		${webwrite2_SOURCE_DIR}/doc/Doxyfile.in
-#		${webwrite2_BINARY_DIR}/Doxyfile @ONLY)
+	configure_file(
+		${autojson_SOURCE_DIR}/doc/Doxyfile.in
+		${autojson_BINARY_DIR}/Doxyfile @ONLY)
 
-#	add_custom_target(doc
-#		${DOXYGEN_EXECUTABLE} ${webwrite2_BINARY_DIR}/Doxyfile
-#		WORKING_DIRECTORY ${webwrite2_BINARY_DIR}
-#		COMMENT "Generating API documentation with Doxygen" VERBATIM)
+	add_custom_target(doc
+		${DOXYGEN_EXECUTABLE} ${autojson_BINARY_DIR}/Doxyfile
+		WORKING_DIRECTORY ${autojson_BINARY_DIR}
+		COMMENT "Generating API documentation with Doxygen" VERBATIM)
 		
 endif (DOXYGEN_FOUND)

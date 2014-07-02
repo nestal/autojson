@@ -40,7 +40,6 @@ SOFTWARE.
     Characters are mapped into these 31 character classes. This allows for
     a significant reduction in the size of the state transition table.
 */
-
 enum classes {
     C_SPACE,  /* space */
     C_WHITE,  /* other whitespace */
@@ -235,22 +234,9 @@ pop(JSON_checker jc, int mode)
     return true;
 }
 
-
 JSON_checker
 new_JSON_checker(int depth)
 {
-/*
-    new_JSON_checker starts the checking process by constructing a JSON_checker
-    object. It takes a depth parameter that restricts the level of maximum
-    nesting.
-
-    To continue the process, call JSON_checker_char for each character in the
-    JSON text, and then call JSON_checker_done to obtain the final result.
-    These functions are fully reentrant.
-
-    The JSON_checker object will be deleted by JSON_checker_done.
-    JSON_checker_char will delete the JSON_checker object if it sees an error.
-*/
     JSON_checker jc = (JSON_checker)malloc(sizeof(struct JSON_checker_struct));
     jc->state = GO;
     jc->depth = depth;
