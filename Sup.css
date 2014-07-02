@@ -1,0 +1,9 @@
+/* The standard CSS for doxygen 1.8.6 */
+
+body, table, div, p, dl {
+	font-family: Helvetica;
+}
+
+h1, h2, h3, h4, h5, h6, .title {
+	font-family: Georgia;
+}
