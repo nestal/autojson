@@ -150,10 +150,10 @@ private :
 };
 
 template <typename DestType>
-class JsonObjectReactor
+class ObjectReactor
 {
 public:
-	JsonObjectReactor() : m_next(nullptr)
+	ObjectReactor() : m_next(nullptr)
 	{
 	}
 
@@ -164,7 +164,7 @@ public:
 	}
 
 	template <typename T>
-	JsonObjectReactor& SaveValue(const std::string& key, T DestType::*member)
+	ObjectReactor& Map(const std::string& key, T DestType::*member)
 	{
 		m_actions.insert(
 			std::make_pair(key, HandlerPtr(new SaveToMember<DestType,T>(member))));
@@ -197,8 +197,8 @@ private :
 template <typename DestType>
 void ReactorCallback(void *user, JSON_event type, const char *data, int len)
 {
-	JsonReactor<DestType> *reactor =
-		reinterpret_cast<JsonReactor<DestType>*>(user);
+	ObjectReactor<DestType> *reactor =
+		reinterpret_cast<ObjectReactor<DestType>*>(user);
 
 	reactor->On(type, data, len);
 }
@@ -210,12 +210,13 @@ TEST(TryOutCpp, JsonTest)
 		std::string value;
 	};
 
-	JsonObjectReactor<Subject> r;
-	Subject j {};
-	r.SaveValue("haha", &Subject::value);
-
-	const char js[] = "{ \"haha\": \"fun\" }";
 	JSON_checker jc = new_JSON_checker(5);
+	Subject j {};
+	const char js[] = "{ \"haha\": \"fun\" }";
+
+	ObjectReactor<Subject> r;
+	r.Map("haha", &Subject::value);
 	r.Parse(j, jc, js, sizeof(js)-1);
+	
 	ASSERT_EQ("fun", j.value) ;
 }
