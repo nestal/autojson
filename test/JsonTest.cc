@@ -26,6 +26,9 @@
 #include <string>
 #include <gtest/gtest.h>
 
+#include <iostream>
+#include <map>
+
 struct JsonToken
 {
 	JSON_event	type;
@@ -119,4 +122,86 @@ TEST(PartialJsonCanBeParsed, JsonTest)
 		{JSON_object_end, ""},
 	};
 	ASSERT_EQ(expect, actual);
+}
+
+template <typename DestType>
+class Handler
+{
+public :
+	virtual void Do(DestType& t, const std::string& value) = 0;
+};
+
+template <typename DestType, typename T>
+class SaveToMember : public Handler<DestType>
+{
+public :
+	SaveToMember(T DestType::*member) : m_member(member)
+	{
+	}
+
+	void Do(DestType& t, const std::string& value) override
+	{
+		t.*m_member = value;
+	}
+
+private :
+	T DestType::*m_member;
+};
+
+template <typename DestType>
+class JsonReactor
+{
+public:
+	JsonReactor() : m_next(nullptr)
+	{
+	}
+
+	void Start(DestType& t)
+	{
+		m_subj = &t;
+
+		// fake it
+		On(JSON_object_start,	nullptr,0);
+		On(JSON_object_key,		"haha", 4);
+		On(JSON_string,			"fun", 3);
+	}
+
+	template <typename T>
+	void Add(const std::string& name, T DestType::*member)
+	{
+		m_actions[name] = new SaveToMember<DestType,T>(member);
+	}
+
+	void On(JSON_event event, const char *data, int len)
+	{
+		if (event == JSON_object_key)
+		{
+			auto i = m_actions.find(std::string(data,len)) ;
+			m_next = (i != m_actions.end() ? i->second : nullptr);
+		}
+		else if (m_next != nullptr)
+		{
+			m_next->Do(*m_subj, std::string(data,len));
+		}
+	}
+
+private :
+	DestType	*m_subj;
+
+	std::map<std::string, Handler<DestType>*> m_actions;
+	Handler<DestType> *m_next;
+};
+
+TEST(TryOutCpp, JsonTest)
+{
+	struct Subject
+	{
+		std::string value;
+	};
+
+	JsonReactor<Subject> r;
+	Subject j {};
+	r.Add("haha", &Subject::value);
+	r.Start(j);
+	ASSERT_EQ("fun", j.value) ;
 }
