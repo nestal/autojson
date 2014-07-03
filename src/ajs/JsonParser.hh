@@ -27,7 +27,9 @@
 
 namespace ajs {
 
-/**	Brief description of JsonParser
+/**	The main parser class.
+	JsonParser is the class you use to parse JSON data. First, construct a JsonParser
+	object by providing a Reactor and an object that receives the output.
 */
 class JsonParser
 {
