@@ -133,6 +133,7 @@ TEST(TryOutCpp, JsonTest)
 	struct Subject
 	{
 		std::string value;
+		int in;
 		struct Sub
 		{
 			std::string v2;
@@ -141,11 +142,13 @@ TEST(TryOutCpp, JsonTest)
 
 	JSON_checker jc = new_JSON_checker(5);
 	Subject j {};
-	const char js[] = "{ \"haha\": \"fun\" }";
+	const char js[] = "{ \"haha\": \"fun\", \"hehe\": 199 }";
 
 	ObjectReactor<Subject> r;
-	r.Map("haha", &Subject::value);
+	r.Map("haha", &Subject::value)
+	 .Map("hehe", &Subject::in);
 	r.Parse(j, jc, js, sizeof(js)-1);
 	
 	ASSERT_EQ("fun", j.value) ;
+	ASSERT_EQ(199, j.in) ;
 }

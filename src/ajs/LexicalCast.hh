@@ -18,50 +18,27 @@
 	02110-1301, USA.
 */
 
-#ifndef REACTOR_HH_INCLUDED
-#define REACTOR_HH_INCLUDED
-
-#include "JSON_checker.h"
-#include "LexicalCast.hh"
+#ifndef LEXICALCAST_HH_INCLUDED
+#define LEXICALCAST_HH_INCLUDED
 
 #include <string>
 
 namespace ajs {
 
-class ParseState;
+template <typename Dest>
+Dest lexical_cast(const char *str, std::size_t len);
 
-/**	Brief description of Reactor
-*/
-class Reactor
-{
-public:
-	virtual ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) = 0;
-};
+template <>
+int lexical_cast(const char *str, std::size_t len);
 
-struct ParseState
-{
-	Reactor	*handler;
-	void	*dest;
-};
+template <>
+long long lexical_cast(const char *str, std::size_t len);
 
-template <typename DestType, typename T>
-class SaveToMember : public Reactor
-{
-public :
-	SaveToMember(T DestType::*member) : m_member(member)
-	{
-	}
+template <>
+double lexical_cast(const char *str, std::size_t len);
 
-	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override
-	{
-		DestType *dest = reinterpret_cast<DestType*>(s.dest);
-		(dest->*m_member) = lexical_cast<T>(data, len);
-		return s;
-	}
-
-private :
-	T DestType::*m_member;
-};
+template <>
+std::string lexical_cast(const char *str, std::size_t len);
 
 } // end of namespace
 

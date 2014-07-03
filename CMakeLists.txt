@@ -30,6 +30,8 @@ add_library(autojson
 	${autojson_SOURCE_DIR}/src/ajs/Reactor.hh
 	${autojson_SOURCE_DIR}/src/ajs/ObjectReactor.hh
 	${autojson_SOURCE_DIR}/src/ajs/ObjectReactor.cc
+	${autojson_SOURCE_DIR}/src/ajs/LexicalCast.hh
+	${autojson_SOURCE_DIR}/src/ajs/LexicalCast.cc
 )
 
 # gcc specific
