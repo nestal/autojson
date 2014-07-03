@@ -19,6 +19,7 @@
 */
 
 #include "JSON_checker.h"
+#include "ajs/JsonParser.hh"
 #include "ajs/ObjectReactor.hh"
 
 #include <functional>
@@ -63,7 +64,7 @@ bool operator==(const JsonToken& t1, const JsonToken& t2)
 	return t1.type == t2.type && t1.value == t2.value;
 }
 
-void Callback(void *pvec, JSON_event type, const char *data, int len)
+void Callback(void *pvec, JSON_event type, const char *data, size_t len)
 {
 	std::vector<JsonToken>	*vec = reinterpret_cast<std::vector<JsonToken>*>(pvec);
 	
@@ -140,15 +141,20 @@ TEST(TryOutCpp, JsonTest)
 		} sub;
 	};
 
-	JSON_checker jc = new_JSON_checker(5);
 	Subject j {};
-	const char js[] = "{ \"haha\": \"fun\", \"hehe\": 199 }";
+	const char js[] =
+	"{"
+		"\"haha\": \"fun\","
+		"\"hehe\": 199"
+	"}";
 
-	ObjectReactor<Subject> r;
-	r.Map("haha", &Subject::value)
-	 .Map("hehe", &Subject::in);
-	r.Parse(j, jc, js, sizeof(js)-1);
+	JsonParser p(
+		ObjectReactor<Subject>().
+			Map("haha", &Subject::value).
+			Map("hehe", &Subject::in),
+		j);
+	p.Parse(js, sizeof(js)-1);
 	
-	ASSERT_EQ("fun", j.value) ;
-	ASSERT_EQ(199, j.in) ;
+	ASSERT_EQ("fun",	j.value) ;
+	ASSERT_EQ(199,		j.in) ;
 }

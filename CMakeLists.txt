@@ -26,12 +26,14 @@ find_package(GTest)
 include_directories(${autojson_SOURCE_DIR}/src)
 
 add_library(autojson
-	${autojson_SOURCE_DIR}/src/JSON_checker.c
-	${autojson_SOURCE_DIR}/src/ajs/Reactor.hh
-	${autojson_SOURCE_DIR}/src/ajs/ObjectReactor.hh
-	${autojson_SOURCE_DIR}/src/ajs/ObjectReactor.cc
-	${autojson_SOURCE_DIR}/src/ajs/LexicalCast.hh
-	${autojson_SOURCE_DIR}/src/ajs/LexicalCast.cc
+	src/JSON_checker.c
+	src/ajs/Reactor.hh
+	src/ajs/ObjectReactor.hh
+	src/ajs/ObjectReactor.cc
+	src/ajs/LexicalCast.hh
+	src/ajs/LexicalCast.cc
+	src/ajs/JsonParser.hh
+	src/ajs/JsonParser.cc
 )
 
 # gcc specific

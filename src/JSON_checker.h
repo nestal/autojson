@@ -8,6 +8,8 @@
 #ifndef JSON_CHECKER_H_INCLUDED
 #define JSON_CHECKER_H_INCLUDED
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -59,7 +61,7 @@ typedef enum JSON_result
 					characters many need more than 1 byte to represent in
 					UTF-8/UTF-16.
 */
-typedef void (*JSON_callback)(void *user, JSON_event type, const char *data, int len);
+typedef void (*JSON_callback)(void *user, JSON_event type, const char *data, size_t len);
 
 typedef struct JSON_checker_struct {
     int state;
@@ -68,7 +70,7 @@ typedef struct JSON_checker_struct {
     int* stack;
 
 	char token[1024];
-	int token_len;
+	size_t token_len;
 
 } * JSON_checker;
 
@@ -101,7 +103,7 @@ extern JSON_checker new_JSON_checker(int depth);
 	\param	user	A pointer to user data. The parser will not try to interpret this
 					pointer. It will be passed as-is to the callback function \c cb.
 */
-extern int  JSON_checker_char(JSON_checker jc, const char *chars, int len, JSON_callback cb, void *user);
+extern int  JSON_checker_char(JSON_checker jc, const char *chars, size_t len, JSON_callback cb, void *user);
 extern int  JSON_checker_done(JSON_checker jc);
 
 #ifdef __cplusplus

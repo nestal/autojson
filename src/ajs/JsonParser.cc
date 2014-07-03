@@ -18,34 +18,32 @@
 	02110-1301, USA.
 */
 
-#include "LexicalCast.hh"
+#include "JsonParser.hh"
 
-#include <cstdlib>
+#include <cassert>
 
 namespace ajs {
 
-template <>
-int lexical_cast(const char *str, std::size_t len)
+void JsonParser::Parse(const char *json, std::size_t len)
 {
-	return str != nullptr ? std::atoi(std::string(str, len).c_str()) : 0;
+	::JSON_checker_char(m_parser, json, static_cast<int>(len),
+		&JsonParser::Callback, this);
 }
 
-template <>
-long long lexical_cast(const char *str, std::size_t len)
+void JsonParser::Callback(void *user, JSON_event type, const char *data, size_t len)
 {
-	return str != nullptr ? std::atoll(std::string(str, len).c_str()) : 0LL;
-}
+	JsonParser *parser = reinterpret_cast<JsonParser*>(user);
+	assert(parser != nullptr);
+	assert(!parser->m_stack.empty());
 
-template <>
-double lexical_cast(const char *str, std::size_t len)
-{
-	return str != nullptr ? std::atof(std::string(str, len).c_str()) : 0.0;
-}
-
-template <>
-std::string lexical_cast(const char *str, std::size_t len)
-{
-	return str != nullptr ? std::string(str, len) : "";
+	ParseState current	= parser->m_stack.back();
+	ParseState next		= current.reactor->On(current, type, data, len);
+	
+	if (next.reactor != current.reactor)
+		parser->m_stack.push_back(next) ;
+	
+	else if (next.reactor == nullptr)
+		parser->m_stack.pop_back();
 }
 
 } // end of namespace

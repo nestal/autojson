@@ -18,34 +18,41 @@
 	02110-1301, USA.
 */
 
-#include "LexicalCast.hh"
+#ifndef JSONPARSER_HH_INCLUDED
+#define JSONPARSER_HH_INCLUDED
 
-#include <cstdlib>
+#include "Reactor.hh"
+#include <memory>
+#include <vector>
 
 namespace ajs {
 
-template <>
-int lexical_cast(const char *str, std::size_t len)
+/**	Brief description of JsonParser
+*/
+class JsonParser
 {
-	return str != nullptr ? std::atoi(std::string(str, len).c_str()) : 0;
-}
+public :
+	template <typename R, typename DestType>
+	JsonParser(const R& reactor, DestType& t) :
+		m_reactor(new R(reactor)),
+		m_parser(new_JSON_checker(5))
+	{
+		ParseState p {m_reactor.get(), &t};
+		m_stack.push_back(p);
+	}
 
-template <>
-long long lexical_cast(const char *str, std::size_t len)
-{
-	return str != nullptr ? std::atoll(std::string(str, len).c_str()) : 0LL;
-}
+	
+	void Parse(const char *json, std::size_t len);
 
-template <>
-double lexical_cast(const char *str, std::size_t len)
-{
-	return str != nullptr ? std::atof(std::string(str, len).c_str()) : 0.0;
-}
+private :
+	static void Callback(void *user, JSON_event type, const char *data, size_t len);
 
-template <>
-std::string lexical_cast(const char *str, std::size_t len)
-{
-	return str != nullptr ? std::string(str, len) : "";
-}
+private :
+	std::unique_ptr<Reactor>	m_reactor;
+	std::vector<ParseState>		m_stack;
+	JSON_checker				m_parser;
+};
 
 } // end of namespace
+
+#endif

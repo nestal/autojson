@@ -29,8 +29,6 @@
 
 namespace ajs {
 
-void ReactorCallback(void *user, JSON_event type, const char *data, int len);
-
 /**	Brief description of ObjectReactor
 */
 template <typename DestType>
@@ -40,14 +38,17 @@ public:
 	ObjectReactor() : m_next(nullptr)
 	{
 	}
-
-	void Parse(DestType& t, JSON_checker jc, const char *json, std::size_t len)
+	
+	ObjectReactor(const ObjectReactor& rhs) : m_next(rhs.m_next)
 	{
-		ParseState root = {this, &t};
-		std::vector<ParseState> vec(1, root);
-
-		::JSON_checker_char(jc, json, static_cast<int>(len),
-			&ReactorCallback, &vec);
+		for (const auto& p : rhs.m_actions)
+			m_actions.insert(std::make_pair(p.first, ReactorPtr(p.second->Clone())));
+	}
+	
+	ObjectReactor(ObjectReactor&& rhs) :
+		m_actions(std::move(rhs.m_actions)),
+		m_next(rhs.m_next)
+	{
 	}
 
 	template <typename T>
@@ -56,6 +57,11 @@ public:
 		m_actions.insert(
 			std::make_pair(key, ReactorPtr(new SaveToMember<DestType,T>(member))));
 		return *this;
+	}
+
+	ObjectReactor* Clone() const override
+	{
+		return new ObjectReactor(*this);
 	}
 
 	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override
@@ -78,6 +84,7 @@ public:
 				break;
 
 			case JSON_object_start:
+			default:
 				break;
 			}
 			// only use once

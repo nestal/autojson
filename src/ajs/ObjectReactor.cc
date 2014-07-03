@@ -22,16 +22,4 @@
 
 namespace ajs {
 
-void ReactorCallback(void *user, JSON_event type, const char *data, int len)
-{
-	std::vector<ParseState> *state =
-		reinterpret_cast<std::vector<ParseState>*>(user);
-
-	ParseState p = state->back().handler->On(state->back(), type, data, len);
-	if (p.handler != state->back().handler)
-		state->push_back(p) ;
-	else if (p.handler == nullptr)
-		state->pop_back();
-}
-
 } // end of namespace

@@ -330,7 +330,7 @@ static int save_token(JSON_checker jc, JSON_token *token, const char *pos)
 }
 
 int
-JSON_checker_char(JSON_checker jc, const char *chars, int len, JSON_callback cb, void *user)
+JSON_checker_char(JSON_checker jc, const char *chars, size_t len, JSON_callback cb, void *user)
 {
 	JSON_token token = {0, cb, user};
 	int i;

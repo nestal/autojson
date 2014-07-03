@@ -36,11 +36,12 @@ class Reactor
 {
 public:
 	virtual ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) = 0;
+	virtual Reactor* Clone() const = 0;
 };
 
 struct ParseState
 {
-	Reactor	*handler;
+	Reactor	*reactor;
 	void	*dest;
 };
 
@@ -57,6 +58,11 @@ public :
 		DestType *dest = reinterpret_cast<DestType*>(s.dest);
 		(dest->*m_member) = lexical_cast<T>(data, len);
 		return s;
+	}
+
+	SaveToMember* Clone() const override
+	{
+		return new SaveToMember(m_member);
 	}
 
 private :
