@@ -27,6 +27,7 @@
 #include <gtest/gtest.h>
 
 #include <iostream>
+#include <memory>
 #include <map>
 
 struct JsonToken
@@ -149,27 +150,25 @@ private :
 };
 
 template <typename DestType>
-class JsonReactor
+class JsonObjectReactor
 {
 public:
-	JsonReactor() : m_next(nullptr)
+	JsonObjectReactor() : m_next(nullptr)
 	{
 	}
 
-	void Start(DestType& t)
+	void Parse(DestType& t, JSON_checker jc, const char *json, std::size_t len)
 	{
 		m_subj = &t;
-
-		// fake it
-		On(JSON_object_start,	nullptr,0);
-		On(JSON_object_key,		"haha", 4);
-		On(JSON_string,			"fun", 3);
+		::JSON_checker_char(jc, json, static_cast<int>(len), &ReactorCallback<DestType>, this);
 	}
 
 	template <typename T>
-	void Add(const std::string& name, T DestType::*member)
+	JsonObjectReactor& SaveValue(const std::string& key, T DestType::*member)
 	{
-		m_actions[name] = new SaveToMember<DestType,T>(member);
+		m_actions.insert(
+			std::make_pair(key, HandlerPtr(new SaveToMember<DestType,T>(member))));
+		return *this;
 	}
 
 	void On(JSON_event event, const char *data, int len)
@@ -177,20 +176,32 @@ public:
 		if (event == JSON_object_key)
 		{
 			auto i = m_actions.find(std::string(data,len)) ;
-			m_next = (i != m_actions.end() ? i->second : nullptr);
+			m_next = (i != m_actions.end() ? i->second.get() : nullptr);
 		}
 		else if (m_next != nullptr)
 		{
+			// only use once
 			m_next->Do(*m_subj, std::string(data,len));
+			m_next = nullptr;
 		}
 	}
 
 private :
-	DestType	*m_subj;
+	typedef std::unique_ptr<Handler<DestType>> HandlerPtr;
 
-	std::map<std::string, Handler<DestType>*> m_actions;
+	DestType	*m_subj;
+	std::map<std::string, HandlerPtr> m_actions;
 	Handler<DestType> *m_next;
 };
+
+template <typename DestType>
+void ReactorCallback(void *user, JSON_event type, const char *data, int len)
+{
+	JsonReactor<DestType> *reactor =
+		reinterpret_cast<JsonReactor<DestType>*>(user);
+
+	reactor->On(type, data, len);
+}
 
 TEST(TryOutCpp, JsonTest)
 {
@@ -199,9 +210,12 @@ TEST(TryOutCpp, JsonTest)
 		std::string value;
 	};
 
-	JsonReactor<Subject> r;
+	JsonObjectReactor<Subject> r;
 	Subject j {};
-	r.Add("haha", &Subject::value);
-	r.Start(j);
+	r.SaveValue("haha", &Subject::value);
+
+	const char js[] = "{ \"haha\": \"fun\" }";
+	JSON_checker jc = new_JSON_checker(5);
+	r.Parse(j, jc, js, sizeof(js)-1);
 	ASSERT_EQ("fun", j.value) ;
 }
