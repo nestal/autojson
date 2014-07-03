@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>autojson: JSON_token_ Struct Reference</title>
+<title>autojson: ajs::ObjectReactor&lt; DestType &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,30 +82,57 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>ajs</b></li><li class="navelem"><a class="el" href="classajs_1_1ObjectReactor.html">ObjectReactor</a></li>  </ul>
+</div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="structJSON__token__-members.html">List of all members</a>  </div>
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classajs_1_1ObjectReactor-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">JSON_token_ Struct Reference</div>  </div>
+<div class="title">ajs::ObjectReactor&lt; DestType &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ObjectReactor_8hh_source.html">ObjectReactor.hh</a>&gt;</code></p>
+<div class="dynheader">
+Inheritance diagram for ajs::ObjectReactor&lt; DestType &gt;:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="classajs_1_1ObjectReactor.png" usemap="#ajs::ObjectReactor&lt; DestType &gt;_map" alt=""/>
+  <map id="ajs::ObjectReactor&lt; DestType &gt;_map" name="ajs::ObjectReactor&lt; DestType &gt;_map">
+<area href="classajs_1_1Reactor.html" alt="ajs::Reactor" shape="rect" coords="0,0,192,24"/>
+</map>
+ </div></div>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:aee56f82ab5e0cc4e7006c17728df1a2f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aee56f82ab5e0cc4e7006c17728df1a2f"></a>
-const char *&#160;</td><td class="memItemRight" valign="bottom"><b>start</b></td></tr>
-<tr class="separator:aee56f82ab5e0cc4e7006c17728df1a2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeafcd5dbb4bb20aac77d262ce3ed0fbf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeafcd5dbb4bb20aac77d262ce3ed0fbf"></a>
-<a class="el" href="JSON__checker_8h.html#af09b73ac9f2b18c3a183382658a0aecc">JSON_callback</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cb</b></td></tr>
-<tr class="separator:aeafcd5dbb4bb20aac77d262ce3ed0fbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab9328cfce3d6d4c1034510cd803757bc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab9328cfce3d6d4c1034510cd803757bc"></a>
-void *&#160;</td><td class="memItemRight" valign="bottom"><b>user</b></td></tr>
-<tr class="separator:ab9328cfce3d6d4c1034510cd803757bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a152701214d332c24024b09d2d721a0c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a152701214d332c24024b09d2d721a0c9"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ObjectReactor</b> (const <a class="el" href="classajs_1_1ObjectReactor.html">ObjectReactor</a> &amp;rhs)</td></tr>
+<tr class="separator:a152701214d332c24024b09d2d721a0c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb0f79abd01e5525f0c35fd90cda9cdd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abb0f79abd01e5525f0c35fd90cda9cdd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ObjectReactor</b> (<a class="el" href="classajs_1_1ObjectReactor.html">ObjectReactor</a> &amp;&amp;rhs)</td></tr>
+<tr class="separator:abb0f79abd01e5525f0c35fd90cda9cdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67af7e2b0d113c5f5bd66e0e59a050c1"><td class="memTemplParams" colspan="2"><a class="anchor" id="a67af7e2b0d113c5f5bd66e0e59a050c1"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a67af7e2b0d113c5f5bd66e0e59a050c1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classajs_1_1ObjectReactor.html">ObjectReactor</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Map</b> (const std::string &amp;key, T DestType::*member)</td></tr>
+<tr class="separator:a67af7e2b0d113c5f5bd66e0e59a050c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d434a8d705a7f2530741b7a1528bd61"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1d434a8d705a7f2530741b7a1528bd61"></a>
+<a class="el" href="classajs_1_1ObjectReactor.html">ObjectReactor</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>Clone</b> () const override</td></tr>
+<tr class="separator:a1d434a8d705a7f2530741b7a1528bd61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9802551725498ece435e08442eae8739"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9802551725498ece435e08442eae8739"></a>
+<a class="el" href="structajs_1_1ParseState.html">ParseState</a>&#160;</td><td class="memItemRight" valign="bottom"><b>On</b> (<a class="el" href="structajs_1_1ParseState.html">ParseState</a> &amp;s, <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1">JSON_event</a> event, const char *data, std::size_t len) override</td></tr>
+<tr class="separator:a9802551725498ece435e08442eae8739"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
-<li>JSON_checker.c</li>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename DestType&gt;<br/>
+class ajs::ObjectReactor&lt; DestType &gt;</h3>
+
+<p>Brief description of <a class="el" href="classajs_1_1ObjectReactor.html">ObjectReactor</a> </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="ObjectReactor_8hh_source.html">ObjectReactor.hh</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

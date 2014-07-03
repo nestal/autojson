@@ -99,7 +99,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Main header of the C interface of autojson.  
 <a href="#details">More...</a></p>
-
+<div class="textblock"><code>#include &lt;stddef.h&gt;</code><br/>
+</div>
 <p><a href="JSON__checker_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -111,8 +112,10 @@ Classes</h2></td></tr>
 Typedefs</h2></td></tr>
 <tr class="memitem:a1f44920170a028f1f2edbd7615e4eb3e"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1">JSON_event</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="JSON__checker_8h.html#a1f44920170a028f1f2edbd7615e4eb3e">JSON_event</a></td></tr>
 <tr class="separator:a1f44920170a028f1f2edbd7615e4eb3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa482196826847bff63d692ac147f5d02"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="JSON__checker_8h.html#aa482196826847bff63d692ac147f5d02">JSON_callback</a> )(void *user, <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1">JSON_event</a> type, const char *data, int len)</td></tr>
-<tr class="separator:aa482196826847bff63d692ac147f5d02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcd3337899118aecfafad2278a4c273a"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="JSON__checker_8h.html#a056212de1b1a7120d21ef4bd6a728a47">JSON_result</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="JSON__checker_8h.html#abcd3337899118aecfafad2278a4c273a">JSON_result</a></td></tr>
+<tr class="separator:abcd3337899118aecfafad2278a4c273a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af09b73ac9f2b18c3a183382658a0aecc"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="JSON__checker_8h.html#af09b73ac9f2b18c3a183382658a0aecc">JSON_callback</a> )(void *user, <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1">JSON_event</a> type, const char *data, size_t len)</td></tr>
+<tr class="separator:af09b73ac9f2b18c3a183382658a0aecc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab732d63bfe9c0b7351c989b0c80da6cd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab732d63bfe9c0b7351c989b0c80da6cd"></a>
 typedef struct <br class="typebreak"/>
 <a class="el" href="structJSON__checker__struct.html">JSON_checker_struct</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>JSON_checker</b></td></tr>
@@ -136,13 +139,17 @@ Enumerations</h2></td></tr>
 <br/>
  }</td></tr>
 <tr class="separator:adf29974fd1e6f509d1d2212c99f141a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a056212de1b1a7120d21ef4bd6a728a47"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="JSON__checker_8h.html#a056212de1b1a7120d21ef4bd6a728a47">JSON_result</a> { <b>JSON_error</b>, 
+<b>JSON_ok</b>
+ }</td></tr>
+<tr class="separator:a056212de1b1a7120d21ef4bd6a728a47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a24078b3fdcf630775cc3da155a124e45"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structJSON__checker__struct.html">JSON_checker</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="JSON__checker_8h.html#a24078b3fdcf630775cc3da155a124e45">new_JSON_checker</a> (int depth)</td></tr>
 <tr class="separator:a24078b3fdcf630775cc3da155a124e45"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac796d0666f65832d996914cbe2d1dcbc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="JSON__checker_8h.html#ac796d0666f65832d996914cbe2d1dcbc">JSON_checker_char</a> (<a class="el" href="structJSON__checker__struct.html">JSON_checker</a> jc, const char *chars, int len, <a class="el" href="JSON__checker_8h.html#aa482196826847bff63d692ac147f5d02">JSON_callback</a> cb, void *user)</td></tr>
-<tr class="separator:ac796d0666f65832d996914cbe2d1dcbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab24b6aacbe793a6e540c6ecd43c2157f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="JSON__checker_8h.html#ab24b6aacbe793a6e540c6ecd43c2157f">JSON_checker_char</a> (<a class="el" href="structJSON__checker__struct.html">JSON_checker</a> jc, const char *chars, size_t len, <a class="el" href="JSON__checker_8h.html#af09b73ac9f2b18c3a183382658a0aecc">JSON_callback</a> cb, void *user)</td></tr>
+<tr class="separator:ab24b6aacbe793a6e540c6ecd43c2157f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad762de4b529ba96c8736f953eff84107"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad762de4b529ba96c8736f953eff84107"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>JSON_checker_done</b> (<a class="el" href="structJSON__checker__struct.html">JSON_checker</a> jc)</td></tr>
 <tr class="separator:ad762de4b529ba96c8736f953eff84107"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -151,19 +158,19 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>JSON_checker_done</b> 
 <div class="textblock"><p>Main header of the C interface of autojson. </p>
 <p>This file is adapted from <a href="http://www.json.org/JSON_checker/">http://www.json.org/JSON_checker/</a> with modification. </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
-<a class="anchor" id="aa482196826847bff63d692ac147f5d02"></a>
+<a class="anchor" id="af09b73ac9f2b18c3a183382658a0aecc"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef void(* JSON_callback)(void *user, <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1">JSON_event</a> type, const char *data, int len)</td>
+          <td class="memname">typedef void(* JSON_callback)(void *user, <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1">JSON_event</a> type, const char *data, size_t len)</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>A callback function to be invoked when the parser encounter a event. See <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1">JSON_event</a> for a detailed list of events available. You need to provide this function when you call <a class="el" href="JSON__checker_8h.html#ac796d0666f65832d996914cbe2d1dcbc">JSON_checker_char()</a>.</p>
+<p>A callback function to be invoked when the parser encounter a event. See <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1">JSON_event</a> for a detailed list of events available. You need to provide this function when you call <a class="el" href="JSON__checker_8h.html#ab24b6aacbe793a6e540c6ecd43c2157f">JSON_checker_char()</a>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">user</td><td>A user-provided pointer by <a class="el" href="JSON__checker_8h.html#ac796d0666f65832d996914cbe2d1dcbc">JSON_checker_char()</a>. The parser will not interpret its value. It will be pass as-is. </td></tr>
+    <tr><td class="paramname">user</td><td>A user-provided pointer by <a class="el" href="JSON__checker_8h.html#ab24b6aacbe793a6e540c6ecd43c2157f">JSON_checker_char()</a>. The parser will not interpret its value. It will be pass as-is. </td></tr>
     <tr><td class="paramname">type</td><td>Type of event encountered. </td></tr>
     <tr><td class="paramname">data</td><td>Pointer to parsed data. It's only meaningful for certain events, such as <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1a26355d8d67e648d0f6079d0546b61d8c">JSON_string</a>. Note that this buffer is not null-terminated. You need to refer to <code>len</code> to know how many bytes are there. </td></tr>
     <tr><td class="paramname">len</td><td>The number of bytes in the buffer pointed by <code>data</code>. Note that the unit is bytes, not characters, as unicode characters many need more than 1 byte to represent in UTF-8/UTF-16. </td></tr>
@@ -182,7 +189,20 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>JSON_checker_done</b> 
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The type of JSON parse events. It is used to indicate what the parser has encountered. It is a parameter to the <a class="el" href="JSON__checker_8h.html#aa482196826847bff63d692ac147f5d02">JSON_callback()</a> function. </p>
+<p>The type of JSON parse events. It is used to indicate what the parser has encountered. It is a parameter to the <a class="el" href="JSON__checker_8h.html#af09b73ac9f2b18c3a183382658a0aecc">JSON_callback()</a> function. </p>
+
+</div>
+</div>
+<a class="anchor" id="abcd3337899118aecfafad2278a4c273a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef enum <a class="el" href="JSON__checker_8h.html#a056212de1b1a7120d21ef4bd6a728a47">JSON_result</a>  <a class="el" href="JSON__checker_8h.html#a056212de1b1a7120d21ef4bd6a728a47">JSON_result</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enum to indicate success/failure of the function </p>
 
 </div>
 </div>
@@ -196,7 +216,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>JSON_checker_done</b> 
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The type of JSON parse events. It is used to indicate what the parser has encountered. It is a parameter to the <a class="el" href="JSON__checker_8h.html#aa482196826847bff63d692ac147f5d02">JSON_callback()</a> function. </p>
+<p>The type of JSON parse events. It is used to indicate what the parser has encountered. It is a parameter to the <a class="el" href="JSON__checker_8h.html#af09b73ac9f2b18c3a183382658a0aecc">JSON_callback()</a> function. </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="adf29974fd1e6f509d1d2212c99f141a1a4afd4d40ef3fc90a6a5f51de24693e12"></a>JSON_array_start</em>&#160;</td><td class="fielddoc">
 <p>Start of a JSON array. </p>
@@ -232,8 +252,21 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>JSON_checker_done</b> 
 
 </div>
 </div>
+<a class="anchor" id="a056212de1b1a7120d21ef4bd6a728a47"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="JSON__checker_8h.html#a056212de1b1a7120d21ef4bd6a728a47">JSON_result</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enum to indicate success/failure of the function </p>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ac796d0666f65832d996914cbe2d1dcbc"></a>
+<a class="anchor" id="ab24b6aacbe793a6e540c6ecd43c2157f"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -252,13 +285,13 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>JSON_checker_done</b> 
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">size_t&#160;</td>
           <td class="paramname"><em>len</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="JSON__checker_8h.html#aa482196826847bff63d692ac147f5d02">JSON_callback</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="JSON__checker_8h.html#af09b73ac9f2b18c3a183382658a0aecc">JSON_callback</a>&#160;</td>
           <td class="paramname"><em>cb</em>, </td>
         </tr>
         <tr>
@@ -278,7 +311,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>JSON_checker_done</b> 
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">jc</td><td>A parser created by <a class="el" href="JSON__checker_8h.html#a24078b3fdcf630775cc3da155a124e45">new_JSON_checker()</a> </td></tr>
-    <tr><td class="paramname">chars</td><td>A block of JSON data to be parsed. It does not need to be a complete JSON document. <a class="el" href="JSON__checker_8h.html#ac796d0666f65832d996914cbe2d1dcbc">JSON_checker_char()</a> can parse incrementally. </td></tr>
+    <tr><td class="paramname">chars</td><td>A block of JSON data to be parsed. It does not need to be a complete JSON document. <a class="el" href="JSON__checker_8h.html#ab24b6aacbe793a6e540c6ecd43c2157f">JSON_checker_char()</a> can parse incrementally. </td></tr>
     <tr><td class="paramname">len</td><td>Number of bytes in the buffer pointed by <code>chars</code>. </td></tr>
     <tr><td class="paramname">cb</td><td>A pointer to a callback function to be called when the parser encounter an event. See <a class="el" href="JSON__checker_8h.html#adf29974fd1e6f509d1d2212c99f141a1">JSON_event</a> for more details about the events. </td></tr>
     <tr><td class="paramname">user</td><td>A pointer to user data. The parser will not try to interpret this pointer. It will be passed as-is to the callback function <code>cb</code>. </td></tr>
@@ -302,8 +335,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>JSON_checker_done</b> 
       </table>
 </div><div class="memdoc">
 <p>Create a new parser. <a class="el" href="JSON__checker_8h.html#a24078b3fdcf630775cc3da155a124e45">new_JSON_checker()</a> starts the checking process by constructing a JSON_checker object. It takes the <code>depth</code> parameter that restricts the level of maximum nesting.</p>
-<p>To continue the process, call <a class="el" href="JSON__checker_8h.html#ac796d0666f65832d996914cbe2d1dcbc">JSON_checker_char()</a> for each block of characters in the JSON text, and then call JSON_checker_done() to obtain the final result. These functions are fully reentrant.</p>
-<p>The JSON_checker object will be deleted by JSON_checker_done(). <a class="el" href="JSON__checker_8h.html#ac796d0666f65832d996914cbe2d1dcbc">JSON_checker_char()</a> will auto delete the JSON_checker object if it sees an error. </p>
+<p>To continue the process, call <a class="el" href="JSON__checker_8h.html#ab24b6aacbe793a6e540c6ecd43c2157f">JSON_checker_char()</a> for each block of characters in the JSON text, and then call JSON_checker_done() to obtain the final result. These functions are fully reentrant.</p>
+<p>The JSON_checker object will be deleted by JSON_checker_done(). <a class="el" href="JSON__checker_8h.html#ab24b6aacbe793a6e540c6ecd43c2157f">JSON_checker_char()</a> will auto delete the JSON_checker object if it sees an error. </p>
 
 </div>
 </div>
