@@ -317,7 +317,7 @@ static int save_token(JSON_checker jc, JSON_token *token, const char *pos)
 	if (token->start != 0)
 	{
 		char *p = &jc->token[jc->token_len];
-		int len = (int)(pos - token->start);
+		size_t len = pos - token->start;
 		if (sizeof(jc->token) > len)
 		{
 			memcpy(p, token->start, len);
