@@ -125,24 +125,32 @@ TEST(PartialJsonCanBeParsed, JsonTest)
 	ASSERT_EQ(expect, actual);
 }
 
-template <typename DestType>
+class Handler;
+struct ParseState
+{
+	Handler	*handler;
+	void	*ptr;
+};
+
 class Handler
 {
 public :
-	virtual void Do(DestType& t, const std::string& value) = 0;
+	virtual ParseState On(ParseState& s, JSON_event event, const char *data, int len) = 0;
 };
 
 template <typename DestType, typename T>
-class SaveToMember : public Handler<DestType>
+class SaveToMember : public Handler
 {
 public :
 	SaveToMember(T DestType::*member) : m_member(member)
 	{
 	}
 
-	void Do(DestType& t, const std::string& value) override
+	ParseState On(ParseState& s, JSON_event event, const char *data, int len) override
 	{
-		t.*m_member = value;
+		DestType *dest = reinterpret_cast<DestType*>(s.ptr);
+		(dest->*m_member) = std::string(data, len);
+		return s;
 	}
 
 private :
@@ -150,7 +158,7 @@ private :
 };
 
 template <typename DestType>
-class ObjectReactor
+class ObjectReactor : public Handler
 {
 public:
 	ObjectReactor() : m_next(nullptr)
@@ -159,8 +167,10 @@ public:
 
 	void Parse(DestType& t, JSON_checker jc, const char *json, std::size_t len)
 	{
-		m_subj = &t;
-		::JSON_checker_char(jc, json, static_cast<int>(len), &ReactorCallback<DestType>, this);
+		ParseState root = {this, &t};
+		std::vector<ParseState> vec(1, root);
+
+		::JSON_checker_char(jc, json, static_cast<int>(len), &ReactorCallback, &vec);
 	}
 
 	template <typename T>
@@ -171,7 +181,7 @@ public:
 		return *this;
 	}
 
-	void On(JSON_event event, const char *data, int len)
+	ParseState On(ParseState& s, JSON_event event, const char *data, int len) override
 	{
 		if (event == JSON_object_key)
 		{
@@ -180,27 +190,42 @@ public:
 		}
 		else if (m_next != nullptr)
 		{
+			switch (event)
+			{
+			case JSON_string:
+			case JSON_null:
+			case JSON_true:
+			case JSON_false:
+			case JSON_number:
+				m_next->On(s, event, data, len);
+				break;
+
+			case JSON_object_start:
+				break;
+			}
 			// only use once
-			m_next->Do(*m_subj, std::string(data,len));
 			m_next = nullptr;
 		}
+		return s;
 	}
 
 private :
-	typedef std::unique_ptr<Handler<DestType>> HandlerPtr;
-
-	DestType	*m_subj;
+	typedef std::unique_ptr<Handler> HandlerPtr;
+	
 	std::map<std::string, HandlerPtr> m_actions;
-	Handler<DestType> *m_next;
+	Handler *m_next;
 };
 
-template <typename DestType>
 void ReactorCallback(void *user, JSON_event type, const char *data, int len)
 {
-	ObjectReactor<DestType> *reactor =
-		reinterpret_cast<ObjectReactor<DestType>*>(user);
+	std::vector<ParseState> *state =
+		reinterpret_cast<std::vector<ParseState>*>(user);
 
-	reactor->On(type, data, len);
+	ParseState p = state->back().handler->On(state->back(), type, data, len);
+	if (p.handler != state->back().handler)
+		state->push_back(p) ;
+	else if (p.handler == nullptr)
+		state->pop_back();
 }
 
 TEST(TryOutCpp, JsonTest)
@@ -208,6 +233,10 @@ TEST(TryOutCpp, JsonTest)
 	struct Subject
 	{
 		std::string value;
+		struct Sub
+		{
+			std::string v2;
+		} sub;
 	};
 
 	JSON_checker jc = new_JSON_checker(5);
