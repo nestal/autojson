@@ -256,7 +256,7 @@ typedef struct JSON_token_
 
 static void emit_token(JSON_checker jc, JSON_token *token, const char *pos, JSON_event type)
 {
-	int len = pos - token->start;
+	int len = (int)(pos - token->start);
 	if (jc->token_len > 0 && sizeof(jc->token) - jc->token_len > len )
 	{
 		assert(token->start != 0);
@@ -317,7 +317,7 @@ static int save_token(JSON_checker jc, JSON_token *token, const char *pos)
 	if (token->start != 0)
 	{
 		char *p = &jc->token[jc->token_len];
-		int len = pos - token->start;
+		int len = (int)(pos - token->start);
 		if (sizeof(jc->token) > len)
 		{
 			memcpy(p, token->start, len);

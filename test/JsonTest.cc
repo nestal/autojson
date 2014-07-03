@@ -20,10 +20,10 @@
 
 #include "JSON_checker.h"
 
+#include <functional>
+#include <cassert>
 #include <vector>
 #include <string>
-#include <functional>
-#include <iostream>
 #include <gtest/gtest.h>
 
 struct JsonToken
@@ -59,7 +59,11 @@ bool operator==(const JsonToken& t1, const JsonToken& t2)
 void Callback(void *pvec, JSON_event type, const char *data, int len)
 {
 	std::vector<JsonToken>	*vec = reinterpret_cast<std::vector<JsonToken>*>(pvec);
-	vec->push_back({type, data != nullptr ? std::string(data, len) : ""});
+	
+	// MSVC needs two lines
+	JsonToken t {type, data != nullptr ? std::string(data, len) : ""};
+	vec->push_back(t);
+	assert(vec->back().value.size() == len);
 }
 
 TEST(ParsedOutputInCallback, JsonTest)
@@ -69,7 +73,7 @@ TEST(ParsedOutputInCallback, JsonTest)
 	std::vector<JsonToken> actual;
 
 	const char js[] = "{ \"hello\": 100, \"world\": 200.03, \"a\\tr\"   : [1,true,3,4,{\"k\":5},\"abc\\u00fF\", false] }";
-	ASSERT_TRUE(JSON_checker_char(jc, js, sizeof(js)-1, &Callback, &actual));
+	ASSERT_EQ(JSON_ok, JSON_checker_char(jc, js, sizeof(js)-1, &Callback, &actual));
 	
 	std::vector<JsonToken> expect =
 	{
@@ -104,8 +108,8 @@ TEST(PartialJsonCanBeParsed, JsonTest)
 	std::vector<JsonToken> actual;
 
 	const char js[] = "{ \"hello\": \"1234567890abcdefghijk\" }";
-	ASSERT_TRUE(JSON_checker_char(jc, js, 20, &Callback, &actual));
-	ASSERT_TRUE(JSON_checker_char(jc, js+20, sizeof(js)-20-1, &Callback, &actual));
+	ASSERT_EQ(JSON_ok, JSON_checker_char(jc, js, 20, &Callback, &actual));
+	ASSERT_EQ(JSON_ok, JSON_checker_char(jc, js+20, sizeof(js)-20-1, &Callback, &actual));
 	
 	std::vector<JsonToken> expect =
 	{

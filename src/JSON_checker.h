@@ -31,6 +31,14 @@ typedef enum JSON_event
 	JSON_false			//!< Literal value "false"
 } JSON_event;
 
+/**	Enum to indicate success/failure of the function
+*/
+typedef enum JSON_result
+{
+	JSON_error,
+	JSON_ok
+} JSON_result;
+
 /**	A callback function to be invoked when the parser encounter a event.
 	See #JSON_event for a detailed list of events available. You need to
 	provide this function when you call JSON_checker_char().
