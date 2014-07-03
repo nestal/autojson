@@ -27,6 +27,9 @@ include_directories(${autojson_SOURCE_DIR}/src)
 
 add_library(autojson
 	${autojson_SOURCE_DIR}/src/JSON_checker.c
+	${autojson_SOURCE_DIR}/src/ajs/Reactor.hh
+	${autojson_SOURCE_DIR}/src/ajs/ObjectReactor.hh
+	${autojson_SOURCE_DIR}/src/ajs/ObjectReactor.cc
 )
 
 # gcc specific

@@ -19,6 +19,7 @@
 */
 
 #include "JSON_checker.h"
+#include "ajs/ObjectReactor.hh"
 
 #include <functional>
 #include <cassert>
@@ -29,6 +30,8 @@
 #include <iostream>
 #include <memory>
 #include <map>
+
+using namespace ajs;
 
 struct JsonToken
 {
@@ -123,109 +126,6 @@ TEST(PartialJsonCanBeParsed, JsonTest)
 		{JSON_object_end, ""},
 	};
 	ASSERT_EQ(expect, actual);
-}
-
-class Handler;
-struct ParseState
-{
-	Handler	*handler;
-	void	*ptr;
-};
-
-class Handler
-{
-public :
-	virtual ParseState On(ParseState& s, JSON_event event, const char *data, int len) = 0;
-};
-
-template <typename DestType, typename T>
-class SaveToMember : public Handler
-{
-public :
-	SaveToMember(T DestType::*member) : m_member(member)
-	{
-	}
-
-	ParseState On(ParseState& s, JSON_event event, const char *data, int len) override
-	{
-		DestType *dest = reinterpret_cast<DestType*>(s.ptr);
-		(dest->*m_member) = std::string(data, len);
-		return s;
-	}
-
-private :
-	T DestType::*m_member;
-};
-
-template <typename DestType>
-class ObjectReactor : public Handler
-{
-public:
-	ObjectReactor() : m_next(nullptr)
-	{
-	}
-
-	void Parse(DestType& t, JSON_checker jc, const char *json, std::size_t len)
-	{
-		ParseState root = {this, &t};
-		std::vector<ParseState> vec(1, root);
-
-		::JSON_checker_char(jc, json, static_cast<int>(len), &ReactorCallback, &vec);
-	}
-
-	template <typename T>
-	ObjectReactor& Map(const std::string& key, T DestType::*member)
-	{
-		m_actions.insert(
-			std::make_pair(key, HandlerPtr(new SaveToMember<DestType,T>(member))));
-		return *this;
-	}
-
-	ParseState On(ParseState& s, JSON_event event, const char *data, int len) override
-	{
-		if (event == JSON_object_key)
-		{
-			auto i = m_actions.find(std::string(data,len)) ;
-			m_next = (i != m_actions.end() ? i->second.get() : nullptr);
-		}
-		else if (m_next != nullptr)
-		{
-			switch (event)
-			{
-			case JSON_string:
-			case JSON_null:
-			case JSON_true:
-			case JSON_false:
-			case JSON_number:
-				m_next->On(s, event, data, len);
-				break;
-
-			case JSON_object_start:
-				break;
-			}
-			// only use once
-			m_next = nullptr;
-		}
-		return s;
-	}
-
-private :
-	typedef std::unique_ptr<Handler> HandlerPtr;
-	
-	std::map<std::string, HandlerPtr> m_actions;
-	Handler *m_next;
-};
-
-void ReactorCallback(void *user, JSON_event type, const char *data, int len)
-{
-	std::vector<ParseState> *state =
-		reinterpret_cast<std::vector<ParseState>*>(user);
-
-	ParseState p = state->back().handler->On(state->back(), type, data, len);
-	if (p.handler != state->back().handler)
-		state->push_back(p) ;
-	else if (p.handler == nullptr)
-		state->pop_back();
 }
 
 TEST(TryOutCpp, JsonTest)

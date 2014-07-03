@@ -5,6 +5,9 @@
 	This file is adapted from http://www.json.org/JSON_checker/ with modification.
 */
 
+#ifndef JSON_CHECKER_H_INCLUDED
+#define JSON_CHECKER_H_INCLUDED
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -103,4 +106,6 @@ extern int  JSON_checker_done(JSON_checker jc);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
