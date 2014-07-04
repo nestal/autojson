@@ -59,6 +59,14 @@ public:
 		return *this;
 	}
 
+	template <typename T, typename R>
+	ObjectReactor& Map(const std::string& key, R (DestType::*member)(T))
+	{
+		m_actions.insert(
+			std::make_pair(key, ReactorPtr(new SaveByCallingMember<DestType,R,T>(member))));
+		return *this;
+	}
+
 	ObjectReactor* Clone() const override
 	{
 		return new ObjectReactor(*this);

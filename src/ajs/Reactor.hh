@@ -69,6 +69,30 @@ private :
 	T DestType::*m_member;
 };
 
+template <typename DestType, typename R, typename T>
+class SaveByCallingMember : public Reactor
+{
+public :
+	SaveByCallingMember(R (DestType::*member)(T)) : m_member(member)
+	{
+	}
+
+	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override
+	{
+		DestType *dest = reinterpret_cast<DestType*>(s.dest);
+		(dest->*m_member)(lexical_cast<T>(data, len));
+		return s;
+	}
+
+	SaveByCallingMember* Clone() const override
+	{
+		return new SaveByCallingMember(m_member);
+	}
+
+private :
+	R (DestType::*m_member)(T);
+};
+
 } // end of namespace
 
 #endif

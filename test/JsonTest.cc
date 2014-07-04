@@ -135,6 +135,13 @@ TEST(TryOutCpp, JsonTest)
 	{
 		std::string value;
 		int in;
+		double money;
+
+		void SetMoney(double d)
+		{
+			money = d;
+		}
+
 		struct Sub
 		{
 			std::string v2;
@@ -145,17 +152,20 @@ TEST(TryOutCpp, JsonTest)
 	const char js[] =
 	"{"
 		"\"haha\": \"fun\","
-		"\"hehe\": 199"
+		"\"hehe\": 199,"
+		"\"money\": 400.2"
 	"}";
 
 	JsonParser p(
 		ObjectReactor<Subject>().
 			Map("haha", &Subject::value).
-			Map("hehe", &Subject::in),
+			Map("hehe", &Subject::in).
+			Map("money", &Subject::SetMoney),
 		j);
 	p.Parse(js,		10);
 	p.Parse(js+10,	sizeof(js)-10-1);
 	
 	ASSERT_EQ("fun",	j.value) ;
 	ASSERT_EQ(199,		j.in) ;
+	ASSERT_EQ(400.2,	j.money);
 }
