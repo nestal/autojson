@@ -45,6 +45,48 @@ struct ParseState
 	void	*dest;
 };
 
+template <typename Host, typename Type>
+class MemberVariable
+{
+public :
+	MemberVariable(Type Host::*member) : m_member(member)
+	{
+	}
+
+	Type& Get(const ParseState& s) const
+	{
+		Host *dest = reinterpret_cast<Host*>(s.dest);
+		return dest->*m_member;
+	}
+
+	void Set(const ParseState& s, const Type& value) const
+	{
+		Host *dest = reinterpret_cast<Host*>(s.dest);
+		dest->*m_member = value;
+	}
+
+private :
+	Type Host::*m_member;
+};
+
+template <typename Host, typename Ret, typename Arg>
+class MemberFunction
+{
+public :
+	MemberFunction(Ret (Host::*member)(Arg)) : m_member(member)
+	{
+	}
+
+	Ret Call(ParseState& s, Arg arg)
+	{
+		Host *dest = reinterpret_cast<Host*>(s.dest);
+		return (dest->*m_member)(arg);
+	}
+
+private :
+	Ret (Host::*m_member)(Arg);
+};
+
 template <typename DestType, typename T>
 class SaveToMember : public Reactor
 {
@@ -55,18 +97,17 @@ public :
 
 	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override
 	{
-		DestType *dest = reinterpret_cast<DestType*>(s.dest);
-		(dest->*m_member) = lexical_cast<T>(data, len);
+		m_member.Set(s, lexical_cast<T>(data, len));
 		return s;
 	}
 
 	SaveToMember* Clone() const override
 	{
-		return new SaveToMember(m_member);
+		return new SaveToMember(*this);
 	}
 
 private :
-	T DestType::*m_member;
+	MemberVariable<DestType, T> m_member;
 };
 
 template <typename DestType, typename R, typename T>
@@ -79,18 +120,17 @@ public :
 
 	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override
 	{
-		DestType *dest = reinterpret_cast<DestType*>(s.dest);
-		(dest->*m_member)(lexical_cast<T>(data, len));
+		m_member.Call(s, lexical_cast<T>(data, len)) ;
 		return s;
 	}
 
 	SaveByCallingMember* Clone() const override
 	{
-		return new SaveByCallingMember(m_member);
+		return new SaveByCallingMember(*this);
 	}
 
 private :
-	R (DestType::*m_member)(T);
+	MemberFunction<DestType, R, T>	m_member;
 };
 
 } // end of namespace

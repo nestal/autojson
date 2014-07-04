@@ -32,24 +32,22 @@ template <typename DestType, typename T, typename R>
 class SubObjectReactor : public Reactor
 {
 public :
-	SubObjectReactor(T DestType::*member, const R& reactor) : m_member(member), m_reactor(reactor)
+	SubObjectReactor(MemberVariable<DestType,T> member, const R& reactor) : m_member(member), m_reactor(reactor)
 	{
 	}
 
 	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override
 	{
-		DestType *dest = reinterpret_cast<DestType*>(s.dest);
-		ParseState r {&m_reactor, &(dest->*m_member)};
-		return r;
+		return ParseState {&m_reactor, &m_member.Get(s)};
 	}
 
 	SubObjectReactor* Clone() const override
 	{
-		return new SubObjectReactor(m_member, m_reactor);
+		return new SubObjectReactor(*this);
 	}
 
 private :
-	T DestType::*m_member;
+	MemberVariable<DestType,T>	m_member;
 	R m_reactor;
 };
 
