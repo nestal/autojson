@@ -65,9 +65,9 @@ ParseState ObjectReactor::On(ParseState& s, JSON_event event, const char *data, 
 			break;
 
 		case JSON_object_start:
+		case JSON_array_start:
 			// return new reactor and new dest in s
 			return m_next->On(s, event, data, len);
-			break;
 		default:
 			break;
 		}

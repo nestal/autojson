@@ -154,6 +154,7 @@ TEST(TryOutCpp, JsonTest)
 		"\"haha\": \"fun\","
 		"\"hehe\": 199,"
 		"\"money\": 400.2,"
+		"\"test\": \"funny\","
 		"\"sub\":"
 		"{"
 			"\"cake\": \"true stuff\""
@@ -167,7 +168,11 @@ TEST(TryOutCpp, JsonTest)
 			Map("money", &Subject::SetMoney).
 			Map("sub", &Subject::sub, ObjectReactor().
 				Map("cake", &Subject::Sub::v2)
-			),
+			).
+			Map<Subject>("test", [](Subject& s, const char *data, std::size_t len)
+			{
+				std::cout << "testing: " << s.money << " " << std::string(data, len) << std::endl;
+			}),
 		j);
 	p.Parse(js,		10);
 	p.Parse(js+10,	sizeof(js)-10-1);

@@ -45,9 +45,13 @@ struct ParseState
 	void	*dest;
 };
 
-template <typename Host, typename Type>
+template <typename H, typename T>
 class MemberVariable
 {
+public :
+	typedef H Host;
+	typedef T Type;
+
 public :
 	MemberVariable(Type Host::*member) : m_member(member)
 	{
@@ -69,9 +73,14 @@ private :
 	Type Host::*m_member;
 };
 
-template <typename Host, typename Ret, typename Arg>
+template <typename H, typename R, typename A>
 class MemberFunction
 {
+public :
+	typedef H Host;
+	typedef R Ret;
+	typedef A Arg;
+
 public :
 	MemberFunction(Ret (Host::*member)(Arg)) : m_member(member)
 	{
@@ -86,6 +95,36 @@ public :
 private :
 	Ret (Host::*m_member)(Arg);
 };
+
+template <typename DestType, typename Callable>
+class CallbackReactor : public Reactor
+{
+public:
+	CallbackReactor(Callable func) : m_func(func)
+	{
+	}
+
+	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override
+	{
+		DestType *dest = reinterpret_cast<DestType*>(s.dest);
+		m_func(*dest, data, len);
+		return s;
+	}
+
+	CallbackReactor* Clone() const override
+	{
+		return new CallbackReactor(*this);
+	}
+
+private :
+	Callable	m_func;
+};
+
+template <typename DestType, typename Callable>
+CallbackReactor<DestType, Callable>* MakeCallbackReactor(Callable func)
+{
+	return new CallbackReactor<DestType, Callable>(func);
+}
 
 template <typename DestType, typename T>
 class SaveToMember : public Reactor

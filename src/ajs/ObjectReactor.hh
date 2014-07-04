@@ -84,6 +84,14 @@ public:
 		return *this;
 	}
 
+	template <typename DestType, typename Callable>
+	ObjectReactor& Map(const std::string& key, Callable func)
+	{
+		m_actions.insert(
+			std::make_pair(key, ReactorPtr(MakeCallbackReactor<DestType>(func))));;
+		return *this;
+	}
+
 	ObjectReactor* Clone() const override;
 	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override;
 

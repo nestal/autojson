@@ -42,8 +42,7 @@ public :
 		ParseState p {m_reactor.get(), &t};
 		m_stack.push_back(p);
 	}
-
-	
+		
 	void Parse(const char *json, std::size_t len);
 
 private :
