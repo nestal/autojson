@@ -154,7 +154,7 @@ TEST(TryOutCpp, JsonTest)
 			Map("hehe", &Subject::in),
 		j);
 	p.Parse(js,		10);
-	p.Parse(js+20,	sizeof(js)-10-1);
+	p.Parse(js+10,	sizeof(js)-10-1);
 	
 	ASSERT_EQ("fun",	j.value) ;
 	ASSERT_EQ(199,		j.in) ;

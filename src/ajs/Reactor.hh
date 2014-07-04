@@ -28,7 +28,7 @@
 
 namespace ajs {
 
-class ParseState;
+struct ParseState;
 
 /**	Brief description of Reactor
 */
