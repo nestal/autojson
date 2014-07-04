@@ -28,6 +28,31 @@
 
 namespace ajs {
 
+template <typename DestType, typename T, typename R>
+class SubObjectReactor : public Reactor
+{
+public :
+	SubObjectReactor(T DestType::*member, const R& reactor) : m_member(member), m_reactor(reactor)
+	{
+	}
+
+	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override
+	{
+		DestType *dest = reinterpret_cast<DestType*>(s.dest);
+		ParseState r {&m_reactor, &(dest->*m_member)};
+		return r;
+	}
+
+	SubObjectReactor* Clone() const override
+	{
+		return new SubObjectReactor(m_member, m_reactor);
+	}
+
+private :
+	T DestType::*m_member;
+	R m_reactor;
+};
+
 /**	Brief description of ObjectReactor
 */
 class ObjectReactor : public Reactor
@@ -54,8 +79,10 @@ public:
 	}
 
 	template <typename T, typename DestType>
-	ObjectReactor& Map(const std::string& key, T DestType::*member, const ObjectReactor& )
+	ObjectReactor& Map(const std::string& key, T DestType::*member, const ObjectReactor& r)
 	{
+		m_actions.insert(
+			std::make_pair(key, ReactorPtr(new SubObjectReactor<DestType, T, ObjectReactor>(member, r))));
 		return *this;
 	}
 

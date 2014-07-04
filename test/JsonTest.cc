@@ -153,14 +153,21 @@ TEST(TryOutCpp, JsonTest)
 	"{"
 		"\"haha\": \"fun\","
 		"\"hehe\": 199,"
-		"\"money\": 400.2"
+		"\"money\": 400.2,"
+		"\"sub\":"
+		"{"
+			"\"cake\": \"true stuff\""
+		"}"
 	"}";
 
 	JsonParser p(
 		ObjectReactor().
 			Map("haha", &Subject::value).
 			Map("hehe", &Subject::in).
-			Map("money", &Subject::SetMoney),
+			Map("money", &Subject::SetMoney).
+			Map("sub", &Subject::sub, ObjectReactor().
+				Map("cake", &Subject::Sub::v2)
+			),
 		j);
 	p.Parse(js,		10);
 	p.Parse(js+10,	sizeof(js)-10-1);
@@ -168,4 +175,5 @@ TEST(TryOutCpp, JsonTest)
 	ASSERT_EQ("fun",	j.value) ;
 	ASSERT_EQ(199,		j.in) ;
 	ASSERT_EQ(400.2,	j.money);
+	ASSERT_EQ("true stuff", j.sub.v2);
 }

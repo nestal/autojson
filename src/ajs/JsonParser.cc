@@ -39,11 +39,15 @@ void JsonParser::Callback(void *user, JSON_event type, const char *data, size_t 
 	ParseState current	= parser->m_stack.back();
 	ParseState next		= current.reactor->On(current, type, data, len);
 	
+	// go one level deeper
 	if (next.reactor != current.reactor)
 		parser->m_stack.push_back(next) ;
 	
+	// go back one level
 	else if (next.reactor == nullptr)
 		parser->m_stack.pop_back();
+
+	// otherwise keep at the current level
 }
 
 } // end of namespace
