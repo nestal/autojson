@@ -25,33 +25,19 @@
 
 #include <map>
 #include <memory>
-#include <vector>
 
 namespace ajs {
 
 /**	Brief description of ObjectReactor
 */
-template <typename DestType>
 class ObjectReactor : public Reactor
 {
 public:
-	ObjectReactor() : m_next(nullptr)
-	{
-	}
-	
-	ObjectReactor(const ObjectReactor& rhs) : m_next(rhs.m_next)
-	{
-		for (const auto& p : rhs.m_actions)
-			m_actions.insert(std::make_pair(p.first, ReactorPtr(p.second->Clone())));
-	}
-	
-	ObjectReactor(ObjectReactor&& rhs) :
-		m_actions(std::move(rhs.m_actions)),
-		m_next(rhs.m_next)
-	{
-	}
+	ObjectReactor();
+	ObjectReactor(const ObjectReactor& rhs);
+	ObjectReactor(ObjectReactor&& rhs) NOEXCEPT;
 
-	template <typename T>
+	template <typename T, typename DestType>
 	ObjectReactor& Map(const std::string& key, T DestType::*member)
 	{
 		m_actions.insert(
@@ -59,7 +45,7 @@ public:
 		return *this;
 	}
 
-	template <typename T, typename R>
+	template <typename T, typename R, typename DestType>
 	ObjectReactor& Map(const std::string& key, R (DestType::*member)(T))
 	{
 		m_actions.insert(
@@ -67,39 +53,14 @@ public:
 		return *this;
 	}
 
-	ObjectReactor* Clone() const override
+	template <typename T, typename DestType>
+	ObjectReactor& Map(const std::string& key, T DestType::*member, const ObjectReactor& )
 	{
-		return new ObjectReactor(*this);
+		return *this;
 	}
 
-	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override
-	{
-		if (event == JSON_object_key)
-		{
-			auto i = m_actions.find(std::string(data,len)) ;
-			m_next = (i != m_actions.end() ? i->second.get() : nullptr);
-		}
-		else if (m_next != nullptr)
-		{
-			switch (event)
-			{
-			case JSON_string:
-			case JSON_null:
-			case JSON_true:
-			case JSON_false:
-			case JSON_number:
-				m_next->On(s, event, data, len);
-				break;
-
-			case JSON_object_start:
-			default:
-				break;
-			}
-			// only use once
-			m_next = nullptr;
-		}
-		return s;
-	}
+	ObjectReactor* Clone() const override;
+	ParseState On(ParseState& s, JSON_event event, const char *data, std::size_t len) override;
 
 private :
 	typedef std::unique_ptr<Reactor> ReactorPtr;

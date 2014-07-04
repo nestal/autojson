@@ -157,7 +157,7 @@ TEST(TryOutCpp, JsonTest)
 	"}";
 
 	JsonParser p(
-		ObjectReactor<Subject>().
+		ObjectReactor().
 			Map("haha", &Subject::value).
 			Map("hehe", &Subject::in).
 			Map("money", &Subject::SetMoney),

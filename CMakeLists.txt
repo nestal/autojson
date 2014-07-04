@@ -38,8 +38,14 @@ add_library(autojson
 
 # gcc specific
 if(CMAKE_COMPILER_IS_GNUCXX)
-        list(APPEND CMAKE_CXX_FLAGS "-std=c++0x")
+	list(APPEND CMAKE_CXX_FLAGS "-std=c++0x")
+	add_definitions(-DNOEXCEPT=noexcept)
 endif(CMAKE_COMPILER_IS_GNUCXX)
+
+# MSVC specific
+if(MSVC)
+	add_definitions(-DNOEXCEPT=)
+endif(MSVC)
 
 if (GTEST_FOUND)
 	include_directories(${GTEST_INCLUDE_DIRS})

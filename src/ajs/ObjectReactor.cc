@@ -20,6 +20,58 @@
 
 #include "ObjectReactor.hh"
 
+#include <vector>
+
 namespace ajs {
+
+ObjectReactor::ObjectReactor() : m_next(nullptr)
+{
+}
+	
+ObjectReactor::ObjectReactor(const ObjectReactor& rhs) : m_next(rhs.m_next)
+{
+	for (const auto& p : rhs.m_actions)
+		m_actions.insert(std::make_pair(p.first, ReactorPtr(p.second->Clone())));
+}
+	
+ObjectReactor::ObjectReactor(ObjectReactor&& rhs) NOEXCEPT:
+	m_actions(std::move(rhs.m_actions)),
+	m_next(rhs.m_next)
+{
+}
+
+ObjectReactor* ObjectReactor::Clone() const
+{
+	return new ObjectReactor(*this);
+}
+
+ParseState ObjectReactor::On(ParseState& s, JSON_event event, const char *data, std::size_t len)
+{
+	if (event == JSON_object_key)
+	{
+		auto i = m_actions.find(std::string(data,len)) ;
+		m_next = (i != m_actions.end() ? i->second.get() : nullptr);
+	}
+	else if (m_next != nullptr)
+	{
+		switch (event)
+		{
+		case JSON_string:
+		case JSON_null:
+		case JSON_true:
+		case JSON_false:
+		case JSON_number:
+			m_next->On(s, event, data, len);
+			break;
+
+		case JSON_object_start:
+		default:
+			break;
+		}
+		// only use once
+		m_next = nullptr;
+	}
+	return s;
+}
 
 } // end of namespace
