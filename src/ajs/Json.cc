@@ -106,6 +106,10 @@ Json::Json(const std::string& val) : m_base(new Var<std::string>(val))
 {
 }
 
+Json::Json(const char *val) : Json(std::string(val))
+{
+}
+
 Json::Json(const Array& val) : m_base(new Var<Array>(val))
 {
 }
@@ -128,6 +132,8 @@ bool		Json::AsBool()		const {return As<bool>();}
 const std::string&	Json::AsString()	const {return As<std::string>();}
 const Json::Array&	Json::AsArray()		const {return As<Array>();}
 const Json::Hash&	Json::AsHash()		const {return As<Hash>();}
+Json::Array&	Json::AsArray()	{return Cast<Array>()->var;}
+Json::Hash&		Json::AsHash()	{return Cast<Hash>()->var;}
 
 template <typename T>
 Json::Var<T>* Json::Cast()
@@ -171,7 +177,19 @@ void Json::Clear()
 		Cast<Array>()->var.clear();
 	else if (m_base->Type() == typeid(Hash))
 		Cast<Hash>()->var.clear();
-	
 }
+
+template <typename T>
+bool Json::Is() const
+{
+	return m_base->Type() == typeid(T);
+}
+
+template bool Json::Is<long long>() const;
+template bool Json::Is<double>() const;
+template bool Json::Is<bool>() const;
+template bool Json::Is<std::string>() const;
+template bool Json::Is<Json::Array>() const;
+template bool Json::Is<Json::Hash>() const;
 
 } // end of namespace

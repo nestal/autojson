@@ -130,60 +130,6 @@ TEST(PartialJsonCanBeParsed, JsonTest)
 	ASSERT_EQ(expect, actual);
 }
 
-TEST(TryOutCpp, JsonTest)
-{
-	struct Subject
-	{
-		std::string value;
-		int in;
-		double money;
-
-		void SetMoney(double d)
-		{
-			money = d;
-		}
-
-		struct Sub
-		{
-			std::string v2;
-		} sub;
-	};
-
-	Subject j {};
-	const char js[] =
-	"{"
-		"\"haha\": \"fun\","
-		"\"hehe\": 199,"
-		"\"money\": 400.2,"
-		"\"test\": \"funny\","
-		"\"sub\":"
-		"{"
-			"\"cake\": \"true stuff\""
-		"}"
-	"}";
-
-	JsonParser p(
-		ObjectReactor().
-			Map("haha", &Subject::value).
-			Map("hehe", &Subject::in).
-			Map("money", &Subject::SetMoney).
-			Map("sub", &Subject::sub, ObjectReactor().
-				Map("cake", &Subject::Sub::v2)
-			).
-			Map<Subject>("test", [](Subject& s, const char *data, std::size_t len)
-			{
-				std::cout << "testing: " << s.money << " " << std::string(data, len) << std::endl;
-			}),
-		j);
-	p.Parse(js,		10);
-	p.Parse(js+10,	sizeof(js)-10-1);
-	
-	ASSERT_EQ("fun",	j.value) ;
-	ASSERT_EQ(199,		j.in) ;
-	ASSERT_EQ(400.2,	j.money);
-	ASSERT_EQ("true stuff", j.sub.v2);
-}
-
 TEST(TryVar, JsonTest)
 {
 	Json v;
@@ -194,4 +140,19 @@ TEST(TryVar, JsonTest)
 	vec.Append(in);
 	
 	ASSERT_EQ(100, vec.AsArray()[0].AsInt());
+	ASSERT_TRUE(vec.Is<Json::Array>());
+}
+
+TEST(TryParseTarget, JsonTest)
+{
+	Json target((Json::Hash()));
+	target.Insert("haha", Json("a"));
+	ASSERT_TRUE(target.AsHash()["haha"].Is<std::string>());
+
+	JsonParser p(target);
+
+	const char js[] = "{ \"haha\": \"????\" }";
+	p.Parse(js, sizeof(js)-1);
+		
+	ASSERT_EQ("????", target.AsHash()["haha"].AsString());
 }

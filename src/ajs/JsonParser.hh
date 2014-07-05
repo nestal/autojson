@@ -21,7 +21,9 @@
 #ifndef JSONPARSER_HH_INCLUDED
 #define JSONPARSER_HH_INCLUDED
 
-#include "Reactor.hh"
+#include "Json.hh"
+#include "JSON_checker.h"
+
 #include <memory>
 #include <vector>
 
@@ -34,24 +36,18 @@ namespace ajs {
 class JsonParser
 {
 public :
-	template <typename R, typename DestType>
-	JsonParser(const R& reactor, DestType& t) :
-		m_reactor(new R(reactor)),
-		m_parser(new_JSON_checker(5))
-	{
-		ParseState p {m_reactor.get(), &t};
-		m_stack.push_back(p);
-	}
-		
+	JsonParser(Json& target);
 	void Parse(const char *json, std::size_t len);
 
 private :
 	static void Callback(void *user, JSON_event type, const char *data, size_t len);
+	void Callback(JSON_event type, const char *data, size_t len);
 
 private :
-	std::unique_ptr<Reactor>	m_reactor;
-	std::vector<ParseState>		m_stack;
-	JSON_checker				m_parser;
+	Json&					m_target;
+	std::vector<Json*>		m_stack;
+	Json::Hash::iterator	m_current;
+	JSON_checker			m_parser;
 };
 
 } // end of namespace

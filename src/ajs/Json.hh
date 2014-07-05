@@ -51,6 +51,7 @@ public :
 	explicit Json(double val);
 	explicit Json(bool val);
 	explicit Json(const std::string& val);
+	explicit Json(const char *val);
 	explicit Json(const Array& val);
 	explicit Json(const Hash& val);
 
@@ -60,7 +61,9 @@ public :
 	bool AsBool() const;
 	const std::string& AsString() const;
 	const Array& AsArray() const;
+	Array& AsArray();
 	const Hash& AsHash() const;
+	Hash& AsHash();
 	bool IsNull() const;
 
 	template <typename T>

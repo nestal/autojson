@@ -24,6 +24,12 @@
 
 namespace ajs {
 
+JsonParser::JsonParser(Json& target) :
+	m_target(target),
+	m_parser(new_JSON_checker(5))
+{
+}
+
 void JsonParser::Parse(const char *json, std::size_t len)
 {
 	::JSON_checker_char(m_parser, json, static_cast<int>(len),
@@ -32,22 +38,36 @@ void JsonParser::Parse(const char *json, std::size_t len)
 
 void JsonParser::Callback(void *user, JSON_event type, const char *data, size_t len)
 {
-	JsonParser *parser = reinterpret_cast<JsonParser*>(user);
-	assert(parser != nullptr);
-	assert(!parser->m_stack.empty());
-
-	ParseState current	= parser->m_stack.back();
-	ParseState next		= current.reactor->On(current, type, data, len);
+	JsonParser *pthis = reinterpret_cast<JsonParser*>(user);
+	assert(pthis != nullptr);
 	
-	// go one level deeper
-	if (next.reactor != current.reactor)
-		parser->m_stack.push_back(next) ;
-	
-	// go back one level
-	else if (next.reactor == nullptr)
-		parser->m_stack.pop_back();
+	pthis->Callback(type, data, len);
+}
 
-	// otherwise keep at the current level
+void JsonParser::Callback(JSON_event type, const char *data, size_t len)
+{
+	switch (type)
+	{
+	case JSON_object_start:
+		if (m_stack.empty() && m_target.Is<Json::Hash>())
+			m_stack.push_back(&m_target);
+		break;
+	
+	case JSON_object_key:
+		assert(!m_stack.empty());
+		assert(m_stack.back()->Is<Json::Hash>());
+		m_current = m_stack.back()->AsHash().find(std::string(data,len));
+		break;
+	
+	case JSON_string:
+		assert(m_current != m_stack.back()->AsHash().end());
+		assert(m_current->second.Is<std::string>());
+		m_current->second.Assign(std::string(data, len));
+		break;
+	
+	default:
+		break;
+	}
 }
 
 } // end of namespace
