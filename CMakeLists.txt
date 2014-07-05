@@ -34,6 +34,8 @@ add_library(autojson
 	src/ajs/LexicalCast.cc
 	src/ajs/JsonParser.hh
 	src/ajs/JsonParser.cc
+	src/ajs/Json.hh
+	src/ajs/Json.cc
 )
 
 # gcc specific

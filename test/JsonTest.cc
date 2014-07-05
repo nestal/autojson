@@ -21,6 +21,7 @@
 #include "JSON_checker.h"
 #include "ajs/JsonParser.hh"
 #include "ajs/ObjectReactor.hh"
+#include "ajs/Json.hh"
 
 #include <functional>
 #include <cassert>
@@ -181,4 +182,16 @@ TEST(TryOutCpp, JsonTest)
 	ASSERT_EQ(199,		j.in) ;
 	ASSERT_EQ(400.2,	j.money);
 	ASSERT_EQ("true stuff", j.sub.v2);
+}
+
+TEST(TryVar, JsonTest)
+{
+	Json v;
+	Json in(100);
+	ASSERT_EQ(100, in.AsInt());
+	
+	Json vec((std::vector<Json>()));
+	vec.Append(in);
+	
+	ASSERT_EQ(100, vec.AsArray()[0].AsInt());
 }
