@@ -76,6 +76,7 @@ public :
 	void Append(const Json& val);
 	void Insert(const std::string& key, const Json& val);
 	void Clear();
+	const Json& operator[](const std::string& key) const;
 
 	template <typename T> const T& As() const;
 	template <typename T> bool Is() const;

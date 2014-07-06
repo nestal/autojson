@@ -147,12 +147,12 @@ TEST(TryParseTarget, JsonTest)
 {
 	Json target((Json::Hash()));
 	target.Insert("haha", Json("a"));
-	ASSERT_TRUE(target.AsHash()["haha"].Is<std::string>());
+	ASSERT_TRUE(target["haha"].Is<std::string>());
 
 	JsonParser p(target);
 
 	const char js[] = "{ \"haha\": \"????\" }";
 	p.Parse(js, sizeof(js)-1);
 		
-	ASSERT_EQ("????", target.AsHash()["haha"].AsString());
+	ASSERT_EQ("????", target["haha"].AsString());
 }

@@ -192,4 +192,12 @@ template bool Json::Is<std::string>() const;
 template bool Json::Is<Json::Array>() const;
 template bool Json::Is<Json::Hash>() const;
 
+const Json& Json::operator[](const std::string& key) const
+{
+	static const Json null;
+
+	auto it = AsHash().find(key);
+	return it != AsHash().end() ? it->second : null;
+}
+
 } // end of namespace
