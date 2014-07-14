@@ -21,6 +21,7 @@
 #ifndef JSON_HH_INCLUDED
 #define JSON_HH_INCLUDED
 
+#include <type_traits>
 #include <map>
 #include <memory>
 #include <string>
@@ -34,6 +35,19 @@ class Json
 {
 public :
 	enum class Type { integer, real, boolean, string, array, hash };
+
+private :
+	// helpers
+	template <typename T, typename=void> struct TypeMap;
+	
+	template <typename T>
+	struct Equal
+	{
+		T val;
+		template <typename U>
+		bool operator()(U u) { return false; }
+		bool operator()(T t) { return t == val; }
+	};
 
 public :
 	typedef std::vector<Json> 			Array;
@@ -73,6 +87,20 @@ public :
 	Hash& AsHash();
 	bool IsNull() const;
 
+	template <typename F>
+	auto Apply(F func) const -> decltype(func(1))
+	{
+		switch (m_type)
+		{
+		case Type::integer:	return func(m_raw.integer);
+		case Type::real:	return func(m_raw.real);
+		case Type::boolean:	return func(m_raw.boolean);
+		case Type::string:	return func(*m_raw.string);
+		case Type::array:	return func(*m_raw.array);
+		case Type::hash:	return func(*m_raw.hash);
+		default:			throw -1;
+		}
+	}
 	template <typename F>
 	auto Apply(F func) -> decltype(func(1))
 	{
@@ -135,7 +163,14 @@ public :
 	const Json& operator[](std::size_t idx) const;
 
 //	template <typename T> const T& As() const;
-//	template <typename T> bool Is() const;
+	template <typename T> bool Is() const
+	{
+		return m_type == TypeMap<T>::type;
+	}
+	template <typename T> bool Is(const T& v) const
+	{
+		return Apply(Equal<typename TypeMap<T>::UnderlyingType>{v});
+	}
 
 	Type MyType() const;
 	bool Is(Type type) const;
@@ -153,6 +188,48 @@ private :
 
 	Type	m_type;
 	Raw 	m_raw;
+};
+
+template <typename T>
+struct Json::TypeMap<T, typename std::enable_if<std::is_integral<T>::value>::type>
+{
+	static const Type type = Type::integer;
+	typedef long long UnderlyingType ;
+};
+
+template <typename T>
+struct Json::TypeMap<T, typename std::enable_if<std::is_floating_point<T>::value>::type>
+{
+	static const Type type = Type::real;
+	typedef double UnderlyingType ;
+};
+
+template <>
+struct Json::TypeMap<std::string>
+{
+	static const Type type = Type::string;
+	typedef std::string UnderlyingType ;
+};
+
+template <>
+struct Json::TypeMap<const char*>
+{
+	static const Type type = Type::string;
+	typedef std::string UnderlyingType ;
+};
+
+template <>
+struct Json::TypeMap<Json::Array>
+{
+	static const Type type = Type::array;
+	typedef Json::Array UnderlyingType ;
+};
+
+template <>
+struct Json::TypeMap<Json::Hash>
+{
+	static const Type type = Type::hash;
+	typedef Json::Hash UnderlyingType ;
 };
 
 } // end of namespace
