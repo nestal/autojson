@@ -218,6 +218,13 @@ struct Json::TypeMap<const char*>
 	typedef std::string UnderlyingType ;
 };
 
+template <std::size_t n>
+struct Json::TypeMap<char[n]>
+{
+	static const Type type = Type::string;
+	typedef std::string UnderlyingType ;
+};
+
 template <>
 struct Json::TypeMap<Json::Array>
 {
@@ -231,6 +238,12 @@ struct Json::TypeMap<Json::Hash>
 	static const Type type = Type::hash;
 	typedef Json::Hash UnderlyingType ;
 };
+
+template <typename T> bool operator==(const T& v, const Json& js)
+{
+	return js.Is(v);
+}
+
 
 } // end of namespace
 

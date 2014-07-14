@@ -135,8 +135,8 @@ TEST(TryVar, JsonTest)
 	Json v;
 	Json in(100);
 	ASSERT_TRUE(in.Is<int>());
-	ASSERT_TRUE(in.Is(100LL));
 	ASSERT_EQ(100, in.Int());
+	ASSERT_EQ(100, in);
 	
 	Json vec((std::vector<Json>()));
 	vec.Add(in);
@@ -151,6 +151,7 @@ TEST(TryParseTarget, JsonTest)
 	Json target((Json::Hash()));
 	target.Add("haha", "a");
 	ASSERT_TRUE(target["haha"].Is(Json::Type::string));
+	ASSERT_EQ("a", target["haha"]);
 
 	JsonParser p(target);
 
