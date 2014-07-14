@@ -61,12 +61,12 @@ public :
 	explicit Json(const Hash& val);
 	explicit Json(Hash&& val);
 
-	int AsInt() const;
-	long long AsLong() const ;
-	double AsDouble() const;
-	bool AsBool() const;
-	const std::string& AsString() const;
-	std::string& AsString();
+	int Int() const;
+	long long Long() const ;
+	double Real() const;
+	bool Bool() const;
+	const std::string& Str() const;
+	std::string& Str();
 	const Array& AsArray() const;
 	Array& AsArray();
 	const Hash& AsHash() const;
@@ -74,10 +74,20 @@ public :
 	bool IsNull() const;
 
 	template <typename F>
-	void Apply(F func)
+	auto Apply(F func) -> decltype(func(1))
 	{
+		switch (m_type)
+		{
+		case Type::integer:	return func(m_raw.integer);
+		case Type::real:	return func(m_raw.real);
+		case Type::boolean:	return func(m_raw.boolean);
+		case Type::string:	return func(*m_raw.string);
+		case Type::array:	return func(*m_raw.array);
+		case Type::hash:	return func(*m_raw.hash);
+		default:			throw -1;
+		}
 	}
-
+	
 	template <typename T>
 	void Assign(const T& val)
 	{
@@ -95,10 +105,34 @@ public :
 	void Swap(Json& rhs);
 	
 	// complex types only
-	void Add(const Json& val);
-	void Add(const std::string& key, const Json& val);
+	template <typename T>
+	Json& Add(const T& val)
+	{
+		return Add(Json(val));
+	}
+	template <typename T>
+	Json& Add(T&& val)
+	{
+		return Add(Json(std::move(val)));
+	}
+	template <typename T>
+	Json& Add(const std::string& key, const T& val)
+	{
+		return Add(key, Json(val));
+	}
+	template <typename T>
+	Json& Add(const std::string& key, T&& val)
+	{
+		return Add(key, Json(std::move(val)));
+	}
+	Json& Add(const Json& val);
+	Json& Add(Json&& val);
+	Json& Add(const std::string& key, const Json& val);
+	Json& Add(const std::string& key, Json&& val);
+	
 	void Clear();
 	const Json& operator[](const std::string& key) const;
+	const Json& operator[](std::size_t idx) const;
 
 //	template <typename T> const T& As() const;
 //	template <typename T> bool Is() const;
@@ -116,7 +150,7 @@ private :
 		Array		*array;
 		Hash		*hash;
 	};
-	
+
 	Type	m_type;
 	Raw 	m_raw;
 };

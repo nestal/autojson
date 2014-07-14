@@ -29,6 +29,7 @@ Json::Json() : m_type(Type::hash)
 	m_raw.hash = new Hash;
 }
 
+
 Json::Json(const Json& val) : m_type(val.m_type), m_raw(val.m_raw)
 {
 	switch (m_type)
@@ -123,23 +124,12 @@ Json::~Json()
 	}
 }
 
-int Json::AsInt() const
+int Json::Int() const
 {
-	return static_cast<int>(AsLong());
+	return static_cast<int>(Long());
 }
 
-long long Json::AsLong() const
-{
-	switch (m_type)
-	{
-	case Type::integer:	return m_raw.integer;
-	case Type::real:	return static_cast<long long>(m_raw.real);
-	case Type::string:	return std::atoi(m_raw.string->c_str());
-	default:			throw -1;
-	}
-}
-
-double Json::AsDouble() const
+long long Json::Long() const
 {
 	switch (m_type)
 	{
@@ -150,7 +140,18 @@ double Json::AsDouble() const
 	}
 }
 
-const std::string& Json::AsString() const
+double Json::Real() const
+{
+	switch (m_type)
+	{
+	case Type::integer:	return m_raw.integer;
+	case Type::real:	return static_cast<long long>(m_raw.real);
+	case Type::string:	return std::atoi(m_raw.string->c_str());
+	default:			throw -1;
+	}
+}
+
+const std::string& Json::Str() const
 {
 	if (m_type == Type::string)
 		return *m_raw.string;
@@ -158,7 +159,7 @@ const std::string& Json::AsString() const
 		throw -1;
 }
 
-std::string& Json::AsString()
+std::string& Json::Str()
 {
 	if (m_type == Type::string)
 		return *m_raw.string;
@@ -198,14 +199,28 @@ const Json::Hash& Json::AsHash() const
 		throw -1;
 }
 
-void Json::Add(const Json& val)
+Json& Json::Add(const Json& val)
 {
 	AsArray().push_back(val);
+	return *this;
 }
 
-void Json::Add(const std::string& key, const Json& val)
+Json& Json::Add(Json&& val)
+{
+	AsArray().push_back(std::move(val));
+	return *this;
+}
+
+Json& Json::Add(const std::string& key, const Json& val)
 {
 	AsHash().insert(std::make_pair(key, val));
+	return *this;
+}
+
+Json& Json::Add(const std::string& key, Json&& val)
+{
+	AsHash().insert(std::make_pair(key, std::move(val)));
+	return *this;
 }
 
 Json::Type Json::MyType() const
@@ -225,6 +240,11 @@ const Json& Json::operator[](const std::string& key) const
 		throw -1;
 	
 	return it->second;
+}
+
+const Json& Json::operator[](std::size_t idx) const
+{
+	return AsArray().at(idx);
 }
 
 } // end of namespace

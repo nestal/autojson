@@ -134,19 +134,19 @@ TEST(TryVar, JsonTest)
 {
 	Json v;
 	Json in(100);
-	ASSERT_EQ(100, in.AsInt());
+	ASSERT_EQ(100, in.Int());
 	
 	Json vec((std::vector<Json>()));
 	vec.Add(in);
 	
-	ASSERT_EQ(100, vec.AsArray()[0].AsInt());
+	ASSERT_EQ(100, vec[0].Int());
 	ASSERT_TRUE(vec.Is(Json::Type::array));
 }
 
 TEST(TryParseTarget, JsonTest)
 {
 	Json target((Json::Hash()));
-	target.Add("haha", Json("a"));
+	target.Add("haha", "a");
 	ASSERT_TRUE(target["haha"].Is(Json::Type::string));
 
 	JsonParser p(target);
@@ -154,5 +154,5 @@ TEST(TryParseTarget, JsonTest)
 	const char js[] = "{ \"haha\": \"????\" }";
 	p.Parse(js, sizeof(js)-1);
 		
-	ASSERT_EQ("????", target["haha"].AsString());
+	ASSERT_EQ("????", target["haha"].Str());
 }
