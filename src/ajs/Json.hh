@@ -33,6 +33,9 @@ namespace ajs {
 class Json
 {
 public :
+	enum class Type { integer, real, boolean, string, array, hash };
+
+public :
 	typedef std::vector<Json> 			Array;
 	typedef std::map<std::string, Json>	Hash;
 
@@ -51,48 +54,71 @@ public :
 	explicit Json(double val);
 	explicit Json(bool val);
 	explicit Json(const std::string& val);
+	explicit Json(std::string&& val);
 	explicit Json(const char *val);
 	explicit Json(const Array& val);
+	explicit Json(Array&& val);
 	explicit Json(const Hash& val);
+	explicit Json(Hash&& val);
 
 	int AsInt() const;
 	long long AsLong() const ;
 	double AsDouble() const;
 	bool AsBool() const;
 	const std::string& AsString() const;
+	std::string& AsString();
 	const Array& AsArray() const;
 	Array& AsArray();
 	const Hash& AsHash() const;
 	Hash& AsHash();
 	bool IsNull() const;
 
+	template <typename F>
+	void Apply(F func)
+	{
+	}
+
 	template <typename T>
-	void Assign(const T& val);
-	void Assign(int val);
+	void Assign(const T& val)
+	{
+		Json tmp(val);
+		Swap(tmp);
+	}
+	
+	template <typename T>
+	void Assign(T&& val)
+	{
+		Json tmp(std::move(val));
+		Swap(tmp);
+	}
 
 	void Swap(Json& rhs);
 	
 	// complex types only
-	void Append(const Json& val);
-	void Insert(const std::string& key, const Json& val);
+	void Add(const Json& val);
+	void Add(const std::string& key, const Json& val);
 	void Clear();
 	const Json& operator[](const std::string& key) const;
 
-	template <typename T> const T& As() const;
-	template <typename T> bool Is() const;
-	
-	// schema related
-	std::size_t MaxSize() const;
-	bool Optional() const;
+//	template <typename T> const T& As() const;
+//	template <typename T> bool Is() const;
+
+	Type MyType() const;
+	bool Is(Type type) const;
 
 private :
-	struct Base;
-	std::unique_ptr<Base>	m_base;
+	union Raw
+	{
+		long long	integer;
+		double		real;
+		bool		boolean;
+		std::string	*string;
+		Array		*array;
+		Hash		*hash;
+	};
 	
-	template <typename T> struct Var;
-	
-	template <typename T> Var<T>* Cast();
-	template <typename T> const Var<T>* Cast() const;
+	Type	m_type;
+	Raw 	m_raw;
 };
 
 } // end of namespace

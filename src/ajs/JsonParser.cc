@@ -49,19 +49,19 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 	switch (type)
 	{
 	case JSON_object_start:
-		if (m_stack.empty() && m_target.Is<Json::Hash>())
+		if (m_stack.empty() && m_target.Is(Json::Type::hash))
 			m_stack.push_back(&m_target);
 		break;
 	
 	case JSON_object_key:
 		assert(!m_stack.empty());
-		assert(m_stack.back()->Is<Json::Hash>());
+		assert(m_stack.back()->Is(Json::Type::hash));
 		m_current = m_stack.back()->AsHash().find(std::string(data,len));
 		break;
 	
 	case JSON_string:
 		assert(m_current != m_stack.back()->AsHash().end());
-		assert(m_current->second.Is<std::string>());
+		assert(m_current->second.Is(Json::Type::string));
 		m_current->second.Assign(std::string(data, len));
 		break;
 	

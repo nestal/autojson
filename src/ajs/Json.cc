@@ -24,180 +24,207 @@
 
 namespace ajs {
 
-struct Json::Base
+Json::Json() : m_type(Type::hash)
 {
-	virtual ~Base() {}
-	virtual Base* Clone() const = 0;
-	virtual const std::type_info& Type() const = 0;
-};
-
-template <>
-struct Json::Var<void> : public Json::Base
-{
-	Var* Clone() const override {return new Var;}
-	const std::type_info& Type() const override {return typeid(void);}
-};
-
-template <typename T>
-struct Json::Var : public Json::Base
-{
-	T var;
-	Var(const T& t) : var(t) {}
-	Var* Clone() const override
-	{
-		return new Var(*this);
-	}
-	const std::type_info& Type() const override
-	{
-		return typeid(T);
-	}
-};
-
-Json::Json(const Json& rhs) : m_base(rhs.m_base->Clone())
-{
+	m_raw.hash = new Hash;
 }
 
-Json::Json(Json&& rhs)
+Json::Json(const Json& val) : m_type(val.m_type), m_raw(val.m_raw)
 {
-	Swap(rhs);
+	switch (m_type)
+	{
+	case Type::string:	m_raw.string = new std::string(*val.m_raw.string);	break;
+	case Type::array:	m_raw.array	 = new Array(*val.m_raw.array);			break;
+	case Type::hash:	m_raw.hash	 = new Hash(*val.m_raw.hash);			break;
+	default:	break;
+	}
 }
 
-Json::~Json()
+Json::Json(Json&& val) : m_type(val.m_type), m_raw(val.m_raw)
 {
+	switch (m_type)
+	{
+	case Type::string:	m_raw.string = new std::string(std::move(*val.m_raw.string));	break;
+	case Type::array:	m_raw.array	 = new Array(std::move(*val.m_raw.array));			break;
+	case Type::hash:	m_raw.hash	 = new Hash(std::move(*val.m_raw.hash));			break;
+	default:	break;
+	}
+}
+
+Json::Json(int val) : m_type(Type::integer)
+{
+	m_raw.integer = val;
+}
+
+Json::Json(long long val) : m_type(Type::integer)
+{
+	m_raw.integer = val;
+}
+
+Json::Json(double val) : m_type(Type::real)
+{
+	m_raw.real = val;
+}
+
+Json::Json(bool val) : m_type(Type::boolean)
+{
+	m_raw.boolean = val;
+}
+
+Json::Json(const std::string& val) : m_type(Type::string)
+{
+	m_raw.string = new std::string(val);
+}
+
+Json::Json(std::string&& val) : m_type(Type::string)
+{
+	m_raw.string = new std::string(std::move(val));
+}
+
+Json::Json(const char *val) : m_type(Type::string)
+{
+	m_raw.string = new std::string(val);
+}
+
+Json::Json(const Array& val) : m_type(Type::array)
+{
+	m_raw.array = new Array(val);
+}
+
+Json::Json(Array&& val) : m_type(Type::array)
+{
+	m_raw.array = new Array(std::move(val));
+}
+
+Json::Json(const Hash& val) : m_type(Type::hash)
+{
+	m_raw.hash = new Hash(val);
+}
+
+Json::Json(Hash&& val) : m_type(Type::hash)
+{
+	m_raw.hash = new Hash(std::move(val));
 }
 
 void Json::Swap(Json& rhs)
 {
-	std::swap(m_base, rhs.m_base);
+	std::swap(m_type, rhs.m_type);
+	std::swap(m_raw,  rhs.m_raw);
 }
 
-Json& Json::operator=(const Json& rhs)
+Json::~Json()
 {
-	return operator=(std::move(Json(rhs)));
+	switch (m_type)
+	{
+	case Type::string:	delete m_raw.string;	break;
+	case Type::array:	delete m_raw.array;		break;
+	case Type::hash:	delete m_raw.hash;		break;
+	default:									break;
+	}
 }
 
-Json& Json::operator=(Json&& rhs)
+int Json::AsInt() const
 {
-	Swap(rhs);
-	return *this;
+	return static_cast<int>(AsLong());
 }
 
-Json::Json() : m_base(new Var<void>)
+long long Json::AsLong() const
 {
+	switch (m_type)
+	{
+	case Type::integer:	return m_raw.integer;
+	case Type::real:	return static_cast<long long>(m_raw.real);
+	case Type::string:	return std::atoi(m_raw.string->c_str());
+	default:			throw -1;
+	}
 }
 
-Json::Json(int val) : Json(static_cast<long long>(val))
+double Json::AsDouble() const
 {
+	switch (m_type)
+	{
+	case Type::integer:	return m_raw.integer;
+	case Type::real:	return static_cast<long long>(m_raw.real);
+	case Type::string:	return std::atoi(m_raw.string->c_str());
+	default:			throw -1;
+	}
 }
 
-Json::Json(long long val) : m_base(new Var<long long>(val))
+const std::string& Json::AsString() const
 {
+	if (m_type == Type::string)
+		return *m_raw.string;
+	else
+		throw -1;
 }
 
-Json::Json(double val) : m_base(new Var<double>(val))
+std::string& Json::AsString()
 {
+	if (m_type == Type::string)
+		return *m_raw.string;
+	else
+		throw -1;
 }
 
-Json::Json(bool val) : m_base(new Var<bool>(val))
+Json::Array& Json::AsArray()
 {
+	if (m_type == Type::array)
+		return *m_raw.array;
+	else
+		throw -1;
 }
 
-Json::Json(const std::string& val) : m_base(new Var<std::string>(val))
+const Json::Array& Json::AsArray() const
 {
+	if (m_type == Type::array)
+		return *m_raw.array;
+	else
+		throw -1;
 }
 
-Json::Json(const char *val) : Json(std::string(val))
+Json::Hash& Json::AsHash()
 {
+	if (m_type == Type::hash)
+		return *m_raw.hash;
+	else
+		throw -1;
 }
 
-Json::Json(const Array& val) : m_base(new Var<Array>(val))
+const Json::Hash& Json::AsHash() const
 {
+	if (m_type == Type::hash)
+		return *m_raw.hash;
+	else
+		throw -1;
 }
 
-Json::Json(const Hash& val) : m_base(new Var<Hash>(val))
+void Json::Add(const Json& val)
 {
+	AsArray().push_back(val);
 }
 
-template <typename T>
-const T& Json::As() const
+void Json::Add(const std::string& key, const Json& val)
 {
-	return dynamic_cast<const Var<T>*>(m_base.get())->var;
+	AsHash().insert(std::make_pair(key, val));
 }
 
-int			Json::AsInt()		const {return static_cast<int>(As<long long>());}
-long long	Json::AsLong()		const {return static_cast<int>(As<long long>());}
-double		Json::AsDouble()	const {return As<double>();}
-bool		Json::AsBool()		const {return As<bool>();}
-
-const std::string&	Json::AsString()	const {return As<std::string>();}
-const Json::Array&	Json::AsArray()		const {return As<Array>();}
-const Json::Hash&	Json::AsHash()		const {return As<Hash>();}
-Json::Array&	Json::AsArray()	{return Cast<Array>()->var;}
-Json::Hash&		Json::AsHash()	{return Cast<Hash>()->var;}
-
-template <typename T>
-Json::Var<T>* Json::Cast()
+Json::Type Json::MyType() const
 {
-	return dynamic_cast<Var<T>*>(m_base.get());
+	return m_type;
 }
 
-template <typename T>
-const Json::Var<T>* Json::Cast() const
+bool Json::Is(Type type) const
 {
-	return dynamic_cast<const Var<T>*>(m_base.get());
+	return m_type == type;
 }
-
-template <typename T>
-void Json::Assign(const T& val)
-{
-	Cast<T>()->var = val;
-}
-
-template void Json::Assign<long long>(const long long& val);
-template void Json::Assign<double>(const double& val);
-template void Json::Assign<bool>(const bool& val);
-template void Json::Assign<std::string>(const std::string& val);
-template void Json::Assign<Json::Array>(const Array& val);
-template void Json::Assign<Json::Hash>(const Hash& val);
-
-// complex types only
-void Json::Append(const Json& val)
-{
-	Cast<Array>()->var.push_back(val);
-}
-
-void Json::Insert(const std::string& key, const Json& val)
-{
-	Cast<Hash>()->var.insert(std::make_pair(key, val));
-}
-
-void Json::Clear()
-{
-	if (m_base->Type() == typeid(Array))
-		Cast<Array>()->var.clear();
-	else if (m_base->Type() == typeid(Hash))
-		Cast<Hash>()->var.clear();
-}
-
-template <typename T>
-bool Json::Is() const
-{
-	return m_base->Type() == typeid(T);
-}
-
-template bool Json::Is<long long>() const;
-template bool Json::Is<double>() const;
-template bool Json::Is<bool>() const;
-template bool Json::Is<std::string>() const;
-template bool Json::Is<Json::Array>() const;
-template bool Json::Is<Json::Hash>() const;
 
 const Json& Json::operator[](const std::string& key) const
 {
-	static const Json null;
-
 	auto it = AsHash().find(key);
-	return it != AsHash().end() ? it->second : null;
+	if (it == AsHash().end())
+		throw -1;
+	
+	return it->second;
 }
 
 } // end of namespace
