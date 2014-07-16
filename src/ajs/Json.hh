@@ -50,10 +50,10 @@ private :
 	template <typename T>
 	struct GetVal
 	{
-		const T *val;
+		T *val;
 		template <typename U>
-		void operator()(const U& u) { throw -1; }
-		void operator()(const T& t) { val = &t; }
+		void operator()(U u) { throw -1; }
+		void operator()(T& t) { val = &t; }
 	};
 
 public :
@@ -104,16 +104,16 @@ public :
 			AsArray().push_back(Json(i));
 	}
 
-	int Int() const;
-	long long Long() const ;
-	double Real() const;
-	bool Bool() const;
-	const std::string& Str() const;
-	std::string& Str();
-	const Array& AsArray() const;
-	Array& AsArray();
-	const Hash& AsHash() const;
-	Hash& AsHash();
+	int Int() const 				{return As<int>();}
+	long long Long() const			{return As<long long>();}
+	double Real() const				{return As<double>();}
+	bool Bool() const				{return As<bool>();}
+	const std::string& Str() const	{return As<std::string>();}
+	std::string& Str()				{return As<std::string>();}
+	const Array& AsArray() const	{return As<Array>();}
+	Array& AsArray()				{return As<Array>();}
+	const Hash& AsHash() const		{return As<Hash>();}
+	Hash& AsHash()					{return As<Hash>();}
 	bool IsNull() const;
 
 	template <typename F>
@@ -179,7 +179,13 @@ public :
 	const Json& operator[](const std::string& key) const;
 	const Json& operator[](std::size_t idx) const;
 
-	template <typename T> const T& As() const
+	template <typename T> const typename TypeMap<T>::UnderlyingType& As() const
+	{
+		auto func = Apply(GetVal<const typename TypeMap<T>::UnderlyingType>{});
+		assert(func.val != nullptr);
+		return *func.val;
+	}
+	template <typename T> typename TypeMap<T>::UnderlyingType& As()
 	{
 		auto func = Apply(GetVal<typename TypeMap<T>::UnderlyingType>{});
 		assert(func.val != nullptr);
