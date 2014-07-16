@@ -167,4 +167,16 @@ const Json& Json::operator[](std::size_t idx) const
 	return AsArray().at(idx);
 }
 
+struct Json::Destroyer
+{
+	template <typename U> void operator()(U)	{throw -1;}
+	void operator()(Json::Hash& hash)			{hash.clear();}
+	void operator()(Json::Array& array)			{array.clear();}
+};
+
+void Json::Clear()
+{
+	Apply(Destroyer());
+}
+
 } // end of namespace

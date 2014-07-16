@@ -171,9 +171,20 @@ TEST(AssignmentOpCanChangeType, JsonTest)
 	ASSERT_EQ("this is a string", target.Str());
 	ASSERT_EQ("this is a string", target);
 	ASSERT_EQ("this is a string", target.As<std::string>());
-	
+}
+
+TEST(AsReturnByReference, JsonTest)
+{
+	Json target;
 	target = 100;
+	ASSERT_FALSE(target.Is<void>());
+	ASSERT_TRUE(target.Is<int>());
+	ASSERT_TRUE(target.Is<short>());
+	
 	long long& i = target.As<int>();
 	i = 20;
 	ASSERT_EQ(20, target);
+	
+	const Json& ref = target;
+	ASSERT_EQ(20, ref);
 }

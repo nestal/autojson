@@ -43,7 +43,7 @@ private :
 		const T& val;
 		bool equal;
 		template <typename U>
-		void operator()(U u) { equal = false; }
+		void operator()(U) { equal = false; }
 		void operator()(T t) { equal = (t == val); }
 	};
 	
@@ -52,9 +52,11 @@ private :
 	{
 		T *val;
 		template <typename U>
-		void operator()(U u) { throw -1; }
+		void operator()(U) { throw -1; }
 		void operator()(T& t) { val = &t; }
 	};
+	
+	struct Destroyer;
 
 public :
 	typedef std::vector<Json> 			Array;
@@ -101,7 +103,7 @@ public :
 	explicit Json(const std::vector<T>& vec) : Json((Array()))
 	{
 		for (const auto& i : vec)
-			AsArray().push_back(Json(i));
+			m_raw.array->push_back(Json(i));
 	}
 
 	int Int() const 				{return As<int>();}
@@ -114,19 +116,19 @@ public :
 	Array& AsArray()				{return As<Array>();}
 	const Hash& AsHash() const		{return As<Hash>();}
 	Hash& AsHash()					{return As<Hash>();}
-	bool IsNull() const;
+	bool IsNull() const				{return Is<void>();}
 
 	template <typename F>
 	F Apply(F func) const
 	{
 		switch (m_type)
 		{
-		case ajs::Type::integer:	func(m_raw.integer);	break;
-		case ajs::Type::real:		func(m_raw.real);		break;
-		case ajs::Type::boolean:	func(m_raw.boolean);	break;
-		case ajs::Type::string:		func(*m_raw.string);	break;
-		case ajs::Type::array:		func(*m_raw.array);		break;
-		case ajs::Type::hash:		func(*m_raw.hash);		break;
+		case ajs::Type::integer:	func(*static_cast<const long long*>(&m_raw.integer));	break;
+		case ajs::Type::real:		func(*static_cast<const double*>(&m_raw.real));			break;
+		case ajs::Type::boolean:	func(*static_cast<const bool*>(&m_raw.boolean));		break;
+		case ajs::Type::string:		func(*static_cast<const std::string*>(m_raw.string));	break;
+		case ajs::Type::array:		func(*static_cast<const Array*>(m_raw.array));			break;
+		case ajs::Type::hash:		func(*static_cast<const Hash*>(m_raw.hash));			break;
 		default:	throw -1;
 		}
 		return func;

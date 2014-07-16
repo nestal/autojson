@@ -65,6 +65,12 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 		m_current->second = std::string(data, len);
 		break;
 	
+	case JSON_object_end:
+		if (m_stack.empty())
+			throw -1;
+		m_stack.pop_back();
+		break;
+	
 	default:
 		break;
 	}

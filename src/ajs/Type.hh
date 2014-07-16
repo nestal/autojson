@@ -84,6 +84,13 @@ struct TypeMap<std::map<std::string, Json>>
 	typedef std::map<std::string, Json> UnderlyingType ;
 };
 
+template <>
+struct TypeMap<void>
+{
+	static const Type type = Type::null;
+	typedef void UnderlyingType ;
+};
+
 } // end of namespace
 
 #endif
