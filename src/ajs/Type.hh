@@ -30,7 +30,7 @@ namespace ajs {
 
 class Json;
 
-enum class Type { integer, real, boolean, string, array, hash };
+enum class Type { null, integer, real, boolean, string, array, hash };
 
 // mapping from a C++ type to its corresponding JSON type
 template <typename T, typename=void> struct TypeMap;

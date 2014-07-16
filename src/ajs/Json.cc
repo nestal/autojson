@@ -30,7 +30,6 @@ Json::Json() : m_type(ajs::Type::hash)
 	m_raw.hash = new Hash;
 }
 
-
 Json::Json(const Json& val) : m_type(val.m_type), m_raw(val.m_raw)
 {
 	switch (m_type)
@@ -44,13 +43,8 @@ Json::Json(const Json& val) : m_type(val.m_type), m_raw(val.m_raw)
 
 Json::Json(Json&& val) : m_type(val.m_type), m_raw(val.m_raw)
 {
-	switch (m_type)
-	{
-	case ajs::Type::string:	m_raw.string = new std::string(std::move(*val.m_raw.string));	break;
-	case ajs::Type::array:	m_raw.array	 = new Array(std::move(*val.m_raw.array));			break;
-	case ajs::Type::hash:	m_raw.hash	 = new Hash(std::move(*val.m_raw.hash));			break;
-	default:	break;
-	}
+	val.m_type	= ajs::Type::null;
+	val.m_raw	= {};
 }
 
 Json::Json(int val) : m_type(ajs::Type::integer)

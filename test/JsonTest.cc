@@ -135,6 +135,7 @@ TEST(TryVar, JsonTest)
 	Json v;
 	Json in(100);
 	ASSERT_TRUE(in.Is<int>());
+	ASSERT_TRUE(in.Is<long long>());
 	ASSERT_EQ(100, in.Int());
 	ASSERT_EQ(100, in);
 	
@@ -169,4 +170,5 @@ TEST(AssignmentOpCanChangeType, JsonTest)
 	ASSERT_TRUE(target.Is<std::string>());
 	ASSERT_EQ("this is a string", target.Str());
 	ASSERT_EQ("this is a string", target);
+	ASSERT_EQ("this is a string", target.As<std::string>());
 }

@@ -23,6 +23,7 @@
 
 #include "Type.hh"
 
+#include <cassert>
 #include <map>
 #include <memory>
 #include <string>
@@ -39,10 +40,20 @@ private :
 	template <typename T>
 	struct CheckEqual
 	{
-		T val;
+		const T& val;
+		bool equal;
 		template <typename U>
-		bool operator()(U u) { return false; }
-		bool operator()(T t) { return t == val; }
+		void operator()(U u) { equal = false; }
+		void operator()(T t) { equal = (t == val); }
+	};
+	
+	template <typename T>
+	struct GetVal
+	{
+		const T *val;
+		template <typename U>
+		void operator()(const U& u) { throw -1; }
+		void operator()(const T& t) { val = &t; }
 	};
 
 public :
@@ -86,6 +97,12 @@ public :
 	explicit Json(Array&& val);
 	explicit Json(const Hash& val);
 	explicit Json(Hash&& val);
+	template <typename T>
+	explicit Json(const std::vector<T>& vec) : Json((Array()))
+	{
+		for (const auto& i : vec)
+			AsArray().push_back(Json(i));
+	}
 
 	int Int() const;
 	long long Long() const ;
@@ -100,32 +117,34 @@ public :
 	bool IsNull() const;
 
 	template <typename F>
-	auto Apply(F func) const -> decltype(func(1))
+	F Apply(F func) const
 	{
 		switch (m_type)
 		{
-		case ajs::Type::integer:	return func(m_raw.integer);
-		case ajs::Type::real:		return func(m_raw.real);
-		case ajs::Type::boolean:	return func(m_raw.boolean);
-		case ajs::Type::string:		return func(*m_raw.string);
-		case ajs::Type::array:		return func(*m_raw.array);
-		case ajs::Type::hash:		return func(*m_raw.hash);
+		case ajs::Type::integer:	func(m_raw.integer);	break;
+		case ajs::Type::real:		func(m_raw.real);		break;
+		case ajs::Type::boolean:	func(m_raw.boolean);	break;
+		case ajs::Type::string:		func(*m_raw.string);	break;
+		case ajs::Type::array:		func(*m_raw.array);		break;
+		case ajs::Type::hash:		func(*m_raw.hash);		break;
 		default:	throw -1;
 		}
+		return func;
 	}
 	template <typename F>
-	auto Apply(F func) -> decltype(func(1))
+	F Apply(F func)
 	{
 		switch (m_type)
 		{
-		case ajs::Type::integer:	return func(m_raw.integer);
-		case ajs::Type::real:		return func(m_raw.real);
-		case ajs::Type::boolean:	return func(m_raw.boolean);
-		case ajs::Type::string:		return func(*m_raw.string);
-		case ajs::Type::array:		return func(*m_raw.array);
-		case ajs::Type::hash:		return func(*m_raw.hash);
+		case ajs::Type::integer:	func(m_raw.integer);	break;
+		case ajs::Type::real:		func(m_raw.real);		break;
+		case ajs::Type::boolean:	func(m_raw.boolean);	break;
+		case ajs::Type::string:		func(*m_raw.string);	break;
+		case ajs::Type::array:		func(*m_raw.array);		break;
+		case ajs::Type::hash:		func(*m_raw.hash);		break;
 		default:	throw -1;
 		}
+		return func;
 	}
 	
 	void Swap(Json& rhs);
@@ -160,13 +179,20 @@ public :
 	const Json& operator[](const std::string& key) const;
 	const Json& operator[](std::size_t idx) const;
 
+	template <typename T> const T& As() const
+	{
+		auto func = Apply(GetVal<typename TypeMap<T>::UnderlyingType>{});
+		assert(func.val != nullptr);
+		return *func.val;
+	}
 	template <typename T> bool Is() const
 	{
 		return m_type == TypeMap<T>::type;
 	}
 	template <typename T> bool Equal(const T& v) const
 	{
-		return Apply(CheckEqual<typename TypeMap<T>::UnderlyingType>{v});
+		auto func = Apply(CheckEqual<typename TypeMap<T>::UnderlyingType>{v});
+		return func.equal;
 	}
 
 	ajs::Type Type() const;
