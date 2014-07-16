@@ -21,7 +21,8 @@
 #ifndef JSON_HH_INCLUDED
 #define JSON_HH_INCLUDED
 
-#include <type_traits>
+#include "Type.hh"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -33,15 +34,10 @@ namespace ajs {
 */
 class Json
 {
-public :
-	enum class Type { integer, real, boolean, string, array, hash };
-
 private :
 	// helpers
-	template <typename T, typename=void> struct TypeMap;
-	
 	template <typename T>
-	struct Equal
+	struct CheckEqual
 	{
 		T val;
 		template <typename U>
@@ -60,6 +56,22 @@ public :
 	Json& operator=(const Json& rhs);
 	Json& operator=(Json&& rhs);
 	~Json();
+	
+	template <typename T>
+	Json& operator=(const T& t)
+	{
+		Json temp(t);
+		Swap(temp);
+		return *this;
+	}
+	
+	template <typename T>
+	Json& operator=(T&& t)
+	{
+		Json temp(std::move(t));
+		Swap(temp);
+		return *this;
+	}
 
 	// construction from supported types
 	Json();
@@ -92,13 +104,13 @@ public :
 	{
 		switch (m_type)
 		{
-		case Type::integer:	return func(m_raw.integer);
-		case Type::real:	return func(m_raw.real);
-		case Type::boolean:	return func(m_raw.boolean);
-		case Type::string:	return func(*m_raw.string);
-		case Type::array:	return func(*m_raw.array);
-		case Type::hash:	return func(*m_raw.hash);
-		default:			throw -1;
+		case ajs::Type::integer:	return func(m_raw.integer);
+		case ajs::Type::real:		return func(m_raw.real);
+		case ajs::Type::boolean:	return func(m_raw.boolean);
+		case ajs::Type::string:		return func(*m_raw.string);
+		case ajs::Type::array:		return func(*m_raw.array);
+		case ajs::Type::hash:		return func(*m_raw.hash);
+		default:	throw -1;
 		}
 	}
 	template <typename F>
@@ -106,30 +118,16 @@ public :
 	{
 		switch (m_type)
 		{
-		case Type::integer:	return func(m_raw.integer);
-		case Type::real:	return func(m_raw.real);
-		case Type::boolean:	return func(m_raw.boolean);
-		case Type::string:	return func(*m_raw.string);
-		case Type::array:	return func(*m_raw.array);
-		case Type::hash:	return func(*m_raw.hash);
-		default:			throw -1;
+		case ajs::Type::integer:	return func(m_raw.integer);
+		case ajs::Type::real:		return func(m_raw.real);
+		case ajs::Type::boolean:	return func(m_raw.boolean);
+		case ajs::Type::string:		return func(*m_raw.string);
+		case ajs::Type::array:		return func(*m_raw.array);
+		case ajs::Type::hash:		return func(*m_raw.hash);
+		default:	throw -1;
 		}
 	}
 	
-	template <typename T>
-	void Assign(const T& val)
-	{
-		Json tmp(val);
-		Swap(tmp);
-	}
-	
-	template <typename T>
-	void Assign(T&& val)
-	{
-		Json tmp(std::move(val));
-		Swap(tmp);
-	}
-
 	void Swap(Json& rhs);
 	
 	// complex types only
@@ -162,18 +160,17 @@ public :
 	const Json& operator[](const std::string& key) const;
 	const Json& operator[](std::size_t idx) const;
 
-//	template <typename T> const T& As() const;
 	template <typename T> bool Is() const
 	{
 		return m_type == TypeMap<T>::type;
 	}
-	template <typename T> bool Is(const T& v) const
+	template <typename T> bool Equal(const T& v) const
 	{
-		return Apply(Equal<typename TypeMap<T>::UnderlyingType>{v});
+		return Apply(CheckEqual<typename TypeMap<T>::UnderlyingType>{v});
 	}
 
-	Type MyType() const;
-	bool Is(Type type) const;
+	ajs::Type Type() const;
+	bool Is(ajs::Type type) const;
 
 private :
 	union Raw
@@ -186,64 +183,19 @@ private :
 		Hash		*hash;
 	};
 
-	Type	m_type;
-	Raw 	m_raw;
-};
-
-template <typename T>
-struct Json::TypeMap<T, typename std::enable_if<std::is_integral<T>::value>::type>
-{
-	static const Type type = Type::integer;
-	typedef long long UnderlyingType ;
-};
-
-template <typename T>
-struct Json::TypeMap<T, typename std::enable_if<std::is_floating_point<T>::value>::type>
-{
-	static const Type type = Type::real;
-	typedef double UnderlyingType ;
-};
-
-template <>
-struct Json::TypeMap<std::string>
-{
-	static const Type type = Type::string;
-	typedef std::string UnderlyingType ;
-};
-
-template <>
-struct Json::TypeMap<const char*>
-{
-	static const Type type = Type::string;
-	typedef std::string UnderlyingType ;
-};
-
-template <std::size_t n>
-struct Json::TypeMap<char[n]>
-{
-	static const Type type = Type::string;
-	typedef std::string UnderlyingType ;
-};
-
-template <>
-struct Json::TypeMap<Json::Array>
-{
-	static const Type type = Type::array;
-	typedef Json::Array UnderlyingType ;
-};
-
-template <>
-struct Json::TypeMap<Json::Hash>
-{
-	static const Type type = Type::hash;
-	typedef Json::Hash UnderlyingType ;
+	ajs::Type	m_type;
+	Raw 		m_raw;
 };
 
 template <typename T> bool operator==(const T& v, const Json& js)
 {
-	return js.Is(v);
+	return js.Equal(v);
 }
 
+template <typename T> bool operator==(const Json& js, const T& v)
+{
+	return js.Equal(v);
+}
 
 } // end of namespace
 

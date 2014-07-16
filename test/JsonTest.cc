@@ -142,7 +142,7 @@ TEST(TryVar, JsonTest)
 	vec.Add(in);
 	
 	ASSERT_EQ(100, vec[0].Int());
-	ASSERT_TRUE(vec.Is(Json::Type::array));
+	ASSERT_TRUE(vec.Is(ajs::Type::array));
 	ASSERT_TRUE(vec.Is<Json::Array>());
 }
 
@@ -150,7 +150,7 @@ TEST(TryParseTarget, JsonTest)
 {
 	Json target((Json::Hash()));
 	target.Add("haha", "a");
-	ASSERT_TRUE(target["haha"].Is(Json::Type::string));
+	ASSERT_TRUE(target["haha"].Is(ajs::Type::string));
 	ASSERT_EQ("a", target["haha"]);
 
 	JsonParser p(target);
@@ -159,4 +159,14 @@ TEST(TryParseTarget, JsonTest)
 	p.Parse(js, sizeof(js)-1);
 		
 	ASSERT_EQ("????", target["haha"].Str());
+}
+
+TEST(AssignmentOpCanChangeType, JsonTest)
+{
+	Json target(100);
+	target = "this is a string";
+	
+	ASSERT_TRUE(target.Is<std::string>());
+	ASSERT_EQ("this is a string", target.Str());
+	ASSERT_EQ("this is a string", target);
 }

@@ -36,6 +36,7 @@ add_library(autojson
 	src/ajs/JsonParser.cc
 	src/ajs/Json.hh
 	src/ajs/Json.cc
+	src/ajs/Type.hh
 )
 
 # gcc specific

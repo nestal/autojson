@@ -20,11 +20,12 @@
 
 #include "Json.hh"
 
+#include <cassert>
 #include <typeinfo>
 
 namespace ajs {
 
-Json::Json() : m_type(Type::hash)
+Json::Json() : m_type(ajs::Type::hash)
 {
 	m_raw.hash = new Hash;
 }
@@ -34,9 +35,9 @@ Json::Json(const Json& val) : m_type(val.m_type), m_raw(val.m_raw)
 {
 	switch (m_type)
 	{
-	case Type::string:	m_raw.string = new std::string(*val.m_raw.string);	break;
-	case Type::array:	m_raw.array	 = new Array(*val.m_raw.array);			break;
-	case Type::hash:	m_raw.hash	 = new Hash(*val.m_raw.hash);			break;
+	case ajs::Type::string:	m_raw.string = new std::string(*val.m_raw.string);	break;
+	case ajs::Type::array:	m_raw.array	 = new Array(*val.m_raw.array);			break;
+	case ajs::Type::hash:	m_raw.hash	 = new Hash(*val.m_raw.hash);			break;
 	default:	break;
 	}
 }
@@ -45,64 +46,64 @@ Json::Json(Json&& val) : m_type(val.m_type), m_raw(val.m_raw)
 {
 	switch (m_type)
 	{
-	case Type::string:	m_raw.string = new std::string(std::move(*val.m_raw.string));	break;
-	case Type::array:	m_raw.array	 = new Array(std::move(*val.m_raw.array));			break;
-	case Type::hash:	m_raw.hash	 = new Hash(std::move(*val.m_raw.hash));			break;
+	case ajs::Type::string:	m_raw.string = new std::string(std::move(*val.m_raw.string));	break;
+	case ajs::Type::array:	m_raw.array	 = new Array(std::move(*val.m_raw.array));			break;
+	case ajs::Type::hash:	m_raw.hash	 = new Hash(std::move(*val.m_raw.hash));			break;
 	default:	break;
 	}
 }
 
-Json::Json(int val) : m_type(Type::integer)
+Json::Json(int val) : m_type(ajs::Type::integer)
 {
 	m_raw.integer = val;
 }
 
-Json::Json(long long val) : m_type(Type::integer)
+Json::Json(long long val) : m_type(ajs::Type::integer)
 {
 	m_raw.integer = val;
 }
 
-Json::Json(double val) : m_type(Type::real)
+Json::Json(double val) : m_type(ajs::Type::real)
 {
 	m_raw.real = val;
 }
 
-Json::Json(bool val) : m_type(Type::boolean)
+Json::Json(bool val) : m_type(ajs::Type::boolean)
 {
 	m_raw.boolean = val;
 }
 
-Json::Json(const std::string& val) : m_type(Type::string)
+Json::Json(const std::string& val) : m_type(ajs::Type::string)
 {
 	m_raw.string = new std::string(val);
 }
 
-Json::Json(std::string&& val) : m_type(Type::string)
+Json::Json(std::string&& val) : m_type(ajs::Type::string)
 {
 	m_raw.string = new std::string(std::move(val));
 }
 
-Json::Json(const char *val) : m_type(Type::string)
+Json::Json(const char *val) : m_type(ajs::Type::string)
 {
 	m_raw.string = new std::string(val);
 }
 
-Json::Json(const Array& val) : m_type(Type::array)
+Json::Json(const Array& val) : m_type(ajs::Type::array)
 {
 	m_raw.array = new Array(val);
 }
 
-Json::Json(Array&& val) : m_type(Type::array)
+Json::Json(Array&& val) : m_type(ajs::Type::array)
 {
 	m_raw.array = new Array(std::move(val));
 }
 
-Json::Json(const Hash& val) : m_type(Type::hash)
+Json::Json(const Hash& val) : m_type(ajs::Type::hash)
 {
 	m_raw.hash = new Hash(val);
 }
 
-Json::Json(Hash&& val) : m_type(Type::hash)
+Json::Json(Hash&& val) : m_type(ajs::Type::hash)
 {
 	m_raw.hash = new Hash(std::move(val));
 }
@@ -117,9 +118,9 @@ Json::~Json()
 {
 	switch (m_type)
 	{
-	case Type::string:	delete m_raw.string;	break;
-	case Type::array:	delete m_raw.array;		break;
-	case Type::hash:	delete m_raw.hash;		break;
+	case ajs::Type::string:	delete m_raw.string;	break;
+	case ajs::Type::array:	delete m_raw.array;		break;
+	case ajs::Type::hash:	delete m_raw.hash;		break;
 	default:									break;
 	}
 }
@@ -133,9 +134,9 @@ long long Json::Long() const
 {
 	switch (m_type)
 	{
-	case Type::integer:	return m_raw.integer;
-	case Type::real:	return static_cast<long long>(m_raw.real);
-	case Type::string:	return std::atoi(m_raw.string->c_str());
+	case ajs::Type::integer:	return m_raw.integer;
+	case ajs::Type::real:	return static_cast<long long>(m_raw.real);
+	case ajs::Type::string:	return std::atoi(m_raw.string->c_str());
 	default:			throw -1;
 	}
 }
@@ -144,59 +145,65 @@ double Json::Real() const
 {
 	switch (m_type)
 	{
-	case Type::integer:	return m_raw.integer;
-	case Type::real:	return static_cast<long long>(m_raw.real);
-	case Type::string:	return std::atoi(m_raw.string->c_str());
+	case ajs::Type::integer:	return m_raw.integer;
+	case ajs::Type::real:	return static_cast<long long>(m_raw.real);
+	case ajs::Type::string:	return std::atoi(m_raw.string->c_str());
 	default:			throw -1;
 	}
 }
 
 const std::string& Json::Str() const
 {
-	if (m_type == Type::string)
-		return *m_raw.string;
-	else
+	if (m_type != ajs::Type::string)
 		throw -1;
+	
+	assert(m_raw.string != nullptr);
+	return *m_raw.string;
 }
 
 std::string& Json::Str()
 {
-	if (m_type == Type::string)
-		return *m_raw.string;
-	else
+	if (m_type != ajs::Type::string)
 		throw -1;
+	
+	assert(m_raw.string != nullptr);
+	return *m_raw.string;
 }
 
 Json::Array& Json::AsArray()
 {
-	if (m_type == Type::array)
-		return *m_raw.array;
-	else
+	if (m_type != ajs::Type::array)
 		throw -1;
+	
+	assert(m_raw.array != nullptr);
+	return *m_raw.array;
 }
 
 const Json::Array& Json::AsArray() const
 {
-	if (m_type == Type::array)
-		return *m_raw.array;
-	else
+	if (m_type != ajs::Type::array)
 		throw -1;
+	
+	assert(m_raw.array != nullptr);
+	return *m_raw.array;
 }
 
 Json::Hash& Json::AsHash()
 {
-	if (m_type == Type::hash)
-		return *m_raw.hash;
-	else
+	if (m_type != ajs::Type::hash)
 		throw -1;
+	
+	assert( m_raw.hash != nullptr);
+	return *m_raw.hash;
 }
 
 const Json::Hash& Json::AsHash() const
 {
-	if (m_type == Type::hash)
-		return *m_raw.hash;
-	else
+	if (m_type != ajs::Type::hash)
 		throw -1;
+	
+	assert( m_raw.hash != nullptr);
+	return *m_raw.hash;
 }
 
 Json& Json::Add(const Json& val)
@@ -223,12 +230,12 @@ Json& Json::Add(const std::string& key, Json&& val)
 	return *this;
 }
 
-Json::Type Json::MyType() const
+ajs::Type Json::Type() const
 {
 	return m_type;
 }
 
-bool Json::Is(Type type) const
+bool Json::Is(ajs::Type type) const
 {
 	return m_type == type;
 }
