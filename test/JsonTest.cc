@@ -197,3 +197,13 @@ TEST(ArrayAddInteger, JsonTest)
 	ASSERT_EQ(1, target.Size());
 	ASSERT_EQ(1001, target[0]);
 }
+
+TEST(AddWillConvertNullToArrayOrHash, JsonTest)
+{
+	Json target;
+	ASSERT_TRUE(target.IsNull());
+	target.Add("target");
+	ASSERT_TRUE(target.Is<Json::Array>());
+	ASSERT_EQ(1, target.Size());
+	ASSERT_EQ("target", target[0]);
+}

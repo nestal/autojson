@@ -125,18 +125,23 @@ Json& Json::Add(const Json& val)
 
 Json& Json::Add(Json&& val)
 {
+	if (m_type == ajs::Type::null)
+		*this = Array();
+
 	AsArray().push_back(std::move(val));
 	return *this;
 }
 
 Json& Json::Add(const std::string& key, const Json& val)
 {
-	AsHash().insert(std::make_pair(key, val));
-	return *this;
+	return Add(key, std::move(Json(val)));
 }
 
 Json& Json::Add(const std::string& key, Json&& val)
 {
+	if (m_type == ajs::Type::null)
+		*this = Hash();
+	
 	AsHash().insert(std::make_pair(key, std::move(val)));
 	return *this;
 }
