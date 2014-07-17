@@ -50,6 +50,13 @@ struct TypeMap<T, typename std::enable_if<std::is_floating_point<T>::value>::typ
 };
 
 template <>
+struct TypeMap<bool>
+{
+	static const Type type = Type::boolean;
+	typedef bool UnderlyingType ;
+};
+
+template <>
 struct TypeMap<std::string>
 {
 	static const Type type = Type::string;
@@ -65,6 +72,13 @@ struct TypeMap<const char*>
 
 template <std::size_t n>
 struct TypeMap<char[n]>
+{
+	static const Type type = Type::string;
+	typedef std::string UnderlyingType ;
+};
+
+template <std::size_t n>
+struct TypeMap<const char[n]>
 {
 	static const Type type = Type::string;
 	typedef std::string UnderlyingType ;

@@ -40,6 +40,8 @@ private :
 	template <typename T>
 	struct CheckEqual
 	{
+		CheckEqual(const T& r) : val(r), equal(false) {}
+
 		const T& val;
 		bool equal;
 		template <typename U>
@@ -106,7 +108,7 @@ public :
 			m_raw.array->push_back(Json(i));
 	}
 
-	int Int() const 				{return As<int>();}
+	int Int() const 				{return static_cast<int>(As<int>());}
 	long long Long() const			{return As<long long>();}
 	double Real() const				{return As<double>();}
 	bool Bool() const				{return As<bool>();}
@@ -199,7 +201,7 @@ public :
 	}
 	template <typename T> bool Equal(const T& v) const
 	{
-		auto func = Apply(CheckEqual<typename TypeMap<T>::UnderlyingType>{v});
+		auto func = Apply(CheckEqual<typename TypeMap<T>::UnderlyingType>(v));
 		return func.equal;
 	}
 
