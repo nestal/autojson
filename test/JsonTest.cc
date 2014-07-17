@@ -188,3 +188,12 @@ TEST(AsReturnByReference, JsonTest)
 	const Json& ref = target;
 	ASSERT_EQ(20, ref);
 }
+
+TEST(ArrayAddInteger, JsonTest)
+{
+	Json target((Json::Array())), in(1001);
+	ASSERT_EQ(1001, in);
+	target.Add(in);
+	ASSERT_EQ(1, target.Size());
+	ASSERT_EQ(1001, target[0]);
+}

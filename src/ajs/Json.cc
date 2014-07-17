@@ -25,9 +25,8 @@
 
 namespace ajs {
 
-Json::Json() : m_type(ajs::Type::hash)
+Json::Json() : m_type(ajs::Type::null), m_raw({})
 {
-	m_raw.hash = new Hash;
 }
 
 Json::Json(const Json& val) : m_type(val.m_type), m_raw(val.m_raw)
@@ -121,8 +120,7 @@ Json::~Json()
 
 Json& Json::Add(const Json& val)
 {
-	AsArray().push_back(val);
-	return *this;
+	return Add(std::move(Json(val)));
 }
 
 Json& Json::Add(Json&& val)
@@ -177,6 +175,19 @@ struct Json::Destroyer
 void Json::Clear()
 {
 	Apply(Destroyer());
+}
+
+struct Json::SizeOf
+{
+	std::size_t size ;
+	template <typename U> void operator()(U)	{size = 0;}
+	void operator()(const Json::Hash& hash)		{size = hash.size();}
+	void operator()(const Json::Array& array)	{size = array.size();}
+};
+
+std::size_t Json::Size() const
+{
+	return Apply(SizeOf{}).size;
 }
 
 } // end of namespace

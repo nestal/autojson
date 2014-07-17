@@ -40,25 +40,28 @@ private :
 	template <typename T>
 	struct CheckEqual
 	{
-		CheckEqual(const T& r) : val(r), equal(false) {}
+		explicit CheckEqual(const T& r) : val(r), equal(false) {}
 
 		const T& val;
 		bool equal;
 		template <typename U>
-		void operator()(U) { equal = false; }
-		void operator()(T t) { equal = (t == val); }
+		void operator()(U)		{ equal = false; }
+		void operator()(T t)	{ equal = (t == val); }
 	};
 	
 	template <typename T>
 	struct GetVal
 	{
+		explicit GetVal(T *v = nullptr) : val(v) {}
 		T *val;
 		template <typename U>
-		void operator()(U) { throw -1; }
-		void operator()(T& t) { val = &t; }
+		void operator()(U)		{ val = nullptr; }
+		void operator()(T& t)	{ val = &t; }
 	};
 	
 	struct Destroyer;
+	struct Printer;
+	struct SizeOf;
 
 public :
 	typedef std::vector<Json> 			Array;
@@ -108,6 +111,7 @@ public :
 			m_raw.array->push_back(Json(i));
 	}
 
+	// shortcuts for As()
 	int Int() const 				{return static_cast<int>(As<int>());}
 	long long Long() const			{return As<long long>();}
 	double Real() const				{return As<double>();}
@@ -119,6 +123,7 @@ public :
 	const Hash& AsHash() const		{return As<Hash>();}
 	Hash& AsHash()					{return As<Hash>();}
 	bool IsNull() const				{return Is<void>();}
+	std::size_t Size() const;
 
 	template <typename F>
 	F Apply(F func) const
@@ -131,7 +136,7 @@ public :
 		case ajs::Type::string:		func(*static_cast<const std::string*>(m_raw.string));	break;
 		case ajs::Type::array:		func(*static_cast<const Array*>(m_raw.array));			break;
 		case ajs::Type::hash:		func(*static_cast<const Hash*>(m_raw.hash));			break;
-		default:	throw -1;
+		default:	break;
 		}
 		return func;
 	}
@@ -146,7 +151,7 @@ public :
 		case ajs::Type::string:		func(*m_raw.string);	break;
 		case ajs::Type::array:		func(*m_raw.array);		break;
 		case ajs::Type::hash:		func(*m_raw.hash);		break;
-		default:	throw -1;
+		default:	break;
 		}
 		return func;
 	}
@@ -186,13 +191,17 @@ public :
 	template <typename T> const typename TypeMap<T>::UnderlyingType& As() const
 	{
 		auto func = Apply(GetVal<const typename TypeMap<T>::UnderlyingType>{});
-		assert(func.val != nullptr);
+		if (func.val == nullptr)
+			throw -1;
+
 		return *func.val;
 	}
 	template <typename T> typename TypeMap<T>::UnderlyingType& As()
 	{
 		auto func = Apply(GetVal<typename TypeMap<T>::UnderlyingType>{});
-		assert(func.val != nullptr);
+		if (func.val == nullptr)
+			throw -1;
+		
 		return *func.val;
 	}
 	template <typename T> bool Is() const
