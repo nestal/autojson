@@ -28,7 +28,7 @@
 
 namespace ajs {
 
-class Json;
+class JVar;
 
 enum class Type { null, integer, real, boolean, string, array, hash };
 
@@ -88,14 +88,14 @@ template <typename T>
 struct TypeMap<std::vector<T>>
 {
 	static const Type type = Type::array;
-	typedef std::vector<Json> UnderlyingType ;
+	typedef std::vector<JVar> UnderlyingType ;
 };
 
 template <>
-struct TypeMap<std::map<std::string, Json>>
+struct TypeMap<std::map<std::string, JVar>>
 {
 	static const Type type = Type::hash;
-	typedef std::map<std::string, Json> UnderlyingType ;
+	typedef std::map<std::string, JVar> UnderlyingType ;
 };
 
 template <>

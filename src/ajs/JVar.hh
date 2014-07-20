@@ -18,8 +18,8 @@
 	02110-1301, USA.
 */
 
-#ifndef JSON_HH_INCLUDED
-#define JSON_HH_INCLUDED
+#ifndef JVAR_HH_INCLUDED
+#define JVAR_HH_INCLUDED
 
 #include "Type.hh"
 
@@ -33,7 +33,7 @@ namespace ajs {
 
 /**	A variant class to define the structure of an expected JSON object
 */
-class Json
+class JVar
 {
 private :
 	// helpers
@@ -45,8 +45,8 @@ private :
 		const T& val;
 		bool equal;
 		template <typename U>
-		void operator()(U)		{ equal = false; }
-		void operator()(T t)	{ equal = (t == val); }
+		void operator()(U)			{ equal = false; }
+		void operator()(const T& t)	{ equal = (t == val); }
 	};
 	
 	template <typename T>
@@ -59,56 +59,56 @@ private :
 		void operator()(T& t)	{ val = &t; }
 	};
 	
-	struct Destroyer;
+	struct ClearComposite;
 	struct Printer;
 	struct SizeOf;
 
 public :
-	typedef std::vector<Json> 			Array;
-	typedef std::map<std::string, Json>	Hash;
+	typedef std::vector<JVar> 			Array;
+	typedef std::map<std::string, JVar>	Hash;
 
 public :
 	// special member functions
-	Json(const Json& rhs);
-	Json(Json&& rhs);
-	Json& operator=(const Json& rhs);
-	Json& operator=(Json&& rhs);
-	~Json();
+	JVar(const JVar& rhs);
+	JVar(JVar&& rhs);
+	JVar& operator=(const JVar& rhs);
+	JVar& operator=(JVar&& rhs);
+	~JVar();
 	
 	template <typename T>
-	Json& operator=(const T& t)
+	JVar& operator=(const T& t)
 	{
-		Json temp(t);
+		JVar temp(t);
 		Swap(temp);
 		return *this;
 	}
 	
 	template <typename T>
-	Json& operator=(T&& t)
+	JVar& operator=(T&& t)
 	{
-		Json temp(std::move(t));
+		JVar temp(std::move(t));
 		Swap(temp);
 		return *this;
 	}
 
 	// construction from supported types
-	Json();
-	explicit Json(int val);
-	explicit Json(long long val);
-	explicit Json(double val);
-	explicit Json(bool val);
-	explicit Json(const std::string& val);
-	explicit Json(std::string&& val);
-	explicit Json(const char *val);
-	explicit Json(const Array& val);
-	explicit Json(Array&& val);
-	explicit Json(const Hash& val);
-	explicit Json(Hash&& val);
+	JVar();
+	explicit JVar(int val);
+	explicit JVar(long long val);
+	explicit JVar(double val);
+	explicit JVar(bool val);
+	explicit JVar(const std::string& val);
+	explicit JVar(std::string&& val);
+	explicit JVar(const char *val);
+	explicit JVar(const Array& val);
+	explicit JVar(Array&& val);
+	explicit JVar(const Hash& val);
+	explicit JVar(Hash&& val);
 	template <typename T>
-	explicit Json(const std::vector<T>& vec) : Json((Array()))
+	explicit JVar(const std::vector<T>& vec)
 	{
 		for (const auto& i : vec)
-			m_raw.array->push_back(Json(i));
+			m_raw.array->emplace_back(i);
 	}
 
 	// shortcuts for As()
@@ -156,37 +156,37 @@ public :
 		return func;
 	}
 	
-	void Swap(Json& rhs);
+	void Swap(JVar& rhs);
 	
 	// complex types only
 	template <typename T>
-	Json& Add(const T& val)
+	JVar& Add(const T& val)
 	{
-		return Add(Json(val));
+		return Add(JVar(val));
 	}
 	template <typename T>
-	Json& Add(T&& val)
+	JVar& Add(T&& val)
 	{
-		return Add(Json(std::move(val)));
+		return Add(JVar(std::move(val)));
 	}
 	template <typename T>
-	Json& Add(const std::string& key, const T& val)
+	JVar& Add(const std::string& key, const T& val)
 	{
-		return Add(key, Json(val));
+		return Add(key, JVar(val));
 	}
 	template <typename T>
-	Json& Add(const std::string& key, T&& val)
+	JVar& Add(const std::string& key, T&& val)
 	{
-		return Add(key, Json(std::move(val)));
+		return Add(key, JVar(std::move(val)));
 	}
-	Json& Add(const Json& val);
-	Json& Add(Json&& val);
-	Json& Add(const std::string& key, const Json& val);
-	Json& Add(const std::string& key, Json&& val);
+	JVar& Add(const JVar& val);
+	JVar& Add(JVar&& val);
+	JVar& Add(const std::string& key, const JVar& val);
+	JVar& Add(const std::string& key, JVar&& val);
 	
 	void Clear();
-	const Json& operator[](const std::string& key) const;
-	const Json& operator[](std::size_t idx) const;
+	const JVar& operator[](const std::string& key) const;
+	const JVar& operator[](std::size_t idx) const;
 
 	template <typename T> const typename TypeMap<T>::UnderlyingType& As() const
 	{
@@ -232,12 +232,12 @@ private :
 	Raw 		m_raw;
 };
 
-template <typename T> bool operator==(const T& v, const Json& js)
+template <typename T> bool operator==(const T& v, const JVar& js)
 {
 	return js.Equal(v);
 }
 
-template <typename T> bool operator==(const Json& js, const T& v)
+template <typename T> bool operator==(const JVar& js, const T& v)
 {
 	return js.Equal(v);
 }

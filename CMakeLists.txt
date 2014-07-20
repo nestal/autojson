@@ -34,9 +34,11 @@ add_library(autojson
 	src/ajs/LexicalCast.cc
 	src/ajs/JsonParser.hh
 	src/ajs/JsonParser.cc
-	src/ajs/Json.hh
-	src/ajs/Json.cc
+	src/ajs/JVar.hh
+	src/ajs/JVar.cc
 	src/ajs/Type.hh
+	src/ajs/Exception.hh
+	src/ajs/Exception.cc
 )
 
 # gcc specific
@@ -53,7 +55,8 @@ endif(MSVC)
 if (GTEST_FOUND)
 	include_directories(${GTEST_INCLUDE_DIRS})
 	add_executable(unittest
-		${autojson_SOURCE_DIR}/test/JsonTest.cc
+		test/JsonTest.cc
+		test/JVarTest.cc
 	)
 	target_link_libraries(unittest autojson ${GTEST_BOTH_LIBRARIES})
 endif (GTEST_FOUND)

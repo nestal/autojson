@@ -21,7 +21,7 @@
 #include "JSON_checker.h"
 #include "ajs/JsonParser.hh"
 #include "ajs/ObjectReactor.hh"
-#include "ajs/Json.hh"
+#include "ajs/JVar.hh"
 
 #include <functional>
 #include <cassert>
@@ -132,25 +132,25 @@ TEST(PartialJsonCanBeParsed, JsonTest)
 
 TEST(TryVar, JsonTest)
 {
-	Json v;
-	Json in(100);
+	JVar v;
+	JVar in(100);
 	ASSERT_TRUE(in.Is<int>());
 	ASSERT_TRUE(in.Is<long long>());
 	ASSERT_EQ(100, in.Int());
 	ASSERT_EQ(100, in);
 	ASSERT_EQ(0, in.Size());
 	
-	Json vec;
+	JVar vec;
 	vec.Add(in);
 	
 	ASSERT_EQ(100, vec[0].Int());
 	ASSERT_TRUE(vec.Is(ajs::Type::array));
-	ASSERT_TRUE(vec.Is<Json::Array>());
+	ASSERT_TRUE(vec.Is<JVar::Array>());
 }
 
 TEST(TryParseTarget, JsonTest)
 {
-	Json target((Json::Hash()));
+	JVar target((JVar::Hash()));
 	target.Add("haha", "a");
 	ASSERT_TRUE(target["haha"].Is(ajs::Type::string));
 	ASSERT_EQ("a", target["haha"]);
@@ -161,61 +161,4 @@ TEST(TryParseTarget, JsonTest)
 	p.Parse(js, sizeof(js)-1);
 		
 	ASSERT_EQ("????", target["haha"].Str());
-}
-
-TEST(AssignmentOpCanChangeType, JsonTest)
-{
-	Json target(100);
-	target = "this is a string";
-	
-	ASSERT_TRUE(target.Is<std::string>());
-	ASSERT_EQ("this is a string", target.Str());
-	ASSERT_EQ("this is a string", target);
-	ASSERT_EQ("this is a string", target.As<std::string>());
-}
-
-TEST(AsReturnByReference, JsonTest)
-{
-	Json target;
-	target = 100;
-	ASSERT_FALSE(target.Is<void>());
-	ASSERT_TRUE(target.Is<int>());
-	ASSERT_TRUE(target.Is<short>());
-	
-	long long& i = target.As<int>();
-	i = 20;
-	ASSERT_EQ(20, target);
-	
-	const Json& ref = target;
-	ASSERT_EQ(20, ref);
-}
-
-TEST(ArrayAddInteger, JsonTest)
-{
-	Json target((Json::Array())), in(1001);
-	ASSERT_EQ(1001, in);
-	target.Add(in);
-	ASSERT_EQ(1, target.Size());
-	ASSERT_EQ(1001, target[0]);
-}
-
-TEST(AddWillConvertNullToArrayOrHash, JsonTest)
-{
-	Json target;
-	ASSERT_TRUE(target.IsNull());
-	target.Add("target");
-	ASSERT_TRUE(target.Is<Json::Array>());
-	ASSERT_EQ(1, target.Size());
-	ASSERT_EQ("target", target[0]);
-}
-
-TEST(OpSqBracketCanBeNested, JsonTest)
-{
-	Json target;
-	target.Add("key", Json().Add(
-		"subkey", "value1"
-	).Add(
-		"subkey2", "value2"
-	));
-	ASSERT_EQ("value2", target["key"]["subkey2"]);
 }

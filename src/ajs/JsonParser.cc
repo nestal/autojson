@@ -24,7 +24,7 @@
 
 namespace ajs {
 
-JsonParser::JsonParser(Json& target) :
+JsonParser::JsonParser(JVar& target) :
 	m_target(target),
 	m_parser(new_JSON_checker(5))
 {

@@ -18,38 +18,12 @@
 	02110-1301, USA.
 */
 
-#ifndef JSONPARSER_HH_INCLUDED
-#define JSONPARSER_HH_INCLUDED
-
-#include "JVar.hh"
-#include "JSON_checker.h"
-
-#include <memory>
-#include <vector>
+#include "Exception.hh"
 
 namespace ajs {
 
-/**	The main parser class.
-	JsonParser is the class you use to parse JSON data. First, construct a JsonParser
-	object by providing a Reactor and an object that receives the output.
-*/
-class JsonParser
+Exception::Exception()
 {
-public :
-	JsonParser(JVar& target);
-	void Parse(const char *json, std::size_t len);
-
-private :
-	static void Callback(void *user, JSON_event type, const char *data, size_t len);
-	void Callback(JSON_event type, const char *data, size_t len);
-
-private :
-	JVar&					m_target;
-	std::vector<JVar*>		m_stack;
-	JVar::Hash::iterator	m_current;
-	JSON_checker			m_parser;
-};
+}
 
 } // end of namespace
-
-#endif
