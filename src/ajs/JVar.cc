@@ -195,4 +195,62 @@ std::size_t JVar::Size() const
 	return Apply(SizeOf{}).size;
 }
 
+struct JVar::Printer
+{
+	std::ostream& os;
+	explicit Printer(std::ostream& outs) : os(outs) {}
+
+	template <typename T>
+	void operator()(T i)
+	{
+		os << i;
+	}
+
+	void operator()(const std::string& s)
+	{
+		// will escape later
+		os << '\"' << s << '\"' ;
+	}
+
+	void operator()(bool b)
+	{
+		os << (b ? "true" : "false");
+	}
+
+	void operator()(const Hash& hash)
+	{
+		bool first = true;
+		os << "{";
+		for (const auto& e : hash)
+		{
+			os << (!first ? ", " : "") << e.first << ": " << e.second ;
+			first = false;
+		}
+		os << '}';
+	}
+	
+	void operator()(const Array& array)
+	{
+		bool first = true;
+		os << '[';
+		for (const auto& e : array)
+		{
+			os << (!first ? ", " : "") << e ;
+			first = false;
+		}
+		os << ']';
+	}
+};
+
+std::ostream& JVar::Print(std::ostream& os) const
+{
+	Apply(Printer(os));
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const JVar& jv)
+{
+	return jv.Print(os);
+}
+
 } // end of namespace

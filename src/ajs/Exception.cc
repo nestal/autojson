@@ -22,8 +22,4 @@
 
 namespace ajs {
 
-Exception::Exception()
-{
-}
-
 } // end of namespace

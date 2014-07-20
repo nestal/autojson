@@ -22,6 +22,7 @@
 #define JVAR_HH_INCLUDED
 
 #include "Type.hh"
+#include "Exception.hh"
 
 #include <cassert>
 #include <map>
@@ -198,7 +199,8 @@ public :
 	}
 	template <typename T> typename TypeMap<T>::UnderlyingType& As()
 	{
-		auto func = Apply(GetVal<typename TypeMap<T>::UnderlyingType>{});
+		typedef typename TypeMap<T>::UnderlyingType TargetType;
+		auto func = Apply(GetVal<TargetType>{});
 		if (func.val == nullptr)
 			throw -1;
 		
@@ -213,6 +215,8 @@ public :
 		auto func = Apply(CheckEqual<typename TypeMap<T>::UnderlyingType>(v));
 		return func.equal;
 	}
+
+	std::ostream& Print(std::ostream& os) const;
 
 	ajs::Type Type() const;
 	bool Is(ajs::Type type) const;
@@ -241,6 +245,8 @@ template <typename T> bool operator==(const JVar& js, const T& v)
 {
 	return js.Equal(v);
 }
+
+std::ostream& operator<<(std::ostream& os, const JVar& jv);
 
 } // end of namespace
 

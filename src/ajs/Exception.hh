@@ -22,15 +22,21 @@
 #define EXCEPTION_HH_INCLUDED
 
 #include <stdexcept>
+#include <sstream>
 
 namespace ajs {
 
 /**	Brief description of Exception
 */
-class Exception
+class InvalidConversion : public std::runtime_error
 {
 public :
-	Exception();
+	template <typename Src, typename Dest>
+	InvalidConversion(const Src& from) : runtime_error([&from](){
+		return "";
+	}())
+	{
+	}
 
 private :
 };
