@@ -138,8 +138,9 @@ TEST(TryVar, JsonTest)
 	ASSERT_TRUE(in.Is<long long>());
 	ASSERT_EQ(100, in.Int());
 	ASSERT_EQ(100, in);
+	ASSERT_EQ(0, in.Size());
 	
-	Json vec((std::vector<Json>()));
+	Json vec;
 	vec.Add(in);
 	
 	ASSERT_EQ(100, vec[0].Int());
@@ -206,4 +207,15 @@ TEST(AddWillConvertNullToArrayOrHash, JsonTest)
 	ASSERT_TRUE(target.Is<Json::Array>());
 	ASSERT_EQ(1, target.Size());
 	ASSERT_EQ("target", target[0]);
+}
+
+TEST(OpSqBracketCanBeNested, JsonTest)
+{
+	Json target;
+	target.Add("key", Json().Add(
+		"subkey", "value1"
+	).Add(
+		"subkey2", "value2"
+	));
+	ASSERT_EQ("value2", target["key"]["subkey2"]);
 }
