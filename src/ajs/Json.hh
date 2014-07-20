@@ -125,8 +125,8 @@ public :
 	bool IsNull() const				{return Is<void>();}
 	std::size_t Size() const;
 
-	template <typename F>
-	F Apply(F func) const
+	template <typename Visitor>
+	Visitor Apply(Visitor func) const
 	{
 		switch (m_type)
 		{
@@ -140,8 +140,8 @@ public :
 		}
 		return func;
 	}
-	template <typename F>
-	F Apply(F func)
+	template <typename Visitor>
+	Visitor Apply(Visitor func)
 	{
 		switch (m_type)
 		{

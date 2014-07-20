@@ -172,7 +172,7 @@ const Json& Json::operator[](std::size_t idx) const
 
 struct Json::Destroyer
 {
-	template <typename U> void operator()(U)	{throw -1;}
+	template <typename U> void operator()(U)	{}
 	void operator()(Json::Hash& hash)			{hash.clear();}
 	void operator()(Json::Array& array)			{array.clear();}
 };
