@@ -31,6 +31,7 @@ JVar::JVar() : m_type(ajs::Type::null), m_raw({})
 
 JVar::JVar(const JVar& val) : m_type(val.m_type), m_raw(val.m_raw)
 {
+	// deep copy
 	switch (m_type)
 	{
 	case ajs::Type::string:	m_raw.string = new std::string(*val.m_raw.string);	break;
@@ -116,6 +117,14 @@ JVar::~JVar()
 	case ajs::Type::hash:	delete m_raw.hash;		break;
 	default:									break;
 	}
+}
+
+JVar& JVar::AddByKey(const std::string& key)
+{
+	if (m_type == ajs::Type::null)
+		*this = Hash();
+
+	return AsHash().emplace(key, JVar()).first->second;
 }
 
 JVar& JVar::Add(const JVar& val)

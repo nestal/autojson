@@ -185,6 +185,8 @@ public :
 	JVar& Add(const std::string& key, const JVar& val);
 	JVar& Add(const std::string& key, JVar&& val);
 	
+	JVar& AddByKey(const std::string& key);
+
 	void Clear();
 	const JVar& operator[](const std::string& key) const;
 	const JVar& operator[](std::size_t idx) const;

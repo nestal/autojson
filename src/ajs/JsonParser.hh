@@ -46,7 +46,6 @@ private :
 private :
 	JVar&					m_target;
 	std::vector<JVar*>		m_stack;
-	JVar::Hash::iterator	m_current;
 	JSON_checker			m_parser;
 };
 
