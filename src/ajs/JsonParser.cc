@@ -24,8 +24,7 @@
 
 namespace ajs {
 
-JsonParser::JsonParser(JVar& target) :
-	m_target(target),
+JsonParser::JsonParser() :
 	m_parser(new_JSON_checker(5))
 {
 }
@@ -44,19 +43,26 @@ void JsonParser::Callback(void *user, JSON_event type, const char *data, size_t 
 	pthis->Callback(type, data, len);
 }
 
-JVar* JsonParser::NewObj(JVar&& js)
+template <typename T>
+JVar* JsonParser::NewObj(T&& js)
 {
 	JVar *result = nullptr;
-
-	assert(!m_stack.empty());
-	if (m_stack.back()->Is(Type::hash))
+	if (m_stack.empty())
 	{
-		result = &m_stack.back()->Set(m_key, std::move(js));
-		m_key.clear();
+		m_root = std::forward<T>(js);
+		result = &m_root;
 	}
-	else if (m_stack.back()->Is(Type::array))
-		m_stack.back()->Add(std::move(js));
-
+	else
+	{
+		JVar& top = *m_stack.back();
+		if (top.Is(Type::hash))
+		{
+			result = &(top[m_key] = std::forward<T>(js));
+			m_key.clear();
+		}
+		else if (top.Is(Type::array))
+			top.Add(std::forward<T>(js));
+	}
 	return result;
 }
 
@@ -65,20 +71,14 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 	switch (type)
 	{
 	case JSON_object_start:
-		if (m_stack.empty())
-			m_stack.push_back(&m_target);
-		else
-			m_stack.push_back(NewObj(JVar(JVar::Hash())));
+		m_stack.push_back(NewObj(Type::hash));
 		break;
 	
 	case JSON_object_key:
-		assert(!m_stack.empty());
-		assert(m_stack.back()->Is(Type::hash));
 		m_key.assign(data, len);
 		break;
 
 	case JSON_string:
-		assert(!m_stack.empty());
 		NewObj(JVar(std::string(data, len)));
 		break;
 
@@ -91,6 +91,11 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 	default:
 		break;
 	}
+}
+
+JVar& JsonParser::Root()
+{
+	return m_root;
 }
 
 } // end of namespace

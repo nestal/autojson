@@ -155,10 +155,10 @@ TEST(TryParseTarget, JsonTest)
 	ASSERT_TRUE(target["haha"].Is(ajs::Type::string));
 	ASSERT_EQ("a", target["haha"]);
 
-	JsonParser p(target);
+	JsonParser p;
 
 	const char js[] = "{ \"haha\": \"????\" }";
 	p.Parse(js, sizeof(js)-1);
 		
-	ASSERT_EQ("????", target["haha"].Str());
+	ASSERT_EQ("????", p.Root()["haha"].Str());
 }

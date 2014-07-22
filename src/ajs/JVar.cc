@@ -25,8 +25,16 @@
 
 namespace ajs {
 
-JVar::JVar() : m_type(ajs::Type::null), m_raw({})
+JVar::JVar(ajs::Type type) : m_type(type)
 {
+	// deep copy
+	switch (m_type)
+	{
+	case ajs::Type::string:	m_raw.string = new std::string;	break;
+	case ajs::Type::array:	m_raw.array	 = new Array;		break;
+	case ajs::Type::hash:	m_raw.hash	 = new Hash;		break;
+	default:	break;
+	}
 }
 
 JVar::JVar(const JVar& val) : m_type(val.m_type), m_raw(val.m_raw)
@@ -41,10 +49,9 @@ JVar::JVar(const JVar& val) : m_type(val.m_type), m_raw(val.m_raw)
 	}
 }
 
-JVar::JVar(JVar&& val) : m_type(val.m_type), m_raw(val.m_raw)
+JVar::JVar(JVar&& val) : JVar()
 {
-	val.m_type	= ajs::Type::null;
-	val.m_raw	= {};
+	Swap(val);
 }
 
 JVar::JVar(int val) : m_type(ajs::Type::integer)
@@ -115,44 +122,8 @@ JVar::~JVar()
 	case ajs::Type::string:	delete m_raw.string;	break;
 	case ajs::Type::array:	delete m_raw.array;		break;
 	case ajs::Type::hash:	delete m_raw.hash;		break;
-	default:									break;
+	default:	break;
 	}
-}
-
-JVar& JVar::AddByKey(const std::string& key)
-{
-	if (m_type == ajs::Type::null)
-		*this = Hash();
-
-	return AsHash().emplace(key, JVar()).first->second;
-}
-
-JVar& JVar::Add(const JVar& val)
-{
-	return Add(std::move(JVar(val)));
-}
-
-JVar& JVar::Add(JVar&& val)
-{
-	if (m_type == ajs::Type::null)
-		*this = Array();
-
-	AsArray().push_back(std::move(val));
-	return *this;
-}
-
-JVar& JVar::Add(const std::string& key, const JVar& val)
-{
-	return Add(key, std::move(JVar(val)));
-}
-
-JVar& JVar::Add(const std::string& key, JVar&& val)
-{
-	if (m_type == ajs::Type::null)
-		*this = Hash();
-	
-	AsHash().insert(std::make_pair(key, std::move(val)));
-	return *this;
 }
 
 ajs::Type JVar::Type() const
@@ -174,7 +145,17 @@ const JVar& JVar::operator[](const std::string& key) const
 	return it->second;
 }
 
+JVar& JVar::operator[](const std::string& key)
+{
+	return AsHash()[key];
+}
+
 const JVar& JVar::operator[](std::size_t idx) const
+{
+	return AsArray().at(idx);
+}
+
+JVar& JVar::operator[](std::size_t idx)
 {
 	return AsArray().at(idx);
 }

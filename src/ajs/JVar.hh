@@ -74,25 +74,17 @@ public :
 	JVar(JVar&& rhs);
 	~JVar();
 	
-	// it works even for T=JVar
-	template <typename T>
-	JVar& operator=(const T& t)
-	{
-		JVar temp(t);
-		Swap(temp);
-		return *this;
-	}
-	
+	// perfectly forward the argument to the constructor
 	template <typename T>
 	JVar& operator=(T&& t)
 	{
-		JVar temp(std::move(t));
+		JVar temp(std::forward<T>(t));
 		Swap(temp);
 		return *this;
 	}
 
 	// construction from supported types
-	JVar();
+	explicit JVar(ajs::Type type = ajs::Type::null);
 	explicit JVar(int val);
 	explicit JVar(long long val);
 	explicit JVar(double val);
@@ -104,6 +96,7 @@ public :
 	explicit JVar(Array&& val);
 	explicit JVar(const Hash& val);
 	explicit JVar(Hash&& val);
+
 	template <typename T>
 	explicit JVar(const std::vector<T>& vec)
 	{
@@ -162,41 +155,44 @@ public :
 	template <typename T>
 	JVar& Add(T&& val)
 	{
-		return Add(JVar(std::forward<T>(val)));
+		if (m_type == ajs::Type::null)
+			*this = Array();
+
+		AsArray().emplace_back(std::forward<T>(val));
+		return *this;
 	}
 	template <typename T>
 	JVar& Add(const std::string& key, T&& val)
 	{
-		return Add(key, JVar(std::forward<T>(val)));
+		if (m_type == ajs::Type::null)
+			*this = Hash();
+		
+		AsHash().emplace(std::piecewise_construct,
+			std::forward_as_tuple(key),
+			std::forward_as_tuple(std::forward<T>(val)));
+		return *this;
 	}
-	JVar& Add(const JVar& val);
-	JVar& Add(JVar&& val);
-	JVar& Add(const std::string& key, const JVar& val);
-	JVar& Add(const std::string& key, JVar&& val);
 	
-	JVar& AddByKey(const std::string& key);
-	template <typename T>
-	JVar& Set(const std::string& key, T&& val)
-	{
-		return AsHash()[key] = JVar(std::forward<T>(val));
-	}
 
 	void Clear();
 	const JVar& operator[](const std::string& key) const;
+	JVar& operator[](const std::string& key);
 	const JVar& operator[](std::size_t idx) const;
+	JVar& operator[](std::size_t idx);
 
-	template <typename T> const typename TypeMap<T>::UnderlyingType& As() const
+	template <typename T, typename Out=typename TypeMap<T>::UnderlyingType>
+	const Out& As() const
 	{
-		auto func = Apply(GetVal<const typename TypeMap<T>::UnderlyingType>{});
+		auto func = Apply(GetVal<const Out>{});
 		if (func.val == nullptr)
 			throw -1;
 
 		return *func.val;
 	}
-	template <typename T> typename TypeMap<T>::UnderlyingType& As()
+	template <typename T, typename Out=typename TypeMap<T>::UnderlyingType>
+	Out& As()
 	{
-		typedef typename TypeMap<T>::UnderlyingType TargetType;
-		auto func = Apply(GetVal<TargetType>{});
+		auto func = Apply(GetVal<Out>{});
 		if (func.val == nullptr)
 			throw -1;
 		

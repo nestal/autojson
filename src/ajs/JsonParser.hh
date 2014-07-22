@@ -36,18 +36,20 @@ namespace ajs {
 class JsonParser
 {
 public :
-	JsonParser(JVar& target);
+	JsonParser();
 	void Parse(const char *json, std::size_t len);
+	JVar& Root() ;
 
 private :
 	static void Callback(void *user, JSON_event type, const char *data, size_t len);
 	void Callback(JSON_event type, const char *data, size_t len);
 
-	JVar* NewObj(JVar&& js);
+	template <typename T>
+	JVar* NewObj(T&& js);
 
 private :
 	std::string				m_key;
-	JVar&					m_target;
+	JVar					m_root;
 	std::vector<JVar*>		m_stack;
 	JSON_checker			m_parser;
 };

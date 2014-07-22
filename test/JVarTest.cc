@@ -93,7 +93,7 @@ TEST(PrintToStdOut, JVarTest)
 	JVar target;
 	target.Add("abc", "def");
 	target.Add("efg", 100.234);
-	target.Print(std::cout);
+//	target.Print(std::cout);
 	
 	const std::string s("aaa");
 	target.Add("cde", s);
@@ -101,5 +101,5 @@ TEST(PrintToStdOut, JVarTest)
 	JVar arr;
 	arr.Add("123");
 	arr.Add(true);
-	arr.Print(std::cout);
+//	arr.Print(std::cout);
 }
