@@ -44,6 +44,22 @@ void JsonParser::Callback(void *user, JSON_event type, const char *data, size_t 
 	pthis->Callback(type, data, len);
 }
 
+JVar* JsonParser::NewObj(JVar&& js)
+{
+	JVar *result = nullptr;
+
+	assert(!m_stack.empty());
+	if (m_stack.back()->Is(Type::hash))
+	{
+		result = &m_stack.back()->Set(m_key, std::move(js));
+		m_key.clear();
+	}
+	else if (m_stack.back()->Is(Type::array))
+		m_stack.back()->Add(std::move(js));
+
+	return result;
+}
+
 void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 {
 	switch (type)
@@ -52,19 +68,18 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 		if (m_stack.empty())
 			m_stack.push_back(&m_target);
 		else
-			*m_stack.back() = JVar::Hash();
+			m_stack.push_back(NewObj(JVar(JVar::Hash())));
 		break;
 	
 	case JSON_object_key:
 		assert(!m_stack.empty());
 		assert(m_stack.back()->Is(Type::hash));
-		m_stack.push_back(&m_stack.back()->AddByKey(std::string(data, len)));
+		m_key.assign(data, len);
 		break;
 
 	case JSON_string:
 		assert(!m_stack.empty());
-		*m_stack.back() = std::string(data, len);
-		m_stack.pop_back();
+		NewObj(JVar(std::string(data, len)));
 		break;
 
 	case JSON_object_end:

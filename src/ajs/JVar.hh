@@ -72,10 +72,9 @@ public :
 	// special member functions
 	JVar(const JVar& rhs);
 	JVar(JVar&& rhs);
-	JVar& operator=(const JVar& rhs);
-	JVar& operator=(JVar&& rhs);
 	~JVar();
 	
+	// it works even for T=JVar
 	template <typename T>
 	JVar& operator=(const T& t)
 	{
@@ -161,24 +160,14 @@ public :
 	
 	// complex types only
 	template <typename T>
-	JVar& Add(const T& val)
-	{
-		return Add(JVar(val));
-	}
-	template <typename T>
 	JVar& Add(T&& val)
 	{
-		return Add(JVar(std::move(val)));
-	}
-	template <typename T>
-	JVar& Add(const std::string& key, const T& val)
-	{
-		return Add(key, JVar(val));
+		return Add(JVar(std::forward<T>(val)));
 	}
 	template <typename T>
 	JVar& Add(const std::string& key, T&& val)
 	{
-		return Add(key, JVar(std::move(val)));
+		return Add(key, JVar(std::forward<T>(val)));
 	}
 	JVar& Add(const JVar& val);
 	JVar& Add(JVar&& val);
@@ -186,6 +175,11 @@ public :
 	JVar& Add(const std::string& key, JVar&& val);
 	
 	JVar& AddByKey(const std::string& key);
+	template <typename T>
+	JVar& Set(const std::string& key, T&& val)
+	{
+		return AsHash()[key] = JVar(std::forward<T>(val));
+	}
 
 	void Clear();
 	const JVar& operator[](const std::string& key) const;

@@ -81,11 +81,10 @@ TEST(AddWillConvertNullToArrayOrHash, JVarTest)
 TEST(OpSqBracketCanBeNested, JVarTest)
 {
 	JVar target;
-	target.Add("key", JVar().Add(
-		"subkey", "value1"
-	).Add(
-		"subkey2", "value2"
-	));
+	target.Add("key", std::move(JVar().
+		Add("subkey", "value1").
+		Add("subkey2", "value2"))
+	);
 	ASSERT_EQ("value2", target["key"]["subkey2"]);
 }
 
@@ -96,6 +95,9 @@ TEST(PrintToStdOut, JVarTest)
 	target.Add("efg", 100.234);
 	target.Print(std::cout);
 	
+	const std::string s("aaa");
+	target.Add("cde", s);
+
 	JVar arr;
 	arr.Add("123");
 	arr.Add(true);
