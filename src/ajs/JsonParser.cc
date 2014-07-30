@@ -62,6 +62,8 @@ JVar* JsonParser::NewObj(T&& js)
 		}
 		else if (top.Is(Type::array))
 			top.Add(std::forward<T>(js));
+		else
+			throw -1;
 	}
 	return result;
 }
@@ -79,7 +81,7 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 		break;
 
 	case JSON_string:
-		NewObj(JVar(std::string(data, len)));
+		NewObj(std::string(data, len));
 		break;
 
 	case JSON_object_end:
