@@ -21,22 +21,70 @@
 #ifndef EXCEPTION_HH_INCLUDED
 #define EXCEPTION_HH_INCLUDED
 
+#include "JVar.hh"
+#include <typeinfo>
+
 #include <stdexcept>
-#include <sstream>
+#include <memory>
 
 namespace ajs {
+
+class ErrInfoBase
+{
+public:
+	virtual ~ErrInfoBase() {}
+	virtual const std::type_info& TypeID() const = 0;
+	virtual ErrInfoBase* Clone() const = 0;
+};
+
+template <class Tag, typename T>
+class ErrInfo : public ErrInfoBase
+{
+public :
+	ErrInfo(const T& t) : m_val(t) {}
+	virtual const std::type_info& TypeID() const override
+	{
+		return typeid(T);
+	}
+	virtual ErrInfo* Clone() const override
+	{
+		return new ErrInfo(m_val) ;
+	}
+
+	T m_val;
+};
+
+class Exception
+{
+public :
+	Exception();
+	Exception(const Exception& rhs);
+
+	template <class Tag, typename T>
+	Exception& Add(const T& t)
+	{
+		m_data.emplace(&typeid(Tag), ErrInfoPtr(new ErrInfo<Tag, T>(t)));
+		return *this;
+	}
+
+	template <class Tag>
+	Exception& Add(const char *str)
+	{
+		return Add<Tag>(std::string(str));
+	}
+
+private :
+	typedef std::unique_ptr<ErrInfoBase> ErrInfoPtr;
+	typedef std::map<const std::type_info*, ErrInfoPtr> Map;
+	Map	m_data;
+};
 
 /**	Brief description of Exception
 */
 class InvalidConversion : public std::runtime_error
 {
 public :
-	template <typename Src, typename Dest>
-	InvalidConversion(const Src& from) : runtime_error([&from](){
-		return "";
-	}())
-	{
-	}
+	InvalidConversion(const JVar& val, const std::string& dest);
 
 private :
 };

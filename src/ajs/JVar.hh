@@ -194,7 +194,9 @@ public :
 	{
 		auto func = Apply(GetVal<Out>{});
 		if (func.val == nullptr)
-			throw -1;
+			throw Exception().
+				Add<struct Src>(*this).
+				Add<struct Dest>("haha");
 		
 		return *func.val;
 	}

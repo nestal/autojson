@@ -19,7 +19,27 @@
 */
 
 #include "Exception.hh"
+#include <sstream>
 
 namespace ajs {
+
+Exception::Exception()
+{
+}
+
+Exception::Exception(const Exception& rhs)
+{
+	for (const auto& i:rhs.m_data)
+		m_data.emplace(i.first, ErrInfoPtr(i.second->Clone()));
+}
+
+InvalidConversion::InvalidConversion(const JVar& val, const std::string& dest) :
+	runtime_error([&]{
+		std::ostringstream ss;
+		ss << "Cannot convert " << val << " into " << dest ;
+		return ss.str();
+}())
+{
+}
 
 } // end of namespace
