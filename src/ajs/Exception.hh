@@ -34,6 +34,7 @@ class ErrInfoBase
 public:
 	virtual ~ErrInfoBase() {}
 	virtual const std::type_info& TypeID() const = 0;
+	virtual void Write(std::ostream& os) const = 0;
 	virtual ErrInfoBase* Clone() const = 0;
 };
 
@@ -50,15 +51,21 @@ public :
 	{
 		return new ErrInfo(m_val) ;
 	}
+	void Write(std::ostream& os) const override
+	{
+		os << m_val;
+	}
 
 	T m_val;
 };
 
-class Exception
+class Exception : public std::exception
 {
 public :
 	Exception();
 	Exception(const Exception& rhs);
+
+	const char* what() const override;
 
 	template <class Tag, typename T>
 	Exception& Add(const T& t)
@@ -76,7 +83,9 @@ public :
 private :
 	typedef std::unique_ptr<ErrInfoBase> ErrInfoPtr;
 	typedef std::map<const std::type_info*, ErrInfoPtr> Map;
-	Map	m_data;
+	
+	Map			m_data;
+	std::string	m_what;
 };
 
 /**	Brief description of Exception

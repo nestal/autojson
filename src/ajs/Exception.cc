@@ -33,6 +33,19 @@ Exception::Exception(const Exception& rhs)
 		m_data.emplace(i.first, ErrInfoPtr(i.second->Clone()));
 }
 
+const char* Exception::what() const
+{
+	if (m_what.empty())
+	{
+		std::ostringstream ss;
+		
+		for (const auto& i:m_data)
+			ss << i.first->name() << i.second.get() ;
+	}
+
+	return m_what.c_str();
+}
+
 InvalidConversion::InvalidConversion(const JVar& val, const std::string& dest) :
 	runtime_error([&]{
 		std::ostringstream ss;
