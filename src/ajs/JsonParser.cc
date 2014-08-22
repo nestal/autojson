@@ -83,6 +83,10 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 	case JSON_string:
 		NewObj(std::string(data, len));
 		break;
+	
+	case JSON_integer:
+		NewObj(JVar(std::string(data, len)));
+		break;
 
 	case JSON_object_end:
 		if (m_stack.empty())

@@ -49,7 +49,7 @@ JVar::JVar(const JVar& val) : m_type(val.m_type), m_raw(val.m_raw)
 	}
 }
 
-JVar::JVar(JVar&& val) : JVar()
+JVar::JVar(JVar&& val) : JVar(ajs::Type::null)
 {
 	Swap(val);
 }
