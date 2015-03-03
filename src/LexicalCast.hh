@@ -35,7 +35,16 @@ template <>
 long long lexical_cast(const char *str, std::size_t len);
 
 template <>
+unsigned long long lexical_cast(const char *str, std::size_t len);
+
+template <>
+unsigned long lexical_cast(const char *str, std::size_t len);
+
+template <>
 double lexical_cast(const char *str, std::size_t len);
+
+template <>
+bool lexical_cast(const char *str, std::size_t len);
 
 template <>
 std::string lexical_cast(const char *str, std::size_t len);

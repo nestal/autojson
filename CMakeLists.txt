@@ -26,12 +26,17 @@ find_package(GTest)
 include_directories(${autojson_SOURCE_DIR}/src)
 
 add_library(autojson
+	src/JSON_checker.h
 	src/JSON_checker.c
-	src/json/JsonParser.hh
-	src/json/JsonParser.cc
-	src/json/Key.hh
-	src/json/Key.cc
-	src/json/LevelVisitor.hh
+	src/JsonParser.hh
+	src/JsonParser.cc
+	src/LexicalCast.hh
+	src/LexicalCast.cc
+	src/Exception.hh
+	src/Exception.cc
+	src/Key.hh
+	src/Key.cc
+	src/LevelVisitor.hh
 )
 
 include(CheckCXXCompilerFlag)
@@ -44,9 +49,14 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 endif()
 
 if (GTEST_FOUND)
+	add_definitions(
+		-DTEST_DATA="${autojson_SOURCE_DIR}/test/data/"
+	)
+
 	include_directories(${GTEST_INCLUDE_DIRS})
 	add_executable(unittest
 		test/JsonTest.cc
+		test/ParserTest.cc
 	)
 	target_link_libraries(unittest autojson ${GTEST_BOTH_LIBRARIES})
 endif (GTEST_FOUND)

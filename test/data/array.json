@@ -1,0 +1,12 @@
+{
+	"kind": "filelist",
+	"items": [
+	{
+		"kind" : "file",
+		"title": "title0"
+	},
+	{
+		"kind" : "file",
+		"title": "title1"
+	}]
+}

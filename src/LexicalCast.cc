@@ -37,6 +37,18 @@ long long lexical_cast(const char *str, std::size_t len)
 }
 
 template <>
+unsigned long lexical_cast(const char *str, std::size_t len)
+{
+	return str != nullptr ? std::strtoll(std::string(str, len).c_str(), nullptr, 10) : 0ULL;
+}
+
+template <>
+unsigned long long lexical_cast(const char *str, std::size_t len)
+{
+	return str != nullptr ? std::strtoull(std::string(str, len).c_str(), nullptr, 10) : 0ULL;
+}
+
+template <>
 double lexical_cast(const char *str, std::size_t len)
 {
 	return str != nullptr ? std::atof(std::string(str, len).c_str()) : 0.0;
@@ -48,4 +60,11 @@ std::string lexical_cast(const char *str, std::size_t len)
 	return str != nullptr ? std::string(str, len) : "";
 }
 
+template <>
+bool lexical_cast(const char *str, std::size_t len)
+{
+	return str != nullptr && std::string(str, len) == "true" ;
+}
+
+	
 } // end of namespace
