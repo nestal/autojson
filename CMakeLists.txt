@@ -27,36 +27,26 @@ include_directories(${autojson_SOURCE_DIR}/src)
 
 add_library(autojson
 	src/JSON_checker.c
-	src/ajs/Reactor.hh
-	src/ajs/ObjectReactor.hh
-	src/ajs/ObjectReactor.cc
-	src/ajs/LexicalCast.hh
-	src/ajs/LexicalCast.cc
-	src/ajs/JsonParser.hh
-	src/ajs/JsonParser.cc
-	src/ajs/JVar.hh
-	src/ajs/JVar.cc
-	src/ajs/Type.hh
-	src/ajs/Exception.hh
-	src/ajs/Exception.cc
+	src/json/JsonParser.hh
+	src/json/JsonParser.cc
+	src/json/Key.hh
+	src/json/Key.cc
+	src/json/LevelVisitor.hh
 )
 
-# gcc specific
-if(CMAKE_COMPILER_IS_GNUCXX)
-	list(APPEND CMAKE_CXX_FLAGS "-std=c++0x")
-	add_definitions(-DNOEXCEPT=noexcept)
-endif(CMAKE_COMPILER_IS_GNUCXX)
-
-# MSVC specific
-if(MSVC)
-	add_definitions(-DNOEXCEPT=)
-endif(MSVC)
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif(COMPILER_SUPPORTS_CXX0X)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+endif()
 
 if (GTEST_FOUND)
 	include_directories(${GTEST_INCLUDE_DIRS})
 	add_executable(unittest
 		test/JsonTest.cc
-		test/JVarTest.cc
 	)
 	target_link_libraries(unittest autojson ${GTEST_BOTH_LIBRARIES})
 endif (GTEST_FOUND)

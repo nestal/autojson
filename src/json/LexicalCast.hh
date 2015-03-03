@@ -18,41 +18,27 @@
 	02110-1301, USA.
 */
 
-#ifndef JSONPARSER_HH_INCLUDED
-#define JSONPARSER_HH_INCLUDED
+#ifndef LEXICALCAST_HH_INCLUDED
+#define LEXICALCAST_HH_INCLUDED
 
-#include "JVar.hh"
-#include "JSON_checker.h"
+#include <string>
 
-#include <memory>
-#include <vector>
+namespace json {
 
-namespace ajs {
+template <typename Dest>
+Dest lexical_cast(const char *str, std::size_t len);
 
-/**	The main parser class.
-	JsonParser is the class you use to parse JSON data. First, construct a JsonParser
-	object by providing a Reactor and an object that receives the output.
-*/
-class JsonParser
-{
-public :
-	JsonParser();
-	void Parse(const char *json, std::size_t len);
-	JVar& Root() ;
+template <>
+int lexical_cast(const char *str, std::size_t len);
 
-private :
-	static void Callback(void *user, JSON_event type, const char *data, size_t len);
-	void Callback(JSON_event type, const char *data, size_t len);
+template <>
+long long lexical_cast(const char *str, std::size_t len);
 
-	template <typename T>
-	JVar* NewObj(T&& js);
+template <>
+double lexical_cast(const char *str, std::size_t len);
 
-private :
-	std::string				m_key;
-	JVar					m_root;
-	std::vector<JVar*>		m_stack;
-	JSON_checker			m_parser;
-};
+template <>
+std::string lexical_cast(const char *str, std::size_t len);
 
 } // end of namespace
 

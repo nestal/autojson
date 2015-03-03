@@ -19,9 +19,6 @@
 */
 
 #include "JSON_checker.h"
-#include "ajs/JsonParser.hh"
-#include "ajs/ObjectReactor.hh"
-#include "ajs/JVar.hh"
 
 #include <functional>
 #include <cassert>
@@ -32,8 +29,6 @@
 #include <iostream>
 #include <memory>
 #include <map>
-
-using namespace ajs;
 
 struct JsonToken
 {
@@ -128,37 +123,4 @@ TEST(PartialJsonCanBeParsed, JsonTest)
 		{JSON_object_end, ""},
 	};
 	ASSERT_EQ(expect, actual);
-}
-
-TEST(TryVar, JsonTest)
-{
-	JVar v;
-	JVar in(100);
-	ASSERT_TRUE(in.Is<int>());
-	ASSERT_TRUE(in.Is<long long>());
-	ASSERT_EQ(100, in.Int());
-	ASSERT_EQ(100, in);
-	ASSERT_EQ(0, in.Size());
-	
-	JVar vec;
-	vec.Add(in);
-	
-	ASSERT_EQ(100, vec[0].Int());
-	ASSERT_TRUE(vec.Is(ajs::Type::array));
-	ASSERT_TRUE(vec.Is<JVar::Array>());
-}
-
-TEST(TryParseTarget, JsonTest)
-{
-	JVar target((JVar::Hash()));
-	target.Add("haha", "a");
-	ASSERT_TRUE(target["haha"].Is(ajs::Type::string));
-	ASSERT_EQ("a", target["haha"]);
-
-	JsonParser p;
-
-	const char js[] = "{ \"haha\": \"????\" }";
-	p.Parse(js, sizeof(js)-1);
-		
-	ASSERT_EQ("????", p.Root()["haha"].Str());
 }

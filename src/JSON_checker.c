@@ -343,8 +343,10 @@ JSON_checker_char(JSON_checker jc, const char *chars, size_t len, JSON_callback 
 		UTF-32. It returns true if things are looking ok so far. If it rejects the
 		text, it deletes the JSON_checker object and returns false.
 	*/
-		int next_char = chars[i];
+		// prevent sign-extension by converting into unsigned char first
+		int next_char = (unsigned char)chars[i];
 		int next_class, next_state;
+		
 	/*
 		Determine the character's class.
 	*/

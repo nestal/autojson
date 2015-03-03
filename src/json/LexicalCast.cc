@@ -18,28 +18,34 @@
 	02110-1301, USA.
 */
 
-#ifndef LEXICALCAST_HH_INCLUDED
-#define LEXICALCAST_HH_INCLUDED
+#include "LexicalCast.hh"
 
-#include <string>
+#include <cstdlib>
 
-namespace ajs {
-
-template <typename Dest>
-Dest lexical_cast(const char *str, std::size_t len);
+namespace json {
 
 template <>
-int lexical_cast(const char *str, std::size_t len);
+int lexical_cast(const char *str, std::size_t len)
+{
+	return str != nullptr ? std::atoi(std::string(str, len).c_str()) : 0;
+}
 
 template <>
-long long lexical_cast(const char *str, std::size_t len);
+long long lexical_cast(const char *str, std::size_t len)
+{
+	return str != nullptr ? std::atoll(std::string(str, len).c_str()) : 0LL;
+}
 
 template <>
-double lexical_cast(const char *str, std::size_t len);
+double lexical_cast(const char *str, std::size_t len)
+{
+	return str != nullptr ? std::atof(std::string(str, len).c_str()) : 0.0;
+}
 
 template <>
-std::string lexical_cast(const char *str, std::size_t len);
+std::string lexical_cast(const char *str, std::size_t len)
+{
+	return str != nullptr ? std::string(str, len) : "";
+}
 
 } // end of namespace
-
-#endif

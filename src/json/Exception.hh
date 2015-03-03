@@ -21,7 +21,6 @@
 #ifndef EXCEPTION_HH_INCLUDED
 #define EXCEPTION_HH_INCLUDED
 
-#include "JVar.hh"
 #include <typeinfo>
 
 #include <stdexcept>
@@ -65,7 +64,7 @@ public :
 	Exception();
 	Exception(const Exception& rhs);
 
-	const char* what() const override;
+	const char* what() const noexcept override;
 
 	template <class Tag, typename T>
 	Exception& Add(const T& t)
@@ -86,16 +85,6 @@ private :
 	
 	Map			m_data;
 	std::string	m_what;
-};
-
-/**	Brief description of Exception
-*/
-class InvalidConversion : public std::runtime_error
-{
-public :
-	InvalidConversion(const JVar& val, const std::string& dest);
-
-private :
 };
 
 } // end of namespace

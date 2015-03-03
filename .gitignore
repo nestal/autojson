@@ -20,5 +20,8 @@
 *.out
 *.app
 
+# generated project files
+*.kdev4
+
 # Build directory
 build
