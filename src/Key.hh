@@ -1,5 +1,5 @@
 /*
-	songbits: A cloud-base music player
+	autojson: A JSON parser base on the automaton provided by json.org
 	Copyright (C) 2015  Wan Wai Ho
 
 	This program is free software; you can redistribute it and/or

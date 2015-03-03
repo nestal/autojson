@@ -1,5 +1,5 @@
 /*
-	songbits: A cloud-base music player
+	autojson: A JSON parser base on the automaton provided by json.org
 	Copyright (C) 2015  Wan Wai Ho
 
 	This program is free software; you can redistribute it and/or
@@ -178,52 +178,4 @@ TEST(ParserTest, GoogleDriveListTest)
 	
 	ASSERT_EQ(list.kind, "drive#fileList");
 //	ASSERT_FALSE(list.labels.starred);
-}
-
-TEST(ParserTest, SimpleArrayTest)
-{
-	struct Item
-	{
-		std::string kind;
-		std::string title;
-	};
-	JsonBuilder<Item> item_level =
-	{
-		{"kind", &Item::kind},
-		{"title", &Item::title}
-	};
-	
-	struct Items
-	{
-		Item item0;
-		Item item1;
-	};
-		
-	struct FileList
-	{
-		std::string kind;
-		Items items;
-	};
-	JsonBuilder<FileList> list_level =
-	{
-		{"kind", &FileList::kind},
-		{"items", &FileList::items, {
-			{0, &Items::item0, item_level},
-			{1, &Items::item1, item_level},
-		}}
-	};
-	
-	std::string json;
-	std::ifstream test_file(TEST_DATA "array.json");
-	std::copy(
-		(std::istreambuf_iterator<char>(test_file)),
-		(std::istreambuf_iterator<char>()),
-		std::back_inserter(json));
-
-	JsonParser sub(&list_level);
-	
-	FileList list;
-	sub.Parse(json.data(), json.size(), &list);
-	
-	ASSERT_EQ(list.items.item0.title, "title0");
 }

@@ -37,6 +37,7 @@ add_library(autojson
 	src/Key.hh
 	src/Key.cc
 	src/LevelVisitor.hh
+	src/VectorBuilder.hh
 )
 
 include(CheckCXXCompilerFlag)
@@ -57,6 +58,7 @@ if (GTEST_FOUND)
 	add_executable(unittest
 		test/JsonTest.cc
 		test/ParserTest.cc
+		test/ArrayTest.cc
 	)
 	target_link_libraries(unittest autojson ${GTEST_BOTH_LIBRARIES})
 endif (GTEST_FOUND)

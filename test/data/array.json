@@ -3,10 +3,10 @@
 	"items": [
 	{
 		"kind" : "file",
-		"title": "title0"
+		"title": "Title of item[0]"
 	},
 	{
 		"kind" : "file",
-		"title": "title1"
+		"title": "Another Item's Title"
 	}]
 }

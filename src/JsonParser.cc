@@ -1,5 +1,5 @@
 /*
-	songbits: A cloud-base music player
+	autojson: A JSON parser base on the automaton provided by json.org
 	Copyright (C) 2015  Wan Wai Ho
 
 	This program is free software; you can redistribute it and/or
@@ -72,6 +72,7 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *o
 				m_stack.push_back(Level{Key(), obj, m_root});
 			else
 				m_stack.push_back(m_stack.back().rec->Advance(m_key, m_stack.back().obj));
+			
 			m_key.Clear();
 			
 			if (type == JSON_array_start)
@@ -80,6 +81,7 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *o
 		
 		case JSON_object_end:
 		case JSON_array_end:
+			assert(!m_stack.empty());
 			m_key = m_stack.back().key;
 			m_stack.pop_back();
 			FinishKey();
@@ -91,6 +93,7 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *o
 		case JSON_true:
 		case JSON_false:
 			assert(!m_stack.empty());
+			assert(m_stack.back().rec);
 			m_stack.back().rec->Data(m_key, type, data, len, m_stack.back().obj);
 			FinishKey();
 			break;

@@ -1,5 +1,5 @@
 /*
-	songbits: A cloud-base music player
+	autojson: A JSON parser base on the automaton provided by json.org
 	Copyright (C) 2015  Wan Wai Ho
 
 	This program is free software; you can redistribute it and/or
@@ -50,7 +50,7 @@ class LevelVisitor
 {
 public:
 	virtual ~LevelVisitor() = default;
-	virtual void Data(const Key& key, JSON_event type, const char *data, size_t len, void *obj) const = 0;
+	virtual void Data(const Key& key, JSON_event type, const char *data, size_t len, void *host) const = 0;
 	virtual Level Advance(const Key& key, void *obj) const = 0;
 };
 
@@ -122,34 +122,33 @@ public :
 	template <typename T>
 	void Add(const Key& key, T Host::*mem)
 	{
-		using V = SimpleTypeBuilder<T>;
-		m_obj_act.emplace(key, std::make_shared<Action<T,V>>(V(), mem));
+		Add(key, mem, SimpleTypeBuilder<T>());
 	}
 	
-	template <typename T, class V>
+	template <typename T, class V=JsonBuilder<T>>
 	void Add(const Key& key, T Host::*mem, const V& rec)
 	{
 		m_obj_act.emplace(key, std::make_shared<Action<T,V>>(rec, mem));
 	}
 	
-	void Data(const Key& key, JSON_event type, const char *data, size_t len, void *obj) const override
+	void Data(const Key& key, JSON_event type, const char *data, size_t len, void *host) const override
 	{
 		assert(key);
-		assert(obj);
+		assert(host);
 		
 		auto i = m_obj_act.find(key);
 		if (i != m_obj_act.end())
-			i->second->OnData(key, type, data, len, static_cast<Host*>(obj));
+			i->second->OnData(key, type, data, len, static_cast<Host*>(host));
 	}
 	
-	Level Advance(const Key& key, void *obj) const override
+	Level Advance(const Key& key, void *host) const override
 	{
 		assert(key);
-		assert(obj);
+		assert(host);
 		
 		auto i = m_obj_act.find(key);
 		return i != m_obj_act.end() ?
-			i->second->OnAdvance(key, static_cast<Host*>(obj)) :
+			i->second->OnAdvance(key, static_cast<Host*>(host)) :
 			Level{key, nullptr, MockObjectHandler::Instance()};
 	}
 	
@@ -162,11 +161,11 @@ private:
 		virtual void OnData(const Key&, JSON_event, const char *data, size_t len, Host *h) const = 0;
 	};
 	
-	template <typename T, class V>
+	template <typename T, class Visitor>
 	class Action : public BaseAction
 	{
 	public:
-		Action(const V& rec, T Host::*m ) :
+		Action(const Visitor& rec, T Host::*m ) :
 			m_rec(rec),
 			m_mem(m)
 		{
@@ -185,13 +184,15 @@ private:
 		}
 		
 	private:
-		V			m_rec;
+		Visitor		m_rec;
 		T Host::*	m_mem;
 	};
 	
 	using ObjMap	= std::map<Key, std::shared_ptr<const BaseAction>> ;
 	ObjMap	m_obj_act;
 };
+
+
 
 } // end of namespace
 
