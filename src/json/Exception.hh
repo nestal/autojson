@@ -21,70 +21,19 @@
 #ifndef EXCEPTION_HH_INCLUDED
 #define EXCEPTION_HH_INCLUDED
 
-#include <typeinfo>
-
 #include <stdexcept>
-#include <memory>
 
-namespace ajs {
+namespace json {
 
-class ErrInfoBase
-{
-public:
-	virtual ~ErrInfoBase() {}
-	virtual const std::type_info& TypeID() const = 0;
-	virtual void Write(std::ostream& os) const = 0;
-	virtual ErrInfoBase* Clone() const = 0;
-};
-
-template <class Tag, typename T>
-class ErrInfo : public ErrInfoBase
+class Exception : public std::runtime_error
 {
 public :
-	ErrInfo(const T& t) : m_val(t) {}
-	virtual const std::type_info& TypeID() const override
-	{
-		return typeid(T);
-	}
-	virtual ErrInfo* Clone() const override
-	{
-		return new ErrInfo(m_val) ;
-	}
-	void Write(std::ostream& os) const override
-	{
-		os << m_val;
-	}
-
-	T m_val;
+	Exception(const std::string& errmsg) ;
 };
 
-class Exception : public std::exception
+struct ParseError : public Exception
 {
-public :
-	Exception();
-	Exception(const Exception& rhs);
-
-	const char* what() const noexcept override;
-
-	template <class Tag, typename T>
-	Exception& Add(const T& t)
-	{
-		m_data.emplace(&typeid(Tag), ErrInfoPtr(new ErrInfo<Tag, T>(t)));
-		return *this;
-	}
-
-	template <class Tag>
-	Exception& Add(const char *str)
-	{
-		return Add<Tag>(std::string(str));
-	}
-
-private :
-	typedef std::unique_ptr<ErrInfoBase> ErrInfoPtr;
-	typedef std::map<const std::type_info*, ErrInfoPtr> Map;
-	
-	Map			m_data;
-	std::string	m_what;
+	ParseError() ;
 };
 
 } // end of namespace

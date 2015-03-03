@@ -45,7 +45,7 @@ void JsonParser::Parse(const char *data, size_t len, void *obj)
 {
 	CB cb = CB(this, obj);
 	if ( ::JSON_checker_char(m_json, data, len, &Callback, &cb) == JSON_error)
-		throw -1;//SB_THROW(ParseError());
+		throw ParseError() ;
 }
 
 void JsonParser::Callback(void *pvcb, JSON_event type, const char *data, size_t len)

@@ -38,9 +38,6 @@ class Reactor;
 */
 class JsonParser
 {
-public:
-//	struct ParseError : virtual expt::Exception {};
-	
 public :
 	explicit JsonParser(const LevelVisitor *root, std::size_t depth = 10);
 	~JsonParser();

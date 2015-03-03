@@ -19,39 +19,15 @@
 */
 
 #include "Exception.hh"
-#include <sstream>
 
-namespace ajs {
+namespace json {
 
-Exception::Exception()
+Exception::Exception(const std::string& errmsg ) :
+	runtime_error(errmsg)
 {
 }
 
-Exception::Exception(const Exception& rhs)
-{
-	for (const auto& i:rhs.m_data)
-		m_data.emplace(i.first, ErrInfoPtr(i.second->Clone()));
-}
-
-const char* Exception::what() const
-{
-	if (m_what.empty())
-	{
-		std::ostringstream ss;
-		
-		for (const auto& i:m_data)
-			ss << i.first->name() << i.second.get() ;
-	}
-
-	return m_what.c_str();
-}
-
-InvalidConversion::InvalidConversion(const JVar& val, const std::string& dest) :
-	runtime_error([&]{
-		std::ostringstream ss;
-		ss << "Cannot convert " << val << " into " << dest ;
-		return ss.str();
-}())
+ParseError::ParseError() : Exception("parse error")
 {
 }
 
