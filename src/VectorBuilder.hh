@@ -30,7 +30,7 @@ namespace json {
 
 // host is a vector of T
 template <typename T>
-class VectorBuilder : public LevelVisitor
+class VectorBuilder : public ComplexTypeBuilder<std::vector<T>>
 {
 public:
 	VectorBuilder(const VectorBuilder&) = default;

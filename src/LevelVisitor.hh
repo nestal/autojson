@@ -29,8 +29,9 @@
 #include <cassert>
 #include <functional>
 #include <initializer_list>
-#include <memory>
 #include <map>
+#include <memory>
+#include <type_traits>
 
 namespace json {
 
@@ -91,7 +92,19 @@ public :
 };
 
 template <typename Host>
-class JsonBuilder : public LevelVisitor
+class ComplexTypeBuilder : public LevelVisitor
+{
+protected:
+	using HostType = Host;
+	
+	static HostType* Cast(void *host)
+	{
+		return static_cast<Host*>(host);
+	}
+};
+
+template <typename Host>
+class JsonBuilder : public ComplexTypeBuilder<Host>
 {
 public :
 	JsonBuilder() = default;
@@ -102,7 +115,7 @@ public :
 	template <typename T>
 	JsonBuilder(const Key& key, T Host::*mem)
 	{
-		Add(key, mem, SimpleTypeBuilder<T>());
+		Add(key, mem);
 	}
 	
 	template <typename T, class V=JsonBuilder<T> >
@@ -122,13 +135,17 @@ public :
 	template <typename T>
 	void Add(const Key& key, T Host::*mem)
 	{
-		Add(key, mem, SimpleTypeBuilder<T>());
+		using V = SimpleTypeBuilder<T>;
+		m_obj_act.emplace(key, std::make_shared<Action<T,V>>(V(), mem));
 	}
 	
-	template <typename T, class V=JsonBuilder<T>>
-	void Add(const Key& key, T Host::*mem, const V& rec)
+	template <typename T, class Visitor=JsonBuilder<T>>
+	void Add(const Key& key, T Host::*mem, const Visitor& rec)
 	{
-		m_obj_act.emplace(key, std::make_shared<Action<T,V>>(rec, mem));
+		static_assert(
+			std::is_base_of<ComplexTypeBuilder<T>, Visitor>::value,
+			"member type and visitor does not match");
+		m_obj_act.emplace(key, std::make_shared<Action<T, Visitor>>(rec, mem));
 	}
 	
 	void Data(const Key& key, JSON_event type, const char *data, size_t len, void *host) const override
