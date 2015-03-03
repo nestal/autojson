@@ -94,13 +94,55 @@ public :
 template <typename Host>
 class ComplexTypeBuilder : public LevelVisitor
 {
-protected:
-	using HostType = Host;
+public:
+	virtual void OnData(const Key& key, JSON_event, const char *data, size_t len, Host *host) const = 0 ;
+	virtual Level OnAdvance(const Key& key, Host *host) const = 0;
 	
-	static HostType* Cast(void *host)
+	void Data(const Key& key, JSON_event ev, const char *data, size_t len, void *obj) const override
 	{
-		return static_cast<Host*>(host);
+		OnData(key, ev, data, len, static_cast<Host*>(obj));
 	}
+	
+	Level Advance(const Key& key, void *obj) const override
+	{
+		return this->OnAdvance(key, static_cast<Host*>(obj));
+	}
+};
+
+/*!	Builds a member of a class with the given builder.
+
+	The MemberBuilder builds a member of a class.
+	\param	Host	The class that host the member to be built.
+	\param	T		The type of the member to be built.
+	\param	Builder	The builder that build the member. It can be a ComplexTypeBuilder
+					or SimpleTypeBuilder.
+	
+*/
+template <typename Host, typename T, typename Builder>
+class MemberBuilder : public ComplexTypeBuilder<Host>
+{
+public:
+	MemberBuilder(const Builder& rec, T Host::*m ) :
+		m_rec(rec),
+		m_mem(m)
+	{
+	}
+	
+	MemberBuilder(const MemberBuilder&) = default;
+	
+	Level OnAdvance(const Key& key, Host *h) const override
+	{
+		return Level{key, &(h->*m_mem), &m_rec};
+	}
+	
+	void OnData(const Key& key, JSON_event type, const char *data, size_t len, Host *h) const override
+	{
+		m_rec.Data(key, type, data, len, &(h->*m_mem));
+	}
+	
+private:
+	Builder		m_rec;
+	T Host::*	m_mem;
 };
 
 template <typename Host>
@@ -135,81 +177,48 @@ public :
 	template <typename T>
 	void Add(const Key& key, T Host::*mem)
 	{
-		using V = SimpleTypeBuilder<T>;
-		m_obj_act.emplace(key, std::make_shared<Action<T,V>>(V(), mem));
+		using Builder = SimpleTypeBuilder<T>;
+		m_obj_act.emplace(key, std::make_shared<MemberBuilder<Host,T,Builder>>(Builder(), mem));
 	}
 	
-	template <typename T, class Visitor=JsonBuilder<T>>
-	void Add(const Key& key, T Host::*mem, const Visitor& rec)
+	template <typename T, class Builder=JsonBuilder<T>>
+	void Add(const Key& key, T Host::*mem, const Builder& rec)
 	{
+		// Since the type of the member variable is T, we need a ComplexTypeBuilder<T>
+		// to build it. Therefore, the Builder must inherit ComplexTypeBuilder<T>. It
+		// cannot be SimpleTextBuilder.
 		static_assert(
-			std::is_base_of<ComplexTypeBuilder<T>, Visitor>::value,
+			std::is_base_of<ComplexTypeBuilder<T>, Builder>::value,
 			"member type and visitor does not match");
-		m_obj_act.emplace(key, std::make_shared<Action<T, Visitor>>(rec, mem));
+		m_obj_act.emplace(key, std::make_shared<MemberBuilder<Host,T,Builder>>(rec, mem));
 	}
 	
-	void Data(const Key& key, JSON_event type, const char *data, size_t len, void *host) const override
+	void OnData(const Key& key, JSON_event type, const char *data, size_t len, Host *host) const override
 	{
 		assert(key);
 		assert(host);
 		
 		auto i = m_obj_act.find(key);
 		if (i != m_obj_act.end())
-			i->second->OnData(key, type, data, len, static_cast<Host*>(host));
+			i->second->OnData(key, type, data, len, host);
 	}
 	
-	Level Advance(const Key& key, void *host) const override
+	Level OnAdvance(const Key& key, Host *host) const override
 	{
 		assert(key);
 		assert(host);
 		
 		auto i = m_obj_act.find(key);
 		return i != m_obj_act.end() ?
-			i->second->OnAdvance(key, static_cast<Host*>(host)) :
+			i->second->OnAdvance(key, host) :
 			Level{key, nullptr, MockObjectHandler::Instance()};
 	}
 	
 private:
-	class BaseAction
-	{
-	public:
-		virtual ~BaseAction() = default;
-		virtual Level OnAdvance(const Key& key, Host *h) const = 0;
-		virtual void OnData(const Key&, JSON_event, const char *data, size_t len, Host *h) const = 0;
-	};
-	
-	template <typename T, class Visitor>
-	class Action : public BaseAction
-	{
-	public:
-		Action(const Visitor& rec, T Host::*m ) :
-			m_rec(rec),
-			m_mem(m)
-		{
-		}
-		
-		Action(const Action&) = default;
-		
-		Level OnAdvance(const Key& key, Host *h) const override
-		{
-			return Level{key, &(h->*m_mem), &m_rec};
-		}
-		
-		void OnData(const Key& key, JSON_event type, const char *data, size_t len, Host *h) const override
-		{
-			m_rec.Data(key, type, data, len, &(h->*m_mem));
-		}
-		
-	private:
-		Visitor		m_rec;
-		T Host::*	m_mem;
-	};
-	
-	using ObjMap	= std::map<Key, std::shared_ptr<const BaseAction>> ;
+	using MemBase	= ComplexTypeBuilder<Host>;
+	using ObjMap	= std::map<Key, std::shared_ptr<const MemBase>> ;
 	ObjMap	m_obj_act;
 };
-
-
 
 } // end of namespace
 

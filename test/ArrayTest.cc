@@ -36,6 +36,7 @@ protected:
 	{
 		std::string kind;
 		std::string title;
+		int page;
 	};
 	
 	static const JsonBuilder<Item> item_level;
@@ -55,7 +56,8 @@ protected:
 const JsonBuilder<ItemArrayTest::Item> ItemArrayTest::item_level =
 {
 	{"kind", &Item::kind},
-	{"title", &Item::title}
+	{"title", &Item::title},
+	{"page", &Item::page}
 };
 
 TEST_F(ItemArrayTest, SimpleArrayTest)
@@ -86,8 +88,8 @@ TEST_F(ItemArrayTest, SimpleArrayTest)
 	FileList list;
 	sub.Parse(m_json.data(), m_json.size(), &list);
 	
-	ASSERT_EQ("Title of item[0]", 		list.items.item0.title);
-	ASSERT_EQ("Another Item's Title",	list.items.item1.title);
+	ASSERT_EQ("Title of item[0]", 	list.items.item0.title);
+	ASSERT_EQ("Folder's Title",		list.items.item1.title);
 }
 
 TEST_F(ItemArrayTest, VectorArrayTest)
@@ -103,13 +105,16 @@ TEST_F(ItemArrayTest, VectorArrayTest)
 		{"kind", &FileList::kind},
 		{"items", &FileList::items, VectorBuilder<Item>(item_level)}
 	};
-
+	
 	JsonParser sub(&list_level);
 	
 	FileList list;
 	sub.Parse(m_json.data(), m_json.size(), &list);
 	
-	ASSERT_EQ(2, list.items.size());
-	ASSERT_EQ("Title of item[0]", 		list.items[0].title);
-	ASSERT_EQ("Another Item's Title",	list.items[1].title);
+	ASSERT_EQ("hello world!", list.kind);
+	
+	ASSERT_EQ(2, 	list.items.size());
+	ASSERT_EQ(100,  list.items[0].page);
+	ASSERT_EQ("Title of item[0]", 	list.items[0].title);
+	ASSERT_EQ("Folder's Title",		list.items[1].title);
 }

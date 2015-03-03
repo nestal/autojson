@@ -1,12 +1,14 @@
 {
-	"kind": "filelist",
+	"kind": "hello world!",
 	"items": [
 	{
 		"kind" : "file",
-		"title": "Title of item[0]"
+		"title": "Title of item[0]",
+		"page" : 100
 	},
 	{
-		"kind" : "file",
-		"title": "Another Item's Title"
+		"kind" : "folder",
+		"title": "Folder's Title",
+		"page" : 20
 	}]
 }

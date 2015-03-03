@@ -43,28 +43,26 @@ public:
 		assert(m_visitor.get());
 	}
 
-	void Data(const Key& key, JSON_event type, const char *data, size_t len, void *host) const override
+	void OnData(const Key& key, JSON_event type, const char *data, size_t len, std::vector<T> *host) const override
 	{
 		assert(key);
 		assert(host);
 
-		std::vector<T> *vec = static_cast<std::vector<T>*>(host);
-		vec->emplace_back();
+		host->emplace_back();
 		
 		assert(m_visitor.get());
-		m_visitor->Data(key, type, data, len, &vec->back());
+		m_visitor->Data(key, type, data, len, &host->back());
 	}
 	
-	Level Advance(const Key& key, void *host) const override
+	Level OnAdvance(const Key& key, std::vector<T> *host) const override
 	{
 		assert(key);
 		assert(host);
 		
-		std::vector<T> *vec = static_cast<std::vector<T>*>(host);
-		vec->emplace_back();
+		host->emplace_back();
 
 		assert(m_visitor.get());
-		return Level{key, &vec->back(), m_visitor.get()};
+		return Level{key, &host->back(), m_visitor.get()};
 	}
 
 private:
