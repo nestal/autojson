@@ -27,7 +27,7 @@ namespace json {
 
 JsonParser::JsonParser(const LevelVisitor *root, std::size_t depth) :
 	m_root(root),
-	m_json(::new_JSON_checker(depth))
+	m_json(::new_JSON_checker(static_cast<int>(depth)))
 {
 }
 
@@ -44,7 +44,7 @@ void JsonParser::Done()
 void JsonParser::Parse(const char *data, size_t len, void *obj)
 {
 	CB cb = CB(this, obj);
-	if ( ::JSON_checker_char(m_json, data, len, &Callback, &cb) == JSON_error)
+	if (::JSON_checker_char(m_json, data, len, &JsonParser::Callback, &cb) == JSON_error)
 		throw ParseError() ;
 }
 

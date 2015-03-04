@@ -34,7 +34,9 @@ class VectorBuilder : public ComplexTypeBuilder<std::vector<T>>
 {
 public:
 	VectorBuilder(const VectorBuilder&) = default;
+#ifndef _MSC_VER
 	VectorBuilder(VectorBuilder&&) = default;
+#endif
 	~VectorBuilder() override = default;
 	
 	template <typename V=JsonBuilder<T>>

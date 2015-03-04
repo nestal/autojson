@@ -66,12 +66,12 @@ TEST(ParserTest, Test2Level)
 	
 	JsonBuilder<Book> h =
 	{
-		{"title", 	&Book::title},
-		{"author",	&Book::author, {
-			{"name",	&Person::name},
-			{"age",		&Person::age}}
+		{"title", &Book::title},
+		{"author", &Book::author, JsonBuilder<Person>{
+			JsonBuilder<Person>{"name", &Person::name},
+			JsonBuilder<Person>{"age", &Person::age} }
 		},
-		{"pages",	&Book::pages}
+		{"pages", &Book::pages}
 	};
 		
 	
@@ -163,7 +163,7 @@ TEST(ParserTest, GoogleDriveListTest)
 	JsonBuilder<FileList> h
 	{
 		{ "kind", 	&FileList::kind },
-		{ "labels",	&FileList::labels, {
+		{ "labels", &FileList::labels, JsonBuilder<Label>{
 			{"starred",	&Label::starred},
 			{"hidden",	&Label::hidden},
 			{"trashed",	&Label::trashed},

@@ -77,9 +77,12 @@ class SimpleTypeBuilder : public LevelVisitor
 public :
 	SimpleTypeBuilder() = default;
 	SimpleTypeBuilder(const SimpleTypeBuilder&) = default;
-	SimpleTypeBuilder(SimpleTypeBuilder&&) = default;
 	~SimpleTypeBuilder() override = default;
-	
+
+#ifndef _MSC_VER
+	SimpleTypeBuilder(SimpleTypeBuilder&&) = default;
+#endif
+
 	void Data(const Key& key, JSON_event, const char *data, size_t len, void *obj) const override
 	{
 		*static_cast<T*>(obj) = lexical_cast<T>(data, len);
@@ -151,7 +154,9 @@ class JsonBuilder : public ComplexTypeBuilder<Host>
 public :
 	JsonBuilder() = default;
 	JsonBuilder(const JsonBuilder&) = default;
+#ifndef _MSC_VER
 	JsonBuilder(JsonBuilder&&) = default;
+#endif
 	~JsonBuilder() override = default;
 	
 	template <typename T>
@@ -208,10 +213,11 @@ public :
 		assert(key);
 		assert(host);
 		
+		static const Level mock{ key, nullptr, MockObjectHandler::Instance() };
+
 		auto i = m_obj_act.find(key);
 		return i != m_obj_act.end() ?
-			i->second->OnAdvance(key, host) :
-			Level{key, nullptr, MockObjectHandler::Instance()};
+			i->second->OnAdvance(key, host) : mock ;
 	}
 	
 private:

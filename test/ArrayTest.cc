@@ -77,7 +77,7 @@ TEST_F(ItemArrayTest, SimpleArrayTest)
 	JsonBuilder<FileList> list_level =
 	{
 		{"kind", &FileList::kind},
-		{"items", &FileList::items, {
+		{"items", &FileList::items, JsonBuilder<Items>{
 			{0, &Items::item0, item_level},
 			{1, &Items::item1, item_level},
 		}}
