@@ -24,14 +24,20 @@
 #include "LevelVisitor.hh"
 
 #include <cassert>
-#include <vector>
 
 namespace json {
 
 // host is a vector of T
-template <typename T>
-class VectorBuilder : public ComplexTypeBuilder<std::vector<T>>
+template <
+	typename T,
+	template <typename, typename> class Container=std::vector,
+	typename A=std::allocator<T>
+>
+class VectorBuilder : public ComplexTypeBuilder<Container<T,A>>
 {
+public:
+	using HostType = Container<T,A>;
+	
 public:
 	VectorBuilder(const VectorBuilder&) = default;
 #ifndef _MSC_VER
@@ -39,31 +45,35 @@ public:
 #endif
 	~VectorBuilder() override = default;
 	
-	template <typename V=JsonBuilder<T>>
-	VectorBuilder(const V& v = V()) : m_visitor(std::make_shared<V>(v))
+	template <typename Builder=JsonBuilder<T>>
+	VectorBuilder(const Builder& v = Builder()) : m_visitor(std::make_shared<Builder>(v))
 	{
-		assert(m_visitor.get());
+		assert(m_visitor);
+		static_assert(
+			std::is_base_of<ComplexTypeBuilder<T>, Builder>::value,
+			"member type and visitor does not match");
+
 	}
 
-	void OnData(const Key& key, JSON_event type, const char *data, size_t len, std::vector<T> *host) const override
+	void OnData(const Key& key, JSON_event type, const char *data, size_t len, HostType *host) const override
 	{
 		assert(key);
 		assert(host);
+		assert(m_visitor);
 
 		host->emplace_back();
 		
-		assert(m_visitor.get());
 		m_visitor->Data(key, type, data, len, &host->back());
 	}
 	
-	Level OnAdvance(const Key& key, std::vector<T> *host) const override
+	Level OnAdvance(const Key& key, HostType *host) const override
 	{
 		assert(key);
 		assert(host);
+		assert(m_visitor);
 		
 		host->emplace_back();
 
-		assert(m_visitor.get());
 		return Level{key, &host->back(), m_visitor.get()};
 	}
 

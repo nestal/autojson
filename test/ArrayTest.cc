@@ -24,6 +24,8 @@
 #include "LevelVisitor.hh"
 #include "VectorBuilder.hh"
 
+#include <vector>
+#include <deque>
 #include <iterator>
 #include <fstream>
 
@@ -97,13 +99,13 @@ TEST_F(ItemArrayTest, VectorArrayTest)
 	struct FileList
 	{
 		std::string kind;
-		std::vector<Item> items;
+		std::deque<Item> items;
 	};
 
 	JsonBuilder<FileList> list_level =
 	{
 		{"kind", &FileList::kind},
-		{"items", &FileList::items, VectorBuilder<Item>(item_level)}
+		{"items", &FileList::items, VectorBuilder<Item, std::deque>(item_level)}
 	};
 	
 	JsonParser sub(&list_level);
