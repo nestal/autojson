@@ -25,25 +25,25 @@
 namespace json {
 
 template <>
-int lexical_cast(const char *str, std::size_t len)
+std::int32_t lexical_cast(const char *str, std::size_t len)
 {
 	return str != nullptr ? std::atoi(std::string(str, len).c_str()) : 0;
 }
 
 template <>
-long long lexical_cast(const char *str, std::size_t len)
+std::uint32_t lexical_cast(const char *str, std::size_t len)
 {
-	return str != nullptr ? std::atoll(std::string(str, len).c_str()) : 0LL;
+	return str != nullptr ? static_cast<std::uint32_t>(std::atoi(std::string(str, len).c_str())) : 0U;
 }
 
 template <>
-unsigned long lexical_cast(const char *str, std::size_t len)
+std::int64_t lexical_cast(const char *str, std::size_t len)
 {
 	return str != nullptr ? std::strtoll(std::string(str, len).c_str(), nullptr, 10) : 0ULL;
 }
 
 template <>
-unsigned long long lexical_cast(const char *str, std::size_t len)
+std::uint64_t lexical_cast(const char *str, std::size_t len)
 {
 	return str != nullptr ? std::strtoull(std::string(str, len).c_str(), nullptr, 10) : 0ULL;
 }

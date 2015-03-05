@@ -22,6 +22,7 @@
 #define LEXICALCAST_HH_INCLUDED
 
 #include <string>
+#include <cstdint>
 
 namespace json {
 
@@ -29,16 +30,16 @@ template <typename Dest>
 Dest lexical_cast(const char *str, std::size_t len);
 
 template <>
-int lexical_cast(const char *str, std::size_t len);
+std::int32_t lexical_cast(const char *str, std::size_t len);
 
 template <>
-long long lexical_cast(const char *str, std::size_t len);
+std::int64_t lexical_cast(const char *str, std::size_t len);
 
 template <>
-unsigned long long lexical_cast(const char *str, std::size_t len);
+std::uint32_t lexical_cast(const char *str, std::size_t len);
 
 template <>
-unsigned long lexical_cast(const char *str, std::size_t len);
+std::uint64_t lexical_cast(const char *str, std::size_t len);
 
 template <>
 double lexical_cast(const char *str, std::size_t len);
