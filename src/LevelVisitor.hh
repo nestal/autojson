@@ -53,6 +53,7 @@ public:
 	virtual ~LevelVisitor() = default;
 	virtual void Data(const Key& key, JSON_event type, const char *data, size_t len, void *host) const = 0;
 	virtual Level Advance(const Key& key, void *obj) const = 0;
+	virtual void Finish(const Level& level, void *obj) const = 0;
 };
 
 class MockObjectHandler : public LevelVisitor
@@ -62,6 +63,10 @@ public:
 	Level Advance(const Key& key, void *) const override
 	{
 		return Level{key, nullptr, Instance()};
+	}
+	
+	void Finish(const Level& level, void *obj) const override
+	{
 	}
 	
 	static MockObjectHandler* Instance()
@@ -92,6 +97,10 @@ public :
 	{
 		return Level{key, nullptr, MockObjectHandler::Instance()};
 	}
+	
+	void Finish(const Level& level, void *obj) const override
+	{
+	}
 };
 
 template <typename Host>
@@ -100,7 +109,8 @@ class ComplexTypeBuilder : public LevelVisitor
 public:
 	virtual void OnData(const Key& key, JSON_event, const char *data, size_t len, Host *host) const = 0 ;
 	virtual Level OnAdvance(const Key& key, Host *host) const = 0;
-	
+	virtual void Finish(const Level& level, Host *host ) const = 0;
+
 	void Data(const Key& key, JSON_event ev, const char *data, size_t len, void *obj) const override
 	{
 		OnData(key, ev, data, len, static_cast<Host*>(obj));
@@ -109,6 +119,11 @@ public:
 	Level Advance(const Key& key, void *obj) const override
 	{
 		return this->OnAdvance(key, static_cast<Host*>(obj));
+	}
+	
+	void Finish(const Level& level, void *obj) const override
+	{
+		this->Finish(level, static_cast<Host*>(obj));
 	}
 };
 
@@ -141,6 +156,10 @@ public:
 	void OnData(const Key& key, JSON_event type, const char *data, size_t len, Host *h) const override
 	{
 		m_rec.Data(key, type, data, len, &(h->*m_mem));
+	}
+	
+	void Finish(const Level& level, Host *host) const override
+	{
 	}
 	
 private:
@@ -219,7 +238,11 @@ public :
 		return i != m_obj_act.end() ?
 			i->second->OnAdvance(key, host) : mock ;
 	}
-	
+
+	void Finish(const Level& level, Host *host) const override
+	{
+	}
+
 private:
 	using MemBase	= ComplexTypeBuilder<Host>;
 	using ObjMap	= std::map<Key, std::shared_ptr<const MemBase>> ;

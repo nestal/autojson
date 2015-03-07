@@ -83,6 +83,7 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *o
 		case JSON_array_end:
 			assert(!m_stack.empty());
 			m_key = m_stack.back().key;
+			m_stack.back().rec->Finish(m_stack.back(), m_stack.back().obj);
 			m_stack.pop_back();
 			FinishKey();
 			break;

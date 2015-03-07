@@ -77,6 +77,10 @@ public:
 		return Level{key, &host->back(), m_visitor.get()};
 	}
 
+	void Finish(const Level& level, HostType *host) const override
+	{
+	}
+
 private:
 	std::shared_ptr<const LevelVisitor>	m_visitor;
 };
