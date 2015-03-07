@@ -56,6 +56,7 @@ private:
 	void Callback(JSON_event type, const char *data, size_t len, void *context);
 
 	void FinishKey();
+	Level Next() const ;
 	
 private :
 	const LevelVisitor		*m_root;

@@ -55,30 +55,33 @@ public:
 
 	}
 
-	void OnData(const Key& key, JSON_event type, const char *data, size_t len, HostType *host) const override
+	void Data(const Level& current, JSON_event type, const char *data, size_t len) const override
 	{
-		assert(key);
-		assert(host);
+		assert(current.key);
+		assert(current.rec == this);
 		assert(m_visitor);
 
+		auto host = this->Self(current);
 		host->emplace_back();
 		
-		m_visitor->Data(key, type, data, len, &host->back());
+		m_visitor->Data(Level{current.key, &host->back(), m_visitor.get()}, type, data, len);
 	}
 	
-	Level OnAdvance(const Key& key, HostType *host) const override
+	Level Advance(const Level& current) const override
 	{
-		assert(key);
-		assert(host);
+		assert(current.key);
+		assert(current.rec == this);
 		assert(m_visitor);
 		
+		auto host = this->Self(current);
 		host->emplace_back();
 
-		return Level{key, &host->back(), m_visitor.get()};
+		return Level{current.key, &host->back(), m_visitor.get()};
 	}
 
-	void Finish(const Level& level, HostType *host) const override
+	void Finish(const Level& current) const override
 	{
+		assert(current.rec == this);
 	}
 
 private:

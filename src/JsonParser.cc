@@ -56,6 +56,12 @@ void JsonParser::Callback(void *pvcb, JSON_event type, const char *data, size_t 
 	cb->first->Callback(type, data, len, cb->second);
 }
 
+Level JsonParser::Next() const
+{
+	const Level& current = m_stack.back() ; 
+	return Level{m_key, current.obj, current.rec} ;
+}
+
 void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *obj)
 {
 	switch (type)
@@ -71,7 +77,9 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *o
 			if (m_stack.empty())
 				m_stack.push_back(Level{Key(), obj, m_root});
 			else
-				m_stack.push_back(m_stack.back().rec->Advance(m_key, m_stack.back().obj));
+			{
+				m_stack.push_back(m_stack.back().rec->Advance(Next()));
+			}
 			
 			m_key.Clear();
 			
@@ -83,7 +91,7 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *o
 		case JSON_array_end:
 			assert(!m_stack.empty());
 			m_key = m_stack.back().key;
-			m_stack.back().rec->Finish(m_stack.back(), m_stack.back().obj);
+			m_stack.back().rec->Finish(m_stack.back());
 			m_stack.pop_back();
 			FinishKey();
 			break;
@@ -95,7 +103,7 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *o
 		case JSON_false:
 			assert(!m_stack.empty());
 			assert(m_stack.back().rec);
-			m_stack.back().rec->Data(m_key, type, data, len, m_stack.back().obj);
+			m_stack.back().rec->Data(Next(), type, data, len);
 			FinishKey();
 			break;
 

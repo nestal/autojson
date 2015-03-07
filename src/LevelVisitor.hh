@@ -51,22 +51,24 @@ class LevelVisitor
 {
 public:
 	virtual ~LevelVisitor() = default;
-	virtual void Data(const Key& key, JSON_event type, const char *data, size_t len, void *host) const = 0;
-	virtual Level Advance(const Key& key, void *obj) const = 0;
-	virtual void Finish(const Level& level, void *obj) const = 0;
+	virtual void Data(const Level& current, JSON_event type, const char *data, size_t len) const = 0;
+	virtual Level Advance(const Level& current) const = 0;
+	virtual void Finish(const Level& current) const = 0;
 };
 
 class MockObjectHandler : public LevelVisitor
 {
 public:
-	void Data(const Key&, JSON_event, const char*, size_t, void*) const override {}
-	Level Advance(const Key& key, void *) const override
+	void Data(const Level&, JSON_event, const char*, size_t) const override {}
+	Level Advance(const Level& current) const override
 	{
-		return Level{key, nullptr, Instance()};
+		assert(current.rec == this);
+		return Level{current.key, nullptr, Instance()};
 	}
 	
-	void Finish(const Level& level, void *obj) const override
+	void Finish(const Level& current) const override
 	{
+		assert(current.rec == this);
 	}
 	
 	static MockObjectHandler* Instance()
@@ -88,18 +90,21 @@ public :
 	SimpleTypeBuilder(SimpleTypeBuilder&&) = default;
 #endif
 
-	void Data(const Key& key, JSON_event, const char *data, size_t len, void *obj) const override
+	void Data(const Level& current, JSON_event, const char *data, size_t len) const override
 	{
-		*static_cast<T*>(obj) = lexical_cast<T>(data, len);
+		assert(current.rec == this);
+		*static_cast<T*>(current.obj) = lexical_cast<T>(data, len);
 	}
 	
-	Level Advance(const Key& key, void *obj) const override
+	Level Advance(const Level& current) const override
 	{
-		return Level{key, nullptr, MockObjectHandler::Instance()};
+		assert(current.rec == this);
+		return Level{current.key, nullptr, MockObjectHandler::Instance()};
 	}
 	
-	void Finish(const Level& level, void *obj) const override
+	void Finish(const Level& current) const override
 	{
+		assert(current.rec == this);
 	}
 };
 
@@ -107,23 +112,31 @@ template <typename Host>
 class ComplexTypeBuilder : public LevelVisitor
 {
 public:
-	virtual void OnData(const Key& key, JSON_event, const char *data, size_t len, Host *host) const = 0 ;
+/*	virtual void OnData(const Key& key, JSON_event, const char *data, size_t len, Host *host) const = 0 ;
 	virtual Level OnAdvance(const Key& key, Host *host) const = 0;
 	virtual void Finish(const Level& level, Host *host ) const = 0;
 
-	void Data(const Key& key, JSON_event ev, const char *data, size_t len, void *obj) const override
+	void Data(const Level& current, JSON_event ev, const char *data, size_t len) const override
 	{
-		OnData(key, ev, data, len, static_cast<Host*>(obj));
+		assert(current.rec == this);
+		OnData(current.key, ev, data, len, static_cast<Host*>(current.obj));
 	}
 	
-	Level Advance(const Key& key, void *obj) const override
+	Level Advance(const Level& current) const override
 	{
-		return this->OnAdvance(key, static_cast<Host*>(obj));
+		assert(current.rec == this);
+		return this->OnAdvance(current.key, static_cast<Host*>(current.obj));
 	}
 	
-	void Finish(const Level& level, void *obj) const override
+	void Finish(const Level& current) const override
 	{
-		this->Finish(level, static_cast<Host*>(obj));
+		this->Finish(current, static_cast<Host*>(current.obj));
+	}*/
+
+	static Host* Self(const Level& current)
+	{
+		assert(current.obj);
+		return static_cast<Host*>(current.obj);
 	}
 };
 
@@ -148,18 +161,21 @@ public:
 	
 	MemberBuilder(const MemberBuilder&) = default;
 	
-	Level OnAdvance(const Key& key, Host *h) const override
+	Level Advance(const Level& current) const override
 	{
-		return Level{key, &(h->*m_mem), &m_rec};
+		return Level{current.key, &(this->Self(current)->*m_mem), &m_rec};
 	}
 	
-	void OnData(const Key& key, JSON_event type, const char *data, size_t len, Host *h) const override
+	void Data(const Level& current, JSON_event type, const char *data, size_t len) const override
 	{
-		m_rec.Data(key, type, data, len, &(h->*m_mem));
+		m_rec.Data(
+			Level{current.key, &(this->Self(current)->*m_mem), &m_rec},
+			type, data, len);
 	}
 	
-	void Finish(const Level& level, Host *host) const override
+	void Finish(const Level& current) const override
 	{
+		assert(current.rec == this);
 	}
 	
 private:
@@ -217,30 +233,31 @@ public :
 		m_obj_act.emplace(key, std::make_shared<MemberBuilder<Host,T,Builder>>(rec, mem));
 	}
 	
-	void OnData(const Key& key, JSON_event type, const char *data, size_t len, Host *host) const override
+	void Data(const Level& current, JSON_event type, const char *data, size_t len) const override
 	{
-		assert(key);
-		assert(host);
+		assert(current.key);
+		assert(current.rec == this);
 		
-		auto i = m_obj_act.find(key);
+		auto i = m_obj_act.find(current.key);
 		if (i != m_obj_act.end())
-			i->second->OnData(key, type, data, len, host);
+			i->second->Data(current, type, data, len);
 	}
 	
-	Level OnAdvance(const Key& key, Host *host) const override
+	Level Advance(const Level& current) const override
 	{
-		assert(key);
-		assert(host);
+		assert(current.key);
+		assert(current.rec == this);
 		
-		static const Level mock{ key, nullptr, MockObjectHandler::Instance() };
+		Level mock{ current.key, nullptr, MockObjectHandler::Instance() };
 
-		auto i = m_obj_act.find(key);
+		auto i = m_obj_act.find(current.key);
 		return i != m_obj_act.end() ?
-			i->second->OnAdvance(key, host) : mock ;
+			i->second->Advance(current) : mock ;
 	}
 
-	void Finish(const Level& level, Host *host) const override
+	void Finish(const Level& current) const override
 	{
+		assert(current.rec == this);
 	}
 
 private:
