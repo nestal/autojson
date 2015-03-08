@@ -22,6 +22,7 @@
 #define EXCEPTION_HH_INCLUDED
 
 #include <stdexcept>
+#include <typeindex>
 
 namespace json {
 
@@ -34,6 +35,11 @@ public :
 struct ParseError : public Exception
 {
 	ParseError() ;
+};
+
+struct TypeMismatch : public Exception
+{
+	TypeMismatch(const std::type_index& expect, const std::type_index& actual);
 };
 
 } // end of namespace

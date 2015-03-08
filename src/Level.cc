@@ -23,27 +23,34 @@
 
 namespace json {
 
+Level::Level(const LevelVisitor *rec) :
+	m_obj(nullptr),
+	m_rec(rec),
+	m_type(typeid(void))
+{
+}
+	
 Level::Level(const ::json::Key& key) :
 	m_key(key),
 	m_obj(nullptr),
-	m_rec(MockObjectHandler::Instance())
+	m_rec(MockObjectHandler::Instance()),
+	m_type(typeid(void))
 {
 }
-
 	
 const ::json::Key& Level::Key() const
 {
 	return m_key;
 }
 
-void* Level::Host() const
-{
-	return m_obj;
-}
-
 const LevelVisitor* Level::Rec() const
 {
 	return m_rec;
+}
+
+void Level::SetKey(const ::json::Key& key)
+{
+	m_key = key;
 }
 
 } // end of namespace

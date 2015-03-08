@@ -63,7 +63,7 @@ public:
 		assert(current.Rec() == this);
 		assert(m_visitor);
 
-		auto host = this->Self(current);
+		auto host = current.Host<HostType>();
 		host->emplace_back();
 		
 		m_visitor->Data(Level{current.Key(), &host->back(), m_visitor.get()}, type, data, len);
@@ -75,7 +75,7 @@ public:
 		assert(current.Rec() == this);
 		assert(m_visitor);
 		
-		auto host = this->Self(current);
+		auto host = current.Host<HostType>();
 		host->emplace_back();
 
 		return Level{current.Key(), &host->back(), m_visitor.get()};

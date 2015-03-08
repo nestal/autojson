@@ -19,6 +19,7 @@
 */
 
 #include "Exception.hh"
+#include <sstream>
 
 namespace json {
 
@@ -28,6 +29,16 @@ Exception::Exception(const std::string& errmsg ) :
 }
 
 ParseError::ParseError() : Exception("parse error")
+{
+}
+
+TypeMismatch::TypeMismatch(const std::type_index& expect, const std::type_index& actual) :
+	Exception([&]{
+		std::ostringstream oss;
+		oss << "type mismatch: expect(" << expect.name() << ") "
+			<< "actual: (" << actual.name() << ")";
+		return oss.str();
+	}())
 {
 }
 

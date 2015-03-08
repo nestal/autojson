@@ -46,21 +46,25 @@ public :
 	JsonParser& operator=(const JsonParser&) = delete;
 
 	// parsing functions
-	void Parse(const char *data, size_t len, void *obj = nullptr);
+	template <typename Host>
+	void Parse(const char *data, size_t len, Host *host)
+	{
+		m_root.SetHost(host);
+		Parse(data, len);
+	}
 	void Done();
 	
 private:
-	typedef std::pair<JsonParser*, void*> CB;
-	
-	static void Callback(void *pvcb, JSON_event type, const char *data, size_t len);
-	void Callback(JSON_event type, const char *data, size_t len, void *context);
+	void Parse(const char *data, size_t len);
+	static void Callback(void *pvthis, JSON_event type, const char *data, size_t len);
+	void Callback(JSON_event type, const char *data, size_t len);
 
 	void FinishKey();
 	Level Next() const ;
 	
 private :
-	const LevelVisitor		*m_root;
-	JSON_checker 			m_json;
+	Level			m_root;
+	JSON_checker 	m_json;
 	
 	// states
 	Key					m_key;

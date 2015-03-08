@@ -22,7 +22,11 @@
 #define LEVEL_HH_INCLUDED
 
 #include "Key.hh"
+#include "Exception.hh"
+
 #include <cassert>
+#include <typeindex>
+#include <iostream>
 
 namespace json {
 
@@ -33,25 +37,46 @@ class LevelVisitor;
 class Level
 {
 public :
-	template <typename Host>
-	Level(const ::json::Key& key, Host *host, const LevelVisitor *rec) :
+	template <typename HostType>
+	Level(const ::json::Key& key, HostType *host, const LevelVisitor *rec) :
 		m_key(key),
 		m_obj(host),
-		m_rec(rec)
+		m_rec(rec),
+		m_type(typeid(HostType))
 	{
-//		assert(m_obj);
+		assert(m_obj);
 	}
 	
 	explicit Level(const ::json::Key& key);
+	explicit Level(const LevelVisitor *rec);
+	
+	Level(const Level&) = default;
 
+	void SetKey(const ::json::Key& key);
 	const ::json::Key& Key() const;
-	void* Host() const;
 	const LevelVisitor* Rec() const;
+
+	template <typename HostType>
+	void SetHost(HostType *host)
+	{
+		m_obj  = host;
+		m_type = typeid(HostType);
+	}
+	
+	template <typename HostType>
+	HostType* Host() const
+	{
+		if (m_type == typeid(HostType))
+			return static_cast<HostType*>(m_obj);
+	
+		throw TypeMismatch(typeid(HostType), m_type);
+	}
 	
 private :
 	::json::Key			m_key;
 	void				*m_obj;	//!< The object being built by JSON
 	const LevelVisitor	*m_rec;	//!< The Reactor that builds the members of the object
+	std::type_index		m_type;
 };
 
 } // end of namespace

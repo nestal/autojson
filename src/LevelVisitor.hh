@@ -78,7 +78,7 @@ public :
 	void Data(const Level& current, JSON_event, const char *data, size_t len) const override
 	{
 		assert(current.Rec() == this);
-		*static_cast<T*>(current.Host()) = lexical_cast<T>(data, len);
+		*current.Host<T>() = lexical_cast<T>(data, len);
 	}
 	
 	Level Advance(const Level& current) const override
@@ -97,11 +97,6 @@ template <typename Host>
 class ComplexTypeBuilder : public LevelVisitor
 {
 public:
-	static Host* Self(const Level& current)
-	{
-		assert(current.Host());
-		return static_cast<Host*>(current.Host());
-	}
 };
 
 /*!	Builds a member of a class with the given builder.
@@ -127,13 +122,13 @@ public:
 	
 	Level Advance(const Level& current) const override
 	{
-		return Level{current.Key(), &(this->Self(current)->*m_mem), &m_rec};
+		return Level{current.Key(), &(current.Host<Host>()->*m_mem), &m_rec};
 	}
 	
 	void Data(const Level& current, JSON_event type, const char *data, size_t len) const override
 	{
 		m_rec.Data(
-			Level{current.Key(), &(this->Self(current)->*m_mem), &m_rec},
+			Level{current.Key(), &(current.Host<Host>()->*m_mem), &m_rec},
 			type, data, len);
 	}
 	

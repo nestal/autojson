@@ -41,28 +41,28 @@ void JsonParser::Done()
 	m_json = ::new_JSON_checker(5);
 }
 
-void JsonParser::Parse(const char *data, size_t len, void *obj)
+void JsonParser::Parse(const char *data, size_t len)
 {
-	CB cb = CB(this, obj);
-	if (::JSON_checker_char(m_json, data, len, &JsonParser::Callback, &cb) == JSON_error)
+	if (::JSON_checker_char(m_json, data, len, &JsonParser::Callback, this) == JSON_error)
 		throw ParseError() ;
 }
 
-void JsonParser::Callback(void *pvcb, JSON_event type, const char *data, size_t len)
+void JsonParser::Callback(void *pvthis, JSON_event type, const char *data, size_t len)
 {
-	CB *cb = reinterpret_cast<CB*>(pvcb);
-	assert(cb != nullptr);
-	assert(cb->first != nullptr);
-	cb->first->Callback(type, data, len, cb->second);
+	JsonParser *pthis = reinterpret_cast<JsonParser*>(pvthis);
+	assert(pthis);
+	
+	pthis->Callback(type, data, len);
 }
 
 Level JsonParser::Next() const
 {
-	const Level& current = m_stack.back() ; 
-	return Level{m_key, current.Host(), current.Rec()} ;
+	Level next = m_stack.back() ; 
+	next.SetKey(m_key);
+	return next ;
 }
 
-void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *obj)
+void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 {
 	switch (type)
 	{
@@ -75,7 +75,7 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len, void *o
 		case JSON_array_start:
 			// first call
 			if (m_stack.empty())
-				m_stack.push_back(Level{Key(), obj, m_root});
+				m_stack.push_back(m_root);
 			else
 			{
 				m_stack.push_back(m_stack.back().Rec()->Advance(Next()));
