@@ -21,7 +21,7 @@
 #ifndef VECTORBUILDER_HH_INCLUDED
 #define VECTORBUILDER_HH_INCLUDED
 
-#include "LevelVisitor.hh"
+#include "TypeBuilder.hh"
 
 #include <cassert>
 #include <memory>
@@ -36,7 +36,7 @@ template <
 	template <typename, typename> class Container=std::vector,
 	typename A=std::allocator<T>
 >
-class VectorBuilder : public ComplexTypeBuilder<Container<T,A>>
+class VectorBuilder : public TypeBuilder<Container<T,A>>
 {
 public:
 	using HostType = Container<T,A>;
@@ -53,7 +53,7 @@ public:
 	{
 		assert(m_visitor);
 		static_assert(
-			std::is_base_of<ComplexTypeBuilder<T>, Builder>::value,
+			std::is_base_of<TypeBuilder<T>, Builder>::value,
 			"member type and visitor does not match");
 	}
 

@@ -21,7 +21,7 @@
 #ifndef JSONBUILDER_HH_INCLUDED
 #define JSONBUILDER_HH_INCLUDED
 
-#include "LevelVisitor.hh"
+#include "TypeBuilder.hh"
 
 #include <initializer_list>
 #include <map>
@@ -32,7 +32,7 @@ namespace json {
 /**	Brief description of JsonBuilder
 */
 template <typename Host>
-class JsonBuilder : public ComplexTypeBuilder<Host>
+class JsonBuilder : public TypeBuilder<Host>
 {
 public :
 	JsonBuilder() = default;
@@ -72,11 +72,11 @@ public :
 	template <typename T, class Builder=JsonBuilder<T>>
 	void Add(const Key& key, T Host::*mem, const Builder& rec)
 	{
-		// Since the type of the member variable is T, we need a ComplexTypeBuilder<T>
+		// Since the type of the member variable is T, we need a TypeBuilder<T>
 		// to build it. Therefore, the Builder must inherit ComplexTypeBuilder<T>. It
 		// cannot be SimpleTextBuilder.
 		static_assert(
-			std::is_base_of<ComplexTypeBuilder<T>, Builder>::value,
+			std::is_base_of<TypeBuilder<T>, Builder>::value,
 			"member type and visitor does not match");
 		m_obj_act.emplace(key, std::make_shared<MemberBuilder<Host,T,Builder>>(rec, mem));
 	}
@@ -109,7 +109,7 @@ public :
 	}
 
 private:
-	using MemBase	= ComplexTypeBuilder<Host>;
+	using MemBase	= TypeBuilder<Host>;
 	using ObjMap	= std::map<Key, std::shared_ptr<const MemBase>> ;
 	ObjMap	m_obj_act;
 };

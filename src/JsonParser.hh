@@ -23,7 +23,7 @@
 #define JSONPARSER_HH_INCLUDED
 
 #include "JSON_checker.h"
-#include "LevelVisitor.hh"
+#include "TypeBuilder.hh"
 
 #include "Exception.hh"
 

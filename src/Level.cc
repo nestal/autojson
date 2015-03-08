@@ -20,6 +20,7 @@
 
 #include "Level.hh"
 #include "LevelVisitor.hh"
+#include "TypeBuilder.hh"
 
 namespace json {
 

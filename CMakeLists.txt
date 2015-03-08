@@ -42,6 +42,7 @@ add_library(autojson
 	src/JVar.cc
 	src/Type.hh
 	src/LevelVisitor.hh
+	src/TypeBuilder.hh
 	src/VectorBuilder.hh
 )
 
