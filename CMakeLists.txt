@@ -36,6 +36,9 @@ add_library(autojson
 	src/Exception.cc
 	src/Key.hh
 	src/Key.cc
+	src/JVar.hh
+	src/JVar.cc
+	src/Type.hh
 	src/LevelVisitor.hh
 	src/VectorBuilder.hh
 )

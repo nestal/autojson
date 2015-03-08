@@ -112,27 +112,6 @@ template <typename Host>
 class ComplexTypeBuilder : public LevelVisitor
 {
 public:
-/*	virtual void OnData(const Key& key, JSON_event, const char *data, size_t len, Host *host) const = 0 ;
-	virtual Level OnAdvance(const Key& key, Host *host) const = 0;
-	virtual void Finish(const Level& level, Host *host ) const = 0;
-
-	void Data(const Level& current, JSON_event ev, const char *data, size_t len) const override
-	{
-		assert(current.rec == this);
-		OnData(current.key, ev, data, len, static_cast<Host*>(current.obj));
-	}
-	
-	Level Advance(const Level& current) const override
-	{
-		assert(current.rec == this);
-		return this->OnAdvance(current.key, static_cast<Host*>(current.obj));
-	}
-	
-	void Finish(const Level& current) const override
-	{
-		this->Finish(current, static_cast<Host*>(current.obj));
-	}*/
-
 	static Host* Self(const Level& current)
 	{
 		assert(current.obj);
@@ -181,6 +160,13 @@ public:
 private:
 	Builder		m_rec;
 	T Host::*	m_mem;
+};
+
+template <typename Host, typename T, typename R=void>
+class MemberCaller : public ComplexTypeBuilder<Host>
+{
+public:
+	using Func = T (Host::*)(T);
 };
 
 template <typename Host>
