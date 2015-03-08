@@ -36,6 +36,8 @@ add_library(autojson
 	src/Exception.cc
 	src/Key.hh
 	src/Key.cc
+	src/Level.hh
+	src/Level.cc
 	src/JVar.hh
 	src/JVar.cc
 	src/Type.hh

@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 
 #include "JsonParser.hh"
+#include "JsonBuilder.hh"
 #include "LevelVisitor.hh"
 #include "VectorBuilder.hh"
 

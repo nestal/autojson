@@ -24,9 +24,12 @@
 #include "LevelVisitor.hh"
 
 #include <cassert>
+#include <memory>
 
 namespace json {
 
+template <typename Host> class JsonBuilder;
+	
 // host is a vector of T
 template <
 	typename T,
@@ -46,42 +49,41 @@ public:
 	~VectorBuilder() override = default;
 	
 	template <typename Builder=JsonBuilder<T>>
-	VectorBuilder(const Builder& v = Builder()) : m_visitor(std::make_shared<Builder>(v))
+	VectorBuilder(const Builder& v) : m_visitor(std::make_shared<Builder>(v))
 	{
 		assert(m_visitor);
 		static_assert(
 			std::is_base_of<ComplexTypeBuilder<T>, Builder>::value,
 			"member type and visitor does not match");
-
 	}
 
 	void Data(const Level& current, JSON_event type, const char *data, size_t len) const override
 	{
-		assert(current.key);
-		assert(current.rec == this);
+		assert(current.Key());
+		assert(current.Rec() == this);
 		assert(m_visitor);
 
 		auto host = this->Self(current);
 		host->emplace_back();
 		
-		m_visitor->Data(Level{current.key, &host->back(), m_visitor.get()}, type, data, len);
+		m_visitor->Data(Level{current.Key(), &host->back(), m_visitor.get()}, type, data, len);
 	}
 	
 	Level Advance(const Level& current) const override
 	{
-		assert(current.key);
-		assert(current.rec == this);
+		assert(current.Key());
+		assert(current.Rec() == this);
 		assert(m_visitor);
 		
 		auto host = this->Self(current);
 		host->emplace_back();
 
-		return Level{current.key, &host->back(), m_visitor.get()};
+		return Level{current.Key(), &host->back(), m_visitor.get()};
 	}
 
 	void Finish(const Level& current) const override
 	{
-		assert(current.rec == this);
+		assert(current.Rec() == this);
 	}
 
 private:

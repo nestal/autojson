@@ -44,8 +44,8 @@ JVar::JVar(const JVar& val) : m_type(val.m_type), m_raw(val.m_raw)
 	switch (m_type)
 	{
 	case json::Type::string:	m_raw.string = new std::string(*val.m_raw.string);	break;
-	case json::Type::array:	m_raw.array	 = new Array(*val.m_raw.array);			break;
-	case json::Type::hash:	m_raw.hash	 = new Hash(*val.m_raw.hash);			break;
+	case json::Type::array:		m_raw.array	 = new Array(*val.m_raw.array);			break;
+	case json::Type::hash:		m_raw.hash	 = new Hash(*val.m_raw.hash);			break;
 	default:	break;
 	}
 }
