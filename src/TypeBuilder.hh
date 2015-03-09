@@ -70,7 +70,7 @@ public :
 	void Data(const Level& current, JSON_event, const char *data, size_t len) const override
 	{
 		assert(current.Rec() == this);
-		*current.Host<T>() = lexical_cast<T>(data, len);
+		*current.Host<T>() = LexicalCast<T>(data, len);
 	}
 	
 	Level Advance(const Level& current) const override

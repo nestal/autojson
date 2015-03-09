@@ -18,38 +18,25 @@
 	02110-1301, USA.
 */
 
-#ifndef LEXICALCAST_HH_INCLUDED
-#define LEXICALCAST_HH_INCLUDED
+#include "LexicalCast.hh"
 
-#include <string>
-#include <cstdint>
+#include "Exception.hh"
+#include "TypeBuilder.hh"
 
-namespace json {
+#include <gtest/gtest.h>
 
-template <typename Dest>
-Dest LexicalCast(const char *str, std::size_t len);
+using namespace json;
 
-template <>
-std::int32_t LexicalCast(const char *str, std::size_t len);
+TEST(Cast_integer, LevelTest)
+{
+	ASSERT_EQ(100,  LexicalCast<int>("100", 3) );
+	ASSERT_EQ(100L, LexicalCast<long>("100", 3) );
+	ASSERT_EQ(123UL, LexicalCast<unsigned long>("123", 3) );
+}
 
-template <>
-std::int64_t LexicalCast(const char *str, std::size_t len);
-
-template <>
-std::uint32_t LexicalCast(const char *str, std::size_t len);
-
-template <>
-std::uint64_t LexicalCast(const char *str, std::size_t len);
-
-template <>
-double LexicalCast(const char *str, std::size_t len);
-
-template <>
-bool LexicalCast(const char *str, std::size_t len);
-
-template <>
-std::string LexicalCast(const char *str, std::size_t len);
-
-} // end of namespace
-
-#endif
+TEST(Cast_double, LevelTest)
+{
+	ASSERT_EQ(100.0,   LexicalCast<double>("100", 3) );
+	ASSERT_EQ(101.0,   LexicalCast<double>("101", 3) );
+	ASSERT_EQ(123.123, LexicalCast<double>("123.123", 7) );
+}

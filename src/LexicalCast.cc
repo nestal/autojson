@@ -25,43 +25,43 @@
 namespace json {
 
 template <>
-std::int32_t lexical_cast(const char *str, std::size_t len)
+std::int32_t LexicalCast(const char *str, std::size_t len)
 {
 	return str != nullptr ? std::atoi(std::string(str, len).c_str()) : 0;
 }
 
 template <>
-std::uint32_t lexical_cast(const char *str, std::size_t len)
+std::uint32_t LexicalCast(const char *str, std::size_t len)
 {
 	return str != nullptr ? static_cast<std::uint32_t>(std::atoi(std::string(str, len).c_str())) : 0U;
 }
 
 template <>
-std::int64_t lexical_cast(const char *str, std::size_t len)
+std::int64_t LexicalCast(const char *str, std::size_t len)
 {
 	return str != nullptr ? std::strtoll(std::string(str, len).c_str(), nullptr, 10) : 0ULL;
 }
 
 template <>
-std::uint64_t lexical_cast(const char *str, std::size_t len)
+std::uint64_t LexicalCast(const char *str, std::size_t len)
 {
 	return str != nullptr ? std::strtoull(std::string(str, len).c_str(), nullptr, 10) : 0ULL;
 }
 
 template <>
-double lexical_cast(const char *str, std::size_t len)
+double LexicalCast(const char *str, std::size_t len)
 {
 	return str != nullptr ? std::atof(std::string(str, len).c_str()) : 0.0;
 }
 
 template <>
-std::string lexical_cast(const char *str, std::size_t len)
+std::string LexicalCast(const char *str, std::size_t len)
 {
 	return str != nullptr ? std::string(str, len) : "";
 }
 
 template <>
-bool lexical_cast(const char *str, std::size_t len)
+bool LexicalCast(const char *str, std::size_t len)
 {
 	return str != nullptr && std::string(str, len) == "true" ;
 }

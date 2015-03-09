@@ -18,38 +18,31 @@
 	02110-1301, USA.
 */
 
-#ifndef LEXICALCAST_HH_INCLUDED
-#define LEXICALCAST_HH_INCLUDED
+#include "Level.hh"
 
-#include <string>
-#include <cstdint>
+#include "Exception.hh"
+#include "TypeBuilder.hh"
 
-namespace json {
+#include <gtest/gtest.h>
 
-template <typename Dest>
-Dest LexicalCast(const char *str, std::size_t len);
+using namespace json;
 
-template <>
-std::int32_t LexicalCast(const char *str, std::size_t len);
+TEST(Get_pointer_with_the_wrong_type_will_throw, LevelTest)
+{
+	SimpleTypeBuilder<int> iv;
+	
+	int idx = 0;
+	Level sub(Key(1), &idx, &iv);
+	
+	ASSERT_THROW(sub.Host<double>(), TypeMismatch);
+}
 
-template <>
-std::int64_t LexicalCast(const char *str, std::size_t len);
-
-template <>
-std::uint32_t LexicalCast(const char *str, std::size_t len);
-
-template <>
-std::uint64_t LexicalCast(const char *str, std::size_t len);
-
-template <>
-double LexicalCast(const char *str, std::size_t len);
-
-template <>
-bool LexicalCast(const char *str, std::size_t len);
-
-template <>
-std::string LexicalCast(const char *str, std::size_t len);
-
-} // end of namespace
-
-#endif
+TEST(Get_pointer_with_the_right_type_will_return_it, LevelTest)
+{
+	SimpleTypeBuilder<std::string> iv;
+	
+	std::string test = "abc";
+	Level sub(Key(1), &test, &iv);
+	
+	ASSERT_EQ("abc", *sub.Host<std::string>());
+}

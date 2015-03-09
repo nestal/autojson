@@ -65,6 +65,8 @@ if (GTEST_FOUND)
 		test/JsonTest.cc
 		test/ParserTest.cc
 		test/ArrayTest.cc
+		test/LevelTest.cc
+		test/LexicalCastTest.cc
 	)
 	target_link_libraries(unittest autojson ${GTEST_BOTH_LIBRARIES})
 endif (GTEST_FOUND)
