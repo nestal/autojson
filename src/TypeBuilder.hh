@@ -21,7 +21,7 @@
 #ifndef TYPEBUILDER_HH_INCLUDED
 #define TYPEBUILDER_HH_INCLUDED
 
-#include "LevelVisitor.hh"
+#include "JsonVisitor.hh"
 
 #include "Key.hh"
 #include "Cursor.hh"
@@ -33,7 +33,7 @@
 
 namespace json {
 
-class MockObjectHandler : public LevelVisitor
+class MockObjectHandler : public JsonVisitor
 {
 public:
 	void Data(const Cursor&, JSON_event, const char*, size_t) const override {}
@@ -70,7 +70,7 @@ public :
 	void Data(const Cursor& current, JSON_event, const char *data, size_t len) const override
 	{
 		assert(current.Rec() == this);
-		*current.Host<T>() = LexicalCast<T>(data, len);
+		*current.Target<T>() = LexicalCast<T>(data, len);
 	}
 	
 	Cursor Advance(const Cursor& current) const override
@@ -108,13 +108,13 @@ public:
 	
 	Cursor Advance(const Cursor& current) const override
 	{
-		return Cursor{current.Key(), &(current.Host<Host>()->*m_mem), &m_rec};
+		return Cursor{current.Key(), &(current.Target<Host>()->*m_mem), &m_rec};
 	}
 	
 	void Data(const Cursor& current, JSON_event type, const char *data, size_t len) const override
 	{
 		m_rec.Data(
-			Cursor{current.Key(), &(current.Host<Host>()->*m_mem), &m_rec},
+			Cursor{current.Key(), &(current.Target<Host>()->*m_mem), &m_rec},
 			type, data, len);
 	}
 	

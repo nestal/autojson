@@ -96,7 +96,7 @@ public :
 		assert(current.Key());
 		assert(current.Rec() == this);
 		
-		Cursor mock{ current.Key()};
+		Cursor mock{current.Key()};
 
 		auto i = m_obj_act.find(current.Key());
 		return i != m_obj_act.end() ?

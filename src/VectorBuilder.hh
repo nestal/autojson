@@ -63,7 +63,7 @@ public:
 		assert(current.Rec() == this);
 		assert(m_visitor);
 
-		auto host = current.Host<HostType>();
+		auto host = current.Target<HostType>();
 		host->emplace_back();
 		
 		m_visitor->Data(Cursor{current.Key(), &host->back(), m_visitor.get()}, type, data, len);
@@ -75,7 +75,7 @@ public:
 		assert(current.Rec() == this);
 		assert(m_visitor);
 		
-		auto host = current.Host<HostType>();
+		auto host = current.Target<HostType>();
 		host->emplace_back();
 
 		return Cursor{current.Key(), &host->back(), m_visitor.get()};
@@ -87,7 +87,7 @@ public:
 	}
 
 private:
-	std::shared_ptr<const LevelVisitor>	m_visitor;
+	std::shared_ptr<const JsonVisitor>	m_visitor;
 };
 
 } // end of namespace

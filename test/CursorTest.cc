@@ -34,7 +34,7 @@ TEST(Get_pointer_with_the_wrong_type_will_throw, CursorTest)
 	int idx = 0;
 	Cursor sub(Key(1), &idx, &iv);
 	
-	ASSERT_THROW(sub.Host<double>(), TypeMismatch);
+	ASSERT_THROW(sub.Target<double>(), TypeMismatch);
 }
 
 TEST(Get_pointer_with_the_right_type_will_return_it, CursorTest)
@@ -44,5 +44,5 @@ TEST(Get_pointer_with_the_right_type_will_return_it, CursorTest)
 	std::string test = "abc";
 	Cursor sub(Key(1), &test, &iv);
 	
-	ASSERT_EQ("abc", *sub.Host<std::string>());
+	ASSERT_EQ("abc", *sub.Target<std::string>());
 }

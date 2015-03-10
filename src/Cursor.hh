@@ -30,31 +30,37 @@
 
 namespace json {
 
-class LevelVisitor;
+class JsonVisitor;
 
-/**	Contain information about the current
+/**	A Cursor is an object that points to a specific location within a hash or array, as
+	well as a pointer to the current C++ object being built.
+
+	Actually, the Cursor class contains 3 things:
+	- The key which the cursor is pointing to, inside a hash or array.
+	- The C++ object being built. It's called Host().
+	- The JsonVisitor that is suppose to build the host.
 */
 class Cursor
 {
 public :
-	template <typename HostType>
-	Cursor(const ::json::Key& key, HostType *host, const LevelVisitor *rec) :
+	template <typename TargetType>
+	Cursor(const ::json::Key& key, TargetType *target, const JsonVisitor *rec) :
 		m_key(key),
-		m_obj(host),
+		m_obj(target),
 		m_rec(rec),
-		m_type(typeid(HostType))
+		m_type(typeid(TargetType))
 	{
 		assert(m_obj);
 	}
 	
 	explicit Cursor(const ::json::Key& key);
-	explicit Cursor(const LevelVisitor *rec);
+	explicit Cursor(const JsonVisitor *rec);
 	
 	Cursor(const Cursor&) = default;
 
 	void SetKey(const ::json::Key& key);
 	const ::json::Key& Key() const;
-	const LevelVisitor* Rec() const;
+	const JsonVisitor* Rec() const;
 
 	template <typename HostType>
 	void SetHost(HostType *host)
@@ -63,19 +69,19 @@ public :
 		m_type = typeid(HostType);
 	}
 	
-	template <typename HostType>
-	HostType* Host() const
+	template <typename TargetType>
+	TargetType* Target() const
 	{
-		if (m_type == typeid(HostType))
-			return static_cast<HostType*>(m_obj);
+		if (m_type == typeid(TargetType))
+			return static_cast<TargetType*>(m_obj);
 	
-		throw TypeMismatch(typeid(HostType), m_type);
+		throw TypeMismatch(typeid(TargetType), m_type);
 	}
 	
 private :
 	::json::Key			m_key;
 	void				*m_obj;	//!< The object being built by JSON
-	const LevelVisitor	*m_rec;	//!< The Reactor that builds the members of the object
+	const JsonVisitor	*m_rec;	//!< The Reactor that builds the members of the object
 	std::type_index		m_type;
 };
 

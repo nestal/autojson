@@ -19,12 +19,12 @@
 */
 
 #include "Cursor.hh"
-#include "LevelVisitor.hh"
+#include "JsonVisitor.hh"
 #include "TypeBuilder.hh"
 
 namespace json {
 
-Cursor::Cursor(const LevelVisitor *rec) :
+Cursor::Cursor(const JsonVisitor *rec) :
 	m_obj(nullptr),
 	m_rec(rec),
 	m_type(typeid(void))
@@ -44,7 +44,7 @@ const ::json::Key& Cursor::Key() const
 	return m_key;
 }
 
-const LevelVisitor* Cursor::Rec() const
+const JsonVisitor* Cursor::Rec() const
 {
 	return m_rec;
 }

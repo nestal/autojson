@@ -22,7 +22,6 @@
 
 #include "JsonParser.hh"
 #include "JsonBuilder.hh"
-#include "LevelVisitor.hh"
 
 #include <iterator>
 #include <fstream>
