@@ -81,7 +81,7 @@ public :
 		m_obj_act.emplace(key, std::make_shared<MemberBuilder<Host,T,Builder>>(rec, mem));
 	}
 	
-	void Data(const Level& current, JSON_event type, const char *data, size_t len) const override
+	void Data(const Cursor& current, JSON_event type, const char *data, size_t len) const override
 	{
 		assert(current.Key());
 		assert(current.Rec() == this);
@@ -91,19 +91,19 @@ public :
 			i->second->Data(current, type, data, len);
 	}
 	
-	Level Advance(const Level& current) const override
+	Cursor Advance(const Cursor& current) const override
 	{
 		assert(current.Key());
 		assert(current.Rec() == this);
 		
-		Level mock{ current.Key()};
+		Cursor mock{ current.Key()};
 
 		auto i = m_obj_act.find(current.Key());
 		return i != m_obj_act.end() ?
 			i->second->Advance(current) : mock ;
 	}
 
-	void Finish(const Level& current) const override
+	void Finish(const Cursor& current) const override
 	{
 		assert(current.Rec() == this);
 	}

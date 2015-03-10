@@ -32,13 +32,13 @@ namespace json {
 
 class LevelVisitor;
 
-/**	Brief description of Level
+/**	Contain information about the current
 */
-class Level
+class Cursor
 {
 public :
 	template <typename HostType>
-	Level(const ::json::Key& key, HostType *host, const LevelVisitor *rec) :
+	Cursor(const ::json::Key& key, HostType *host, const LevelVisitor *rec) :
 		m_key(key),
 		m_obj(host),
 		m_rec(rec),
@@ -47,10 +47,10 @@ public :
 		assert(m_obj);
 	}
 	
-	explicit Level(const ::json::Key& key);
-	explicit Level(const LevelVisitor *rec);
+	explicit Cursor(const ::json::Key& key);
+	explicit Cursor(const LevelVisitor *rec);
 	
-	Level(const Level&) = default;
+	Cursor(const Cursor&) = default;
 
 	void SetKey(const ::json::Key& key);
 	const ::json::Key& Key() const;

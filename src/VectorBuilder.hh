@@ -57,7 +57,7 @@ public:
 			"member type and visitor does not match");
 	}
 
-	void Data(const Level& current, JSON_event type, const char *data, size_t len) const override
+	void Data(const Cursor& current, JSON_event type, const char *data, size_t len) const override
 	{
 		assert(current.Key());
 		assert(current.Rec() == this);
@@ -66,10 +66,10 @@ public:
 		auto host = current.Host<HostType>();
 		host->emplace_back();
 		
-		m_visitor->Data(Level{current.Key(), &host->back(), m_visitor.get()}, type, data, len);
+		m_visitor->Data(Cursor{current.Key(), &host->back(), m_visitor.get()}, type, data, len);
 	}
 	
-	Level Advance(const Level& current) const override
+	Cursor Advance(const Cursor& current) const override
 	{
 		assert(current.Key());
 		assert(current.Rec() == this);
@@ -78,10 +78,10 @@ public:
 		auto host = current.Host<HostType>();
 		host->emplace_back();
 
-		return Level{current.Key(), &host->back(), m_visitor.get()};
+		return Cursor{current.Key(), &host->back(), m_visitor.get()};
 	}
 
-	void Finish(const Level& current) const override
+	void Finish(const Cursor& current) const override
 	{
 		assert(current.Rec() == this);
 	}

@@ -36,8 +36,8 @@ add_library(autojson
 	src/Exception.cc
 	src/Key.hh
 	src/Key.cc
-	src/Level.hh
-	src/Level.cc
+	src/Cursor.hh
+	src/Cursor.cc
 	src/JVar.hh
 	src/JVar.cc
 	src/Type.hh
@@ -65,7 +65,8 @@ if (GTEST_FOUND)
 		test/JsonTest.cc
 		test/ParserTest.cc
 		test/ArrayTest.cc
-		test/LevelTest.cc
+		test/CursorTest.cc
+		test/JVarTest.cc
 		test/LexicalCastTest.cc
 	)
 	target_link_libraries(unittest autojson ${GTEST_BOTH_LIBRARIES})

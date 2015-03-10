@@ -60,15 +60,15 @@ private:
 	void Callback(JSON_event type, const char *data, size_t len);
 
 	void FinishKey();
-	Level Next() const ;
+	Cursor Next() const ;
 	
 private :
-	Level			m_root;
+	Cursor			m_root;
 	JSON_checker 	m_json;
 	
 	// states
 	Key					m_key;
-	std::vector<Level>	m_stack;
+	std::vector<Cursor>	m_stack;
 };
 
 } // end of namespace

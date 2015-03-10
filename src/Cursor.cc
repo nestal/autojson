@@ -1,6 +1,6 @@
 /*
 	autojson: A JSON parser base on the automaton provided by json.org
-	Copyright (C) 2014  Wan Wai Ho
+	Copyright (C) 2015  Wan Wai Ho
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -18,31 +18,40 @@
 	02110-1301, USA.
 */
 
-#include "Level.hh"
-
-#include "Exception.hh"
+#include "Cursor.hh"
+#include "LevelVisitor.hh"
 #include "TypeBuilder.hh"
 
-#include <gtest/gtest.h>
+namespace json {
 
-using namespace json;
-
-TEST(Get_pointer_with_the_wrong_type_will_throw, LevelTest)
+Cursor::Cursor(const LevelVisitor *rec) :
+	m_obj(nullptr),
+	m_rec(rec),
+	m_type(typeid(void))
 {
-	SimpleTypeBuilder<int> iv;
+}
 	
-	int idx = 0;
-	Level sub(Key(1), &idx, &iv);
+Cursor::Cursor(const ::json::Key& key) :
+	m_key(key),
+	m_obj(nullptr),
+	m_rec(MockObjectHandler::Instance()),
+	m_type(typeid(void))
+{
+}
 	
-	ASSERT_THROW(sub.Host<double>(), TypeMismatch);
+const ::json::Key& Cursor::Key() const
+{
+	return m_key;
 }
 
-TEST(Get_pointer_with_the_right_type_will_return_it, LevelTest)
+const LevelVisitor* Cursor::Rec() const
 {
-	SimpleTypeBuilder<std::string> iv;
-	
-	std::string test = "abc";
-	Level sub(Key(1), &test, &iv);
-	
-	ASSERT_EQ("abc", *sub.Host<std::string>());
+	return m_rec;
 }
+
+void Cursor::SetKey(const ::json::Key& key)
+{
+	m_key = key;
+}
+
+} // end of namespace

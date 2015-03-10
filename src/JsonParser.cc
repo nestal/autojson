@@ -55,9 +55,9 @@ void JsonParser::Callback(void *pvthis, JSON_event type, const char *data, size_
 	pthis->Callback(type, data, len);
 }
 
-Level JsonParser::Next() const
+Cursor JsonParser::Next() const
 {
-	Level next = m_stack.back() ; 
+	Cursor next = m_stack.back() ; 
 	next.SetKey(m_key);
 	return next ;
 }
@@ -77,9 +77,7 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 			if (m_stack.empty())
 				m_stack.push_back(m_root);
 			else
-			{
 				m_stack.push_back(m_stack.back().Rec()->Advance(Next()));
-			}
 			
 			m_key.Clear();
 			

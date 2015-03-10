@@ -25,15 +25,15 @@
 
 namespace json {
 
-class Level;
+class Cursor;
 
 class LevelVisitor
 {
 public:
 	virtual ~LevelVisitor() = default;
-	virtual void Data(const Level& current, JSON_event type, const char *data, size_t len) const = 0;
-	virtual Level Advance(const Level& current) const = 0;
-	virtual void Finish(const Level& current) const = 0;
+	virtual void Data(const Cursor& current, JSON_event type, const char *data, size_t len) const = 0;
+	virtual Cursor Advance(const Cursor& current) const = 0;
+	virtual void Finish(const Cursor& current) const = 0;
 };
 
 template <typename Host>

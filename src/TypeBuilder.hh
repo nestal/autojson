@@ -24,7 +24,7 @@
 #include "LevelVisitor.hh"
 
 #include "Key.hh"
-#include "Level.hh"
+#include "Cursor.hh"
 
 #include "LexicalCast.hh"
 
@@ -36,14 +36,14 @@ namespace json {
 class MockObjectHandler : public LevelVisitor
 {
 public:
-	void Data(const Level&, JSON_event, const char*, size_t) const override {}
-	Level Advance(const Level& current) const override
+	void Data(const Cursor&, JSON_event, const char*, size_t) const override {}
+	Cursor Advance(const Cursor& current) const override
 	{
 		assert(current.Rec() == this);
-		return Level{current.Key()};
+		return Cursor{current.Key()};
 	}
 	
-	void Finish(const Level& current) const override
+	void Finish(const Cursor& current) const override
 	{
 		assert(current.Rec() == this);
 	}
@@ -67,19 +67,19 @@ public :
 	SimpleTypeBuilder(SimpleTypeBuilder&&) = default;
 #endif
 
-	void Data(const Level& current, JSON_event, const char *data, size_t len) const override
+	void Data(const Cursor& current, JSON_event, const char *data, size_t len) const override
 	{
 		assert(current.Rec() == this);
 		*current.Host<T>() = LexicalCast<T>(data, len);
 	}
 	
-	Level Advance(const Level& current) const override
+	Cursor Advance(const Cursor& current) const override
 	{
 		assert(current.Rec() == this);
-		return Level{current.Key()};
+		return Cursor{current.Key()};
 	}
 	
-	void Finish(const Level& current) const override
+	void Finish(const Cursor& current) const override
 	{
 		assert(current.Rec() == this);
 	}
@@ -106,19 +106,19 @@ public:
 	
 	MemberBuilder(const MemberBuilder&) = default;
 	
-	Level Advance(const Level& current) const override
+	Cursor Advance(const Cursor& current) const override
 	{
-		return Level{current.Key(), &(current.Host<Host>()->*m_mem), &m_rec};
+		return Cursor{current.Key(), &(current.Host<Host>()->*m_mem), &m_rec};
 	}
 	
-	void Data(const Level& current, JSON_event type, const char *data, size_t len) const override
+	void Data(const Cursor& current, JSON_event type, const char *data, size_t len) const override
 	{
 		m_rec.Data(
-			Level{current.Key(), &(current.Host<Host>()->*m_mem), &m_rec},
+			Cursor{current.Key(), &(current.Host<Host>()->*m_mem), &m_rec},
 			type, data, len);
 	}
 	
-	void Finish(const Level& current) const override
+	void Finish(const Cursor& current) const override
 	{
 		assert(current.Rec() == this);
 	}
