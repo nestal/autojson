@@ -37,6 +37,10 @@ struct ParseError : public Exception
 	ParseError() ;
 };
 
+/**	Indicates an error caused by type mismatch
+
+	The two attributes are expected and actual types. They are stored as std::type_index.
+*/
 struct TypeMismatch : public Exception
 {
 	TypeMismatch(const std::type_index& expect, const std::type_index& actual);

@@ -1,9 +1,17 @@
 /* The standard CSS for doxygen 1.8.6 */
 
+#projectname {
+	font: 900 300% "Lithos Pro",Helvetica,sans-serif;
+}
+
 body, table, div, p, dl {
-	font-family: Helvetica;
+	font: Normal 20px/28px "Kelper Std","Helvetica LT Std",Helvetica,sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6, .title {
-	font-family: Georgia;
+	font-family: "Adobe Carlon Pro",Georgia;
+}
+
+div.line {
+	font-size: 18px/24px;
 }

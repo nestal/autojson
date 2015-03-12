@@ -25,7 +25,7 @@
 
 namespace json {
 
-JsonParser::JsonParser(const JsonVisitor *root, std::size_t depth) :
+JsonParser::JsonParser(const JsonProcessor *root, std::size_t depth) :
 	m_root(root),
 	m_json(::new_JSON_checker(static_cast<int>(depth)))
 {

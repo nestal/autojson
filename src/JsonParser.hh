@@ -39,7 +39,7 @@ class Reactor;
 class JsonParser
 {
 public :
-	explicit JsonParser(const JsonVisitor *root, std::size_t depth = 10);
+	explicit JsonParser(const JsonProcessor *root, std::size_t depth = 10);
 	~JsonParser();
 	
 	JsonParser(const JsonParser&) = delete;

@@ -19,12 +19,12 @@
 */
 
 #include "Cursor.hh"
-#include "JsonVisitor.hh"
+#include "JsonProcessor.hh"
 #include "TypeBuilder.hh"
 
 namespace json {
 
-Cursor::Cursor(const JsonVisitor *rec) :
+Cursor::Cursor(const JsonProcessor *rec) :
 	m_obj(nullptr),
 	m_rec(rec),
 	m_type(typeid(void))
@@ -44,7 +44,7 @@ const ::json::Key& Cursor::Key() const
 	return m_key;
 }
 
-const JsonVisitor* Cursor::Rec() const
+const JsonProcessor* Cursor::Rec() const
 {
 	return m_rec;
 }

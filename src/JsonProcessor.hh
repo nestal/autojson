@@ -27,17 +27,19 @@ namespace json {
 
 class Cursor;
 
-class JsonVisitor
+/**	The abstract visitor
+*/
+class JsonProcessor
 {
 public:
-	virtual ~JsonVisitor() = default;
+	virtual ~JsonProcessor() = default;
 	virtual void Data(const Cursor& current, JSON_event type, const char *data, size_t len) const = 0;
 	virtual Cursor Advance(const Cursor& current) const = 0;
 	virtual void Finish(const Cursor& current) const = 0;
 };
 
 template <typename Host>
-class TypeBuilder : public JsonVisitor
+class TypeBuilder : public JsonProcessor
 {
 public:
 	virtual ~TypeBuilder() = default;

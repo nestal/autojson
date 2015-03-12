@@ -30,21 +30,23 @@
 
 namespace json {
 
-class JsonVisitor;
+class JsonProcessor;
 
 /**	A Cursor is an object that points to a specific location within a hash or array, as
 	well as a pointer to the current C++ object being built.
 
 	Actually, the Cursor class contains 3 things:
 	- The key which the cursor is pointing to, inside a hash or array.
-	- The C++ object being built. It's called Host().
+	- A pointer to the C++ object being built. It's called Target().
 	- The JsonVisitor that is suppose to build the host.
+	
+	The target (i.e. object being built) is not owned by the Cursor.
 */
 class Cursor
 {
 public :
 	template <typename TargetType>
-	Cursor(const ::json::Key& key, TargetType *target, const JsonVisitor *rec) :
+	Cursor(const ::json::Key& key, TargetType *target, const JsonProcessor *rec) :
 		m_key(key),
 		m_obj(target),
 		m_rec(rec),
@@ -54,13 +56,13 @@ public :
 	}
 	
 	explicit Cursor(const ::json::Key& key);
-	explicit Cursor(const JsonVisitor *rec);
+	explicit Cursor(const JsonProcessor *rec);
 	
 	Cursor(const Cursor&) = default;
 
 	void SetKey(const ::json::Key& key);
 	const ::json::Key& Key() const;
-	const JsonVisitor* Rec() const;
+	const JsonProcessor* Rec() const;
 
 	template <typename HostType>
 	void SetHost(HostType *host)
@@ -69,6 +71,15 @@ public :
 		m_type = typeid(HostType);
 	}
 	
+	/**	Returns a pointer to the objects being built.
+	
+		Note that the Cursor does not own this object. Also, the caller needs to
+		specify the type of the object as the template parameter. If the type
+		is different from the actual type, this function will throw TypeMismatch.
+		
+		\throw	TypeMismatch	If the target type is different from the type
+								specified in the template parameter.
+	*/
 	template <typename TargetType>
 	TargetType* Target() const
 	{
@@ -81,7 +92,7 @@ public :
 private :
 	::json::Key			m_key;
 	void				*m_obj;	//!< The object being built by JSON
-	const JsonVisitor	*m_rec;	//!< The Reactor that builds the members of the object
+	const JsonProcessor	*m_rec;	//!< The Reactor that builds the members of the object
 	std::type_index		m_type;
 };
 

@@ -87,7 +87,7 @@ public:
 	}
 
 private:
-	std::shared_ptr<const JsonVisitor>	m_visitor;
+	std::shared_ptr<const JsonProcessor>	m_visitor;
 };
 
 } // end of namespace

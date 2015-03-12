@@ -21,7 +21,7 @@
 #ifndef TYPEBUILDER_HH_INCLUDED
 #define TYPEBUILDER_HH_INCLUDED
 
-#include "JsonVisitor.hh"
+#include "JsonProcessor.hh"
 
 #include "Key.hh"
 #include "Cursor.hh"
@@ -33,7 +33,7 @@
 
 namespace json {
 
-class MockObjectHandler : public JsonVisitor
+class MockObjectHandler : public JsonProcessor
 {
 public:
 	void Data(const Cursor&, JSON_event, const char*, size_t) const override {}
