@@ -55,6 +55,18 @@ public:
 	}
 };
 
+template <typename Host>
+class TypeBuilder : public JsonProcessor
+{
+public:
+	virtual bool Check(const Cursor& c) const
+	{
+		return c.Key() && c.Rec() == this;
+	}
+	
+	virtual ~TypeBuilder() = default;
+};
+
 template <typename T>
 class SimpleTypeBuilder : public TypeBuilder<T>
 {
@@ -69,19 +81,19 @@ public :
 
 	void Data(const Cursor& current, JSON_event, const char *data, size_t len) const override
 	{
-		assert(current.Rec() == this);
+		assert(this->Check(current));
 		*current.Target<T>() = LexicalCast<T>(data, len);
 	}
 	
 	Cursor Advance(const Cursor& current) const override
 	{
-		assert(current.Rec() == this);
+		assert(this->Check(current));
 		return Cursor{current.Key()};
 	}
 	
 	void Finish(const Cursor& current) const override
 	{
-		assert(current.Rec() == this);
+		assert(this->Check(current));
 	}
 };
 
@@ -108,11 +120,13 @@ public:
 	
 	Cursor Advance(const Cursor& current) const override
 	{
+		assert(this->Check(current));
 		return Cursor{current.Key(), &(current.Target<Host>()->*m_mem), &m_rec};
 	}
 	
 	void Data(const Cursor& current, JSON_event type, const char *data, size_t len) const override
 	{
+		assert(this->Check(current));
 		m_rec.Data(
 			Cursor{current.Key(), &(current.Target<Host>()->*m_mem), &m_rec},
 			type, data, len);
@@ -120,7 +134,7 @@ public:
 	
 	void Finish(const Cursor& current) const override
 	{
-		assert(current.Rec() == this);
+		assert(this->Check(current));
 	}
 	
 private:

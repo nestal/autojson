@@ -64,11 +64,13 @@ public :
 	const ::json::Key& Key() const;
 	const JsonProcessor* Rec() const;
 
-	template <typename HostType>
-	void SetHost(HostType *host)
+	Cursor Forward(const JsonProcessor *rec) const;
+	
+	template <typename TargetType>
+	void SetTarget(TargetType *target)
 	{
-		m_obj  = host;
-		m_type = typeid(HostType);
+		m_obj  = target;
+		m_type = typeid(TargetType);
 	}
 	
 	/**	Returns a pointer to the objects being built.

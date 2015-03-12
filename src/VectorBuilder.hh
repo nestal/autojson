@@ -59,8 +59,7 @@ public:
 
 	void Data(const Cursor& current, JSON_event type, const char *data, size_t len) const override
 	{
-		assert(current.Key());
-		assert(current.Rec() == this);
+		assert(this->Check(current));
 		assert(m_visitor);
 
 		auto host = current.Target<HostType>();
@@ -71,8 +70,7 @@ public:
 	
 	Cursor Advance(const Cursor& current) const override
 	{
-		assert(current.Key());
-		assert(current.Rec() == this);
+		assert(this->Check(current));
 		assert(m_visitor);
 		
 		auto host = current.Target<HostType>();
@@ -83,7 +81,7 @@ public:
 
 	void Finish(const Cursor& current) const override
 	{
-		assert(current.Rec() == this);
+		assert(this->Check(current));
 	}
 
 private:

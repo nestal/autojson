@@ -54,4 +54,11 @@ void Cursor::SetKey(const ::json::Key& key)
 	m_key = key;
 }
 
+Cursor Cursor::Forward(const JsonProcessor *rec) const
+{
+	Cursor tmp(*this);
+	tmp.m_rec = rec;
+	return tmp;
+}
+
 } // end of namespace

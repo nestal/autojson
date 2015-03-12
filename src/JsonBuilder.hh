@@ -65,8 +65,7 @@ public :
 	template <typename T>
 	void Add(const Key& key, T Host::*mem)
 	{
-		using Builder = SimpleTypeBuilder<T>;
-		m_obj_act.emplace(key, std::make_shared<MemberBuilder<Host,T,Builder>>(Builder(), mem));
+		Add(key, mem, SimpleTypeBuilder<T>());
 	}
 	
 	template <typename T, class Builder=JsonBuilder<T>>
@@ -83,24 +82,22 @@ public :
 	
 	void Data(const Cursor& current, JSON_event type, const char *data, size_t len) const override
 	{
-		assert(current.Key());
-		assert(current.Rec() == this);
-		
+		assert(this->Check(current));
+
 		auto i = m_obj_act.find(current.Key());
 		if (i != m_obj_act.end())
-			i->second->Data(current, type, data, len);
+			i->second->Data(current.Forward(i->second.get()), type, data, len);
 	}
 	
 	Cursor Advance(const Cursor& current) const override
 	{
-		assert(current.Key());
-		assert(current.Rec() == this);
+		assert(this->Check(current));		
 		
 		Cursor mock{current.Key()};
 
 		auto i = m_obj_act.find(current.Key());
 		return i != m_obj_act.end() ?
-			i->second->Advance(current) : mock ;
+			i->second->Advance(current.Forward(i->second.get())) : mock ;
 	}
 
 	void Finish(const Cursor& current) const override

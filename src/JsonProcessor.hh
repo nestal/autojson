@@ -27,7 +27,14 @@ namespace json {
 
 class Cursor;
 
-/**	The abstract visitor
+/**	The abstract class for handle JSON data
+
+	This is an abstract class for processing JSON. It is called by JsonParser when the
+	corresponding parsing events are triggered. For example, if the JsonParser encounters
+	integer data, it will call the Data() function with the parsed data in its arguments.
+	
+	Derived classes are supposed to implement their own processing. For example, the
+	JsonBuilder classes save the parsed data into a mapped object.
 */
 class JsonProcessor
 {
@@ -37,14 +44,6 @@ public:
 	virtual Cursor Advance(const Cursor& current) const = 0;
 	virtual void Finish(const Cursor& current) const = 0;
 };
-
-template <typename Host>
-class TypeBuilder : public JsonProcessor
-{
-public:
-	virtual ~TypeBuilder() = default;
-};
-
 
 } // end of namespace
 

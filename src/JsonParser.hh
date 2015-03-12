@@ -49,7 +49,7 @@ public :
 	template <typename Host>
 	void Parse(const char *data, size_t len, Host *host)
 	{
-		m_root.SetHost(host);
+		m_root.SetTarget(host);
 		Parse(data, len);
 	}
 	void Done();
