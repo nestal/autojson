@@ -63,11 +63,12 @@ private:
 	Cursor Next() const ;
 	
 private :
-	Cursor			m_root;
-	JSON_checker 	m_json;
+	// underlying parser
+	JSON_checker 		m_json;
 	
 	// states
 	Key					m_key;
+	Cursor				m_root;
 	std::vector<Cursor>	m_stack;
 };
 

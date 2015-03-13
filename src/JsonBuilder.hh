@@ -102,7 +102,7 @@ public :
 
 	void Finish(const Cursor& current) const override
 	{
-		assert(current.Rec() == this);
+		assert(this->Check(current));
 	}
 
 private:

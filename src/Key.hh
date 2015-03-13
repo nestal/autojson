@@ -31,9 +31,11 @@ namespace json {
 class Key
 {
 public:
-	Key() : m_type(none) {}
+	Key() ;
+	
 	template <std::size_t n>
-	Key(const char (&str)[n]) : m_type(key), m_key(str) {}
+	Key(const char (&str)[n]) : m_type(key), m_index(0), m_key(str) {}
+	
 	Key(const std::string& k);
 	Key(std::size_t idx);
 	

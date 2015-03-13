@@ -26,10 +26,12 @@
 namespace json {
 
 JsonParser::JsonParser(const JsonProcessor *root, std::size_t depth) :
-	m_root(root),
 	m_json(::new_JSON_checker(static_cast<int>(depth))),
-	m_key(0)
+	m_key(0),
+	m_root(root)
 {
+	m_root.SetKey(m_key);
+	assert(m_root.Key());
 }
 
 JsonParser::~JsonParser()
@@ -80,8 +82,9 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 			else
 				m_stack.push_back(m_stack.back().Rec()->Advance(Next()));
 			
-			m_key.Clear();
+			assert(m_stack.back().Key());
 			
+			m_key.Clear();
 			if (type == JSON_array_start)
 				m_key.SetIndex(0);
 			break;
@@ -89,6 +92,8 @@ void JsonParser::Callback(JSON_event type, const char *data, size_t len)
 		case JSON_object_end:
 		case JSON_array_end:
 			assert(!m_stack.empty());
+			assert(m_stack.back().Key());
+			
 			m_key = m_stack.back().Key();
 			m_stack.back().Rec()->Finish(m_stack.back());
 			m_stack.pop_back();
