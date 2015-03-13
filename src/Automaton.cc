@@ -356,10 +356,10 @@ private:
 	{
 		switch (m)
 		{
-			case Automaton::Impl::Mode::array:	os << "array"; break;
-			case Automaton::Impl::Mode::key:	os << "key"; break;
-			case Automaton::Impl::Mode::done:	os << "done"; break;
-			case Automaton::Impl::Mode::object:	os << "object"; break;
+			case Mode::array:	os << "array"; break;
+			case Mode::key:	os << "key"; break;
+			case Mode::done:	os << "done"; break;
+			case Mode::object:	os << "object"; break;
 		}
 		return os;
 	}

@@ -29,9 +29,9 @@ using namespace json;
 
 TEST(Cast_integer, LevelTest)
 {
-	ASSERT_EQ(100,  LexicalCast<int>("100", 3) );
-	ASSERT_EQ(100L, LexicalCast<long>("100", 3) );
-	ASSERT_EQ(123UL, LexicalCast<unsigned long>("123", 3) );
+	ASSERT_EQ(100,  LexicalCast<std::int32_t>("100", 3) );
+	ASSERT_EQ(100L, LexicalCast<std::int32_t>("100", 3));
+	ASSERT_EQ(123UL, LexicalCast<std::uint64_t>("123", 3));
 }
 
 TEST(Cast_double, LevelTest)
