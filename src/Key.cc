@@ -21,25 +21,21 @@
 #include "Key.hh"
 
 #include <cassert>
-#include <iostream>
 
 namespace json {
 
 Key::Key() : m_type(none)
 {
-	std::cout << "none" << std::endl;
 	assert(!*this);
 }
 
 Key::Key(const std::string& k) : m_type(key), m_key(k)
 {
-	std::cout << "key = << " << k << std::endl;
 	assert(*this);
 }
 
 Key::Key(std::size_t idx) : m_type(index), m_index(idx)
 {
-	std::cout << "index = << " << idx << std::endl;
 	assert(*this);
 }
 	

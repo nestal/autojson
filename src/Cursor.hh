@@ -91,6 +91,8 @@ public :
 		throw TypeMismatch(typeid(TargetType), m_type);
 	}
 	
+	explicit operator bool() const;
+	
 private :
 	::json::Key			m_key;
 	void				*m_obj;	//!< The object being built by JSON

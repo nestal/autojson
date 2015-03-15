@@ -61,4 +61,9 @@ Cursor Cursor::Forward(const JsonProcessor *rec) const
 	return tmp;
 }
 
+Cursor::operator bool() const
+{
+	return m_obj != nullptr && m_type != typeid(void);
+}
+
 } // end of namespace

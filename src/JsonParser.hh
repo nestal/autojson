@@ -45,17 +45,24 @@ public :
 	JsonParser(const JsonParser&) = delete;
 	JsonParser& operator=(const JsonParser&) = delete;
 
-	// parsing functions
-	template <typename Host>
-	void Parse(const char *data, size_t len, Host *host)
+	template <typename Target>
+	void SetTarget(Target *target)
 	{
-		m_root.SetTarget(host);
+		m_root.SetTarget(target);
+	}
+	
+	// parsing functions
+	template <typename Target>
+	void Parse(const char *data, std::size_t len, Target *target)
+	{
+		SetTarget(target);
 		Parse(data, len);
 	}
+	
+	void Parse(const char *data, size_t len);
 	void Done();
 	
 private:
-	void Parse(const char *data, size_t len);
 	static void Callback(void *pvthis, JSON_event type, const char *data, size_t len);
 	void Callback(JSON_event type, const char *data, size_t len);
 
