@@ -100,5 +100,4 @@ std::string Unescape(const std::string& str)
 	return Unescape(str.c_str(), str.size());
 }
 
-	
 } // end of namespace

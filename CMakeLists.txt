@@ -26,6 +26,8 @@ find_package(GTest)
 include_directories(${autojson_SOURCE_DIR}/src)
 
 add_library(autojson
+	src/Automaton.hh
+	src/Automaton.cc
 	src/JSON_checker.h
 	src/JSON_checker.c
 	src/JsonParser.hh

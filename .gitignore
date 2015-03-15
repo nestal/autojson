@@ -23,5 +23,8 @@
 # generated project files
 *.kdev4
 
+# text editor temp file
+*.kate-swp
+
 # Build directory
 build
