@@ -173,7 +173,6 @@ public :
 		return *this;
 	}
 	
-
 	void Clear();
 	const JVar& operator[](const std::string& key) const;
 	JVar& operator[](const std::string& key);

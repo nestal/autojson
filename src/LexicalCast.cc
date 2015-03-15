@@ -66,5 +66,39 @@ bool LexicalCast(const char *str, std::size_t len)
 	return str != nullptr && std::string(str, len) == "true" ;
 }
 
+std::string Unescape(const char *str, std::size_t len)
+{
+	std::string result;
+	for (std::size_t i = 0 ; i < len ; ++i)
+	{
+		char c = str[i];
+		
+		if (c == '\\' && i+1 < len)
+		{
+			switch (str[++i])
+			{
+				case '\"': c = '"' ;	break;
+				case '\\': c = '\\' ;	break;
+				case 'b': c = '\b' ;	break;
+				case 'f': c = '\f' ;	break;
+				case 'n': c = '\n' ;	break;
+				case 'r': c = '\r' ;	break;
+				case 't': c = '\t' ;	break;
+//				case 'u': c = '\\' ;	break;
+				
+				// truncate the string when error occurs
+				default:	return result;
+			}
+		}
+		result.push_back(c);
+	}
+	return result;
+}
+
+std::string Unescape(const std::string& str)
+{
+	return Unescape(str.c_str(), str.size());
+}
+
 	
 } // end of namespace

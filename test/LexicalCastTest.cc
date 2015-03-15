@@ -40,3 +40,8 @@ TEST(Cast_double, LevelTest)
 	ASSERT_EQ(101.0,   LexicalCast<double>("101", 3) );
 	ASSERT_EQ(123.123, LexicalCast<double>("123.123", 7) );
 }
+
+TEST(Unescape_normal, LevelTest)
+{
+	ASSERT_EQ("ABC\n",	Unescape("ABC\\n"));
+}

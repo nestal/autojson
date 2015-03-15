@@ -50,6 +50,9 @@ bool LexicalCast(const char *str, std::size_t len);
 template <>
 std::string LexicalCast(const char *str, std::size_t len);
 
+std::string Unescape(const char *str, std::size_t len);
+std::string Unescape(const std::string& str);
+
 } // end of namespace
 
 #endif
