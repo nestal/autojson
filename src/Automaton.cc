@@ -22,6 +22,8 @@
 
 #include <vector>
 
+#include <iostream>
+
 namespace json {
 
 namespace chars
@@ -146,6 +148,41 @@ namespace state
 		state_count,
 		bad = state_count,
 	};
+
+	const char *code_str[] = {
+		"go",
+		"ok",
+		"obj",
+		"key",
+		"col",
+		"val",
+		"arr",
+		"str",
+		"esp",
+		"u1",
+		"u2",
+		"u3",
+		"u4",
+		"mi_",
+		"ze0",
+		"inT",
+		"frt",
+		"ex1",
+		"ex2",
+		"ex3",
+		"tr1",
+		"tr2",
+		"tr3",
+		"fe1",
+		"fe2",
+		"fe3",
+		"fe4",
+		"n01",
+		"n02",
+		"n03",
+		
+		"bad",
+	};
 	
 	enum Action
 	{
@@ -226,6 +263,18 @@ enum class Automaton::Mode
 	object
 };
 
+std::ostream& operator<<(std::ostream& os, Automaton::Mode m)
+{
+	switch (m)
+	{
+		case Automaton::Mode::array: os << "array"; break;
+		case Automaton::Mode::key: os << "key"; break;
+		case Automaton::Mode::done: os << "done"; break;
+		case Automaton::Mode::object: os << "object"; break;
+	}
+	return os;
+}
+
 Automaton::Automaton(std::size_t depth) :
 	m_state(state::go),
 	m_stack(1, Mode::done)
@@ -234,11 +283,13 @@ Automaton::Automaton(std::size_t depth) :
 
 void Automaton::Push(Mode mode)
 {
+	std::cout << "pushing " << mode << std::endl;
 	m_stack.push_back(mode);
 }
 
 void Automaton::Pop(Mode mode)
 {
+	std::cout << "popping " << mode << " " << m_stack.back() << std::endl;
 	if (m_stack.back() != mode)
 		throw -1;
 	
@@ -250,15 +301,19 @@ void Automaton::Char(char c)
 	state::Edge  next = state::Next(static_cast<state::Code>(m_state), chars::DeduceType(c));
 
 	state::Code dest = next.Dest();
+	
+	std::cout << c << ": next action = " << (int)next.Action() << std::endl;
+	std::cout << c << ": m_state = " << state::code_str[(int)m_state] << std::endl;
+	
 	switch (next.Action())
 	{
-		case state::soj:	Push(Mode::key);	break;
-		case state::eoj:	Pop (Mode::object);	break;
-		case state::noj:	Pop (Mode::key);	break;
-		case state::sar:	Push(Mode::array);	break;
-		case state::ear:	Pop (Mode::array);	break;
+		case state::soj:	Push(Mode::key);	dest = state::key;	break;
+		case state::eoj:	Pop (Mode::object);	dest = state::ok;	break;
+		case state::noj:	Pop (Mode::key);	dest = state::ok;	break;
+		case state::sar:	Push(Mode::array);	dest = state::arr;	break;
+		case state::ear:	Pop (Mode::array);	dest = state::ok;	break;
 		case state::stk:	Pop (Mode::key);
-							Push(Mode::object);	break;
+							Push(Mode::object);	dest = state::val;	break;
 		case state::nxt:
 			if (m_stack.back() == Mode::object)
 			{
@@ -295,7 +350,13 @@ void Automaton::Char(char c)
 		default:	break;
 	}
 	
+	std::cout << c << ": next state = " << state::code_str[(int)dest] << std::endl;
 	m_state = dest;
+}
+
+bool Automaton::Result() const
+{
+	return m_stack.size() == 1 && m_stack.back() == Mode::done;
 }
 
 } // end of namespace json

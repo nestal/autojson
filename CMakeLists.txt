@@ -70,6 +70,7 @@ if (GTEST_FOUND)
 		test/CursorTest.cc
 		test/JVarTest.cc
 		test/LexicalCastTest.cc
+		test/AutomatonTest.cc
 	)
 	target_link_libraries(unittest autojson ${GTEST_BOTH_LIBRARIES})
 endif (GTEST_FOUND)

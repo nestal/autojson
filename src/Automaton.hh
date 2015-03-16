@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <iosfwd>
 
 namespace json {
 
@@ -50,14 +51,18 @@ enum class Event
 class Automaton
 {
 public :
-	Automaton(std::size_t depth);
+	Automaton(std::size_t depth=0);
 
 	void Char(char c);
 
+	bool Result() const;
+	
 private :
 	enum class Mode;
 	void Push(Mode mode);
 	void Pop(Mode mode);
+	
+	friend std::ostream& operator<<(std::ostream& os, Automaton::Mode m);
 	
 private :
 	int m_state;
