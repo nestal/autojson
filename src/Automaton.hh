@@ -55,7 +55,7 @@ std::ostream& operator<<(std::ostream& os, Event ev);
 class Automaton
 {
 public :
-	using Callback = std::function<void (Event/*, const char *, std::size_t*/)>;
+	using Callback = std::function<void (Event, const char *, std::size_t)>;
 	
 	Automaton(Callback&& callback, std::size_t depth=0);
 	~Automaton();

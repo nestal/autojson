@@ -29,7 +29,7 @@ TEST(Simple, AutomatonTest)
 {
 	std::vector<Event> actual;
 	
-	Automaton sub([&](Event v){
+	Automaton sub([&](Event v, const char *, std::size_t){
 		actual.push_back(v);
 	});
 
@@ -63,4 +63,17 @@ TEST(Simple, AutomatonTest)
 		Event::object_end
 	};
 	ASSERT_EQ(expect, actual);
+}
+
+TEST(SimpleError, AutomatonTest)
+{
+	Automaton sub([](Event v, const char *p, std::size_t s){
+		if (v == Event::string_data)
+			std::cout << std::string(p,s) << std::endl;
+	});
+
+	const char js[] = "{ \"hello\": \"1234567890abcdefghijk\"";
+	sub.Parse(js, sizeof(js)-1);
+	
+	ASSERT_FALSE(sub.Result());
 }

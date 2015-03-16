@@ -210,7 +210,8 @@ public:
 	Impl(Callback&& callback)
 	:	m_state(state::go),
 		m_stack(1, Mode::done),
-		m_callback(std::move(callback))
+		m_callback(std::move(callback)),
+		m_token(nullptr)
 	{
 	}	
 
@@ -246,31 +247,31 @@ private:
 	void OnStartObject(const char *)
 	{
 		Push(Mode::key);
-		m_callback(Event::object_start);
+		m_callback(Event::object_start, nullptr, 0);
 	}
 	
 	void OnEndObject(const char *)
 	{
 		Pop(Mode::object);
-		m_callback(Event::object_end);
+		m_callback(Event::object_end, nullptr, 0);
 	}
 	
 	void OnEndEmptyObject(const char *)
 	{
 		Pop (Mode::key);
-		m_callback(Event::object_end);
+		m_callback(Event::object_end, nullptr, 0);
 	}
 	
 	void OnStartArray(const char *)
 	{
 		Push(Mode::array);
-		m_callback(Event::array_start);
+		m_callback(Event::array_start, nullptr, 0);
 	}
 	
 	void OnEndArray(const char *)
 	{
 		Pop (Mode::array);
-		m_callback(Event::array_end);
+		m_callback(Event::array_end, nullptr, 0);
 	}
 	
 	void OnKeyToValue(const char *)
@@ -290,15 +291,23 @@ private:
 	void OnStartString(const char *p)
 	{
 		if (m_stack.back() == Mode::key)
-			m_callback(Event::object_key);
+			m_callback(Event::object_key, nullptr, 0);
 	
-		m_callback(Event::string_start);
+		m_callback(Event::string_start, nullptr, 0);
+		m_token = p;
 	}
 	
 	void OnEndString(const char *p)
 	{
-		m_callback(Event::string_data);
-		m_callback(Event::string_end);
+		m_token++;
+		
+		std::string tok(m_token, p);
+		std::cout << "tok = " << tok << std::endl;
+		
+		m_callback(Event::string_data, m_token, p-m_token);
+		m_callback(Event::string_end, nullptr, 0);
+		
+		m_token = nullptr;
 	}
 	
 	class Edge
@@ -353,9 +362,9 @@ private:
 	
 private :
 	state::Code			m_state;
+	const char			*m_token;
 	
 	std::vector<Mode>	m_stack;
-	std::string 		m_token;
 	const Callback		m_callback;
 };
 
@@ -428,6 +437,8 @@ void Automaton::Impl::Parse(const char *str, std::size_t len)
 		(this->*actions[next.Action()])(&str[i]);
 		
 		m_state = next.Dest(m_stack.back());
+		if (m_state == state::bad)
+			throw -1;
 	}
 }
 
