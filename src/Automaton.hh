@@ -22,8 +22,7 @@
 #define AUTOMATON_HH_INCLUDED
 
 #include <string>
-#include <vector>
-#include <iosfwd>
+#include <memory>
 
 namespace json {
 
@@ -52,22 +51,15 @@ class Automaton
 {
 public :
 	Automaton(std::size_t depth=0);
-
+	~Automaton();
+	
 	void Char(char c);
 
 	bool Result() const;
 	
 private :
-	enum class Mode;
-	void Push(Mode mode);
-	void Pop(Mode mode);
-	
-	friend std::ostream& operator<<(std::ostream& os, Automaton::Mode m);
-	
-private :
-	int m_state;
-	std::vector<Mode>	m_stack;
-	std::string 		m_token;
+	class Impl;
+	std::unique_ptr<Impl>	m_impl;
 };
 
 } // end of namespace

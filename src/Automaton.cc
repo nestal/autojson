@@ -183,8 +183,11 @@ namespace state
 		
 		"bad",
 	};
-	
-	enum Action
+} ;
+
+namespace action
+{
+	enum Code
 	{
 		none,	// no action required
 		
@@ -193,38 +196,122 @@ namespace state
 		noj,	// end of empty object
 		sar,	// start of array
 		ear,	// end of array
-		stk,	// switch to key
+		ktv,	// key to value
 		nxt,	// next element in array or object
 		sos,	// start of string
 		eos,	// end of string
 	};
+}
+
+class Automaton::Impl
+{
+public:
+	Impl()
+	:
+		m_state(state::go),
+		m_stack(1, Mode::done)
+	{
+	}	
+
+	void Char(char ch);
+	bool Result() const;
 	
+private:
+	enum class Mode
+	{
+		array,
+		done,
+		key,
+		object
+	};
+	
+	void Push(Mode mode)
+	{
+//		std::cout << "pushing " << mode << std::endl;
+		m_stack.push_back(mode);
+	}
+
+	void Pop(Mode mode)
+	{
+//		std::cout << "popping " << mode << " " << m_stack.back() << std::endl;
+		if (m_stack.back() != mode)
+			throw -1;
+		
+		m_stack.pop_back();
+	}
+
 	class Edge
 	{
 	public:
-		Edge(Code dest) : m_action(none), m_dest(dest) {}
-		Edge(Action ac = none) : m_action(ac), m_dest(bad) {}
-	
-		enum Action Action() const { return m_action; }
-		Code   Dest() const { return m_dest; }
-	
+		Edge(state::Code dest) : m_action(action::none), m_dest(dest) {}
+		Edge(action::Code ac = action::none) : m_action(ac), m_dest(state::bad) {}
+
+		action::Code Action() const { return m_action; }
+		
+		// sometimes, the next state will depend on the current mode
+		state::Code  Dest(Mode mode) const
+		{
+			using namespace action;
+			using namespace state;
+			switch (m_action)
+			{
+				case none:	return m_dest;
+				case soj:	return key;
+				case eoj:	return ok;
+				case noj:	return ok;
+				case sar:	return arr;
+				case ear:	return ok;
+				case ktv:	return val;
+				case nxt:	return mode == Mode::object ? key : arr;
+				case sos:	return str;
+				case eos:	return mode == Mode::key    ? col : ok;
+				default:	throw -1;
+			}
+		}
+
+		static Edge Next(state::Code current, chars::Type input);
+		
 	private:
-		enum Action	m_action;
-		enum Code	m_dest;
+		action::Code	m_action;
+		state::Code		m_dest;
 	};
 	
-	// bad state
-	const Edge _____;
-	
-	Edge Next(Code current, chars::Type input)
+	friend std::ostream& operator<<(std::ostream& os, Mode m)
 	{
-		static const Edge transition[state_count][chars::ctype_count] = {
+		switch (m)
+		{
+			case Automaton::Impl::Mode::array:	os << "array"; break;
+			case Automaton::Impl::Mode::key:	os << "key"; break;
+			case Automaton::Impl::Mode::done:	os << "done"; break;
+			case Automaton::Impl::Mode::object:	os << "object"; break;
+		}
+		return os;
+	}
+	
+	void EndObjObject();
+	
+private :
+	int m_state;
+	std::vector<Mode>	m_stack;
+	std::string 		m_token;
+};
+
+
+Automaton::Impl::Edge Automaton::Impl::Edge::Next(state::Code current, chars::Type input)
+{
+	using namespace action;
+	using namespace state;
+	
+	// bad state
+	static const Edge _____;
+	
+	static const Edge transition[state_count][chars::ctype_count] = {
 //			   space  white   {     }     [     ]     :     ,     "     \     /     +     -     .     0    1-9    a     b     c     d     e     f     l     n     r     s     t     u   ABCDF   E    etc
 /*start  go */ {{go} ,{go} ,{soj},_____,{sar},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
 /*ok     ok */ {{ok} ,{ok} ,_____,{eoj},_____,{ear},_____,{nxt},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
 /*object obj*/ {{obj},{obj},_____,{noj},_____,_____,_____,_____,{sos},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
 /*key    key*/ {{key},{key},_____,_____,_____,_____,_____,_____,{sos},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
-/*colon  col*/ {{col},{col},_____,_____,_____,_____,{stk},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
+/*colon  col*/ {{col},{col},_____,_____,_____,_____,{ktv},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
 /*value  val*/ {{val},{val},{soj},_____,{sar},_____,_____,_____,{sos},_____,_____,_____,{mi_},_____,{ze0},{inT},_____,_____,_____,_____,_____,{fe1},_____,{n01},_____,_____,{tr1},_____,_____,_____,_____},
 /*array  arr*/ {{arr},{arr},{soj},_____,{sar},{ear},_____,_____,{sos},_____,_____,_____,{mi_},_____,{ze0},{inT},_____,_____,_____,_____,_____,{fe1},_____,{n01},_____,_____,{tr1},_____,_____,_____,_____},
 /*string str*/ {{str},_____,{str},{str},{str},{str},{str},{str},{eos},{esp},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str}},
@@ -250,113 +337,66 @@ namespace state
 /*nu     N1*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{n02},_____,_____,_____},
 /*nul    N2*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{n03},_____,_____,_____,_____,_____,_____,_____,_____},
 /*null   N3*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{ok} ,_____,_____,_____,_____,_____,_____,_____,_____},
-		};
-		return transition[current][input] ;
-	}
+	};
+	return transition[current][input] ;
 }
 
-enum class Automaton::Mode
+void Automaton::Impl::Char(char c)
 {
-	array,
-	done,
-	key,
-	object
-};
+	Edge next = Edge::Next(static_cast<state::Code>(m_state), chars::DeduceType(c));
 
-std::ostream& operator<<(std::ostream& os, Automaton::Mode m)
-{
-	switch (m)
-	{
-		case Automaton::Mode::array: os << "array"; break;
-		case Automaton::Mode::key: os << "key"; break;
-		case Automaton::Mode::done: os << "done"; break;
-		case Automaton::Mode::object: os << "object"; break;
-	}
-	return os;
-}
-
-Automaton::Automaton(std::size_t depth) :
-	m_state(state::go),
-	m_stack(1, Mode::done)
-{
-}
-
-void Automaton::Push(Mode mode)
-{
-	std::cout << "pushing " << mode << std::endl;
-	m_stack.push_back(mode);
-}
-
-void Automaton::Pop(Mode mode)
-{
-	std::cout << "popping " << mode << " " << m_stack.back() << std::endl;
-	if (m_stack.back() != mode)
-		throw -1;
+	state::Code dest = next.Dest(m_stack.back());
 	
-	m_stack.pop_back();
-}
-
-void Automaton::Char(char c)
-{
-	state::Edge  next = state::Next(static_cast<state::Code>(m_state), chars::DeduceType(c));
-
-	state::Code dest = next.Dest();
-	
-	std::cout << c << ": next action = " << (int)next.Action() << std::endl;
-	std::cout << c << ": m_state = " << state::code_str[(int)m_state] << std::endl;
+//	std::cout << c << ": next action = " << (int)next.Action() << std::endl;
+//	std::cout << c << ": m_state = " << state::code_str[(int)m_state] << std::endl;
 	
 	switch (next.Action())
 	{
-		case state::soj:	Push(Mode::key);	dest = state::key;	break;
-		case state::eoj:	Pop (Mode::object);	dest = state::ok;	break;
-		case state::noj:	Pop (Mode::key);	dest = state::ok;	break;
-		case state::sar:	Push(Mode::array);	dest = state::arr;	break;
-		case state::ear:	Pop (Mode::array);	dest = state::ok;	break;
-		case state::stk:	Pop (Mode::key);
-							Push(Mode::object);	dest = state::val;	break;
-		case state::nxt:
+		case action::soj:	Push(Mode::key);	break;
+		case action::eoj:	Pop (Mode::object);	break;
+		case action::noj:	Pop (Mode::key);	break;
+		case action::sar:	Push(Mode::array);	break;
+		case action::ear:	Pop (Mode::array);	break;
+		case action::ktv:	Pop (Mode::key);
+							Push(Mode::object);	break;
+		case action::nxt:
 			if (m_stack.back() == Mode::object)
 			{
 				Pop(Mode::object);
 				Push(Mode::key);
-				dest = state::key;
-			}
-			else if (m_stack.back() == Mode::array)
-				dest = state::arr;
-			break;
-		
-		case state::sos:
-			dest = state::str;
-			break;
-			
-		case state::eos:
-			switch (m_stack.back())
-			{
-				case Mode::object:
-				case Mode::array:
-					dest = state::ok;
-					break;
-					
-				case Mode::key:
-					dest = state::col;
-					break;
-				
-				default:
-					break;
 			}
 			break;
 		
+		case action::sos:
+		case action::eos:
+	
 		// default should be none
 		default:	break;
 	}
 	
-	std::cout << c << ": next state = " << state::code_str[(int)dest] << std::endl;
+//	std::cout << c << ": next state = " << state::code_str[(int)dest] << std::endl;
 	m_state = dest;
+}
+
+bool Automaton::Impl::Result() const
+{
+	return m_stack.size() == 1 && m_stack.back() == Mode::done;
+}
+
+Automaton::Automaton(std::size_t depth) : m_impl(new Impl)
+{
+}
+
+Automaton::~Automaton() = default ;
+
+void Automaton::Char(char c)
+{
+	m_impl->Char(c);
 }
 
 bool Automaton::Result() const
 {
-	return m_stack.size() == 1 && m_stack.back() == Mode::done;
+	return m_impl->Result();
 }
 
 } // end of namespace json
