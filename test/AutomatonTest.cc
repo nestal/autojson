@@ -21,15 +21,46 @@
 #include "Automaton.hh"
 #include <gtest/gtest.h>
 
+#include <iostream>
+
 using namespace json;
 
 TEST(Simple, AutomatonTest)
 {
-	Automaton sub;
+	std::vector<Event> actual;
+	
+	Automaton sub([&](Event v){
+		actual.push_back(v);
+	});
 
-	const char js[] = "{ \"hello\": \"1234567890abcdefghijk\" }";
-	for (std::size_t i = 0; i < sizeof(js)-1 ; i++)
-		sub.Char(js[i]);
+	const char js[] = "{ \"hello\": \"1234567890abcdefghijk\","
+		"\"hello2\": \"1234567890abcdefghijk\" "
+	" }";
+	sub.Parse(js, sizeof(js)-1);
 	
 	ASSERT_TRUE(sub.Result());
+	
+	std::vector<Event> expect {
+		Event::object_start,
+			Event::object_key,
+				Event::string_start,
+				Event::string_data,
+				Event::string_end,
+			
+			Event::string_start,
+			Event::string_data,
+			Event::string_end,
+
+			Event::object_key,
+				Event::string_start,
+				Event::string_data,
+				Event::string_end,
+			
+			Event::string_start,
+			Event::string_data,
+			Event::string_end,
+
+		Event::object_end
+	};
+	ASSERT_EQ(expect, actual);
 }

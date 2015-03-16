@@ -23,6 +23,8 @@
 
 #include <string>
 #include <memory>
+#include <functional>
+#include <iosfwd>
 
 namespace json {
 
@@ -35,7 +37,9 @@ enum class Event
 					//!< The value of the key is given by \c data with
 					//!< \c len bytes.
 	object_end,		//!< End of a JSON object
-	string,			//!< String as a value. The value is given by \c data
+	string_start,	//!< Start of a string. Does not have any data
+	string_data,	//!< String as a value. The value is given by \c data
+	string_end,		//!< End of a string. Does not have any data
 					//!< and \c len.
 	number,			//!< Number as a value. It's provided as a string.
 					//!< You need to call atoi() to obtain the real number.
@@ -44,17 +48,19 @@ enum class Event
 	false_			//!< Literal value "false"
 } ;
 
-	
+std::ostream& operator<<(std::ostream& os, Event ev);
+
 /**	Brief description of Automaton
 */
 class Automaton
 {
 public :
-	Automaton(std::size_t depth=0);
+	using Callback = std::function<void (Event/*, const char *, std::size_t*/)>;
+	
+	Automaton(Callback&& callback, std::size_t depth=0);
 	~Automaton();
 	
-	void Char(char c);
-
+	void Parse(const char *str, std::size_t len);
 	bool Result() const;
 	
 private :

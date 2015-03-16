@@ -22,6 +22,7 @@
 
 #include <vector>
 
+#include <cassert>
 #include <iostream>
 
 namespace json {
@@ -206,14 +207,14 @@ namespace action
 class Automaton::Impl
 {
 public:
-	Impl()
-	:
-		m_state(state::go),
-		m_stack(1, Mode::done)
+	Impl(Callback&& callback)
+	:	m_state(state::go),
+		m_stack(1, Mode::done),
+		m_callback(std::move(callback))
 	{
 	}	
 
-	void Char(char ch);
+	void Parse(const char *str, std::size_t len);
 	bool Result() const;
 	
 private:
@@ -227,19 +228,79 @@ private:
 	
 	void Push(Mode mode)
 	{
-//		std::cout << "pushing " << mode << std::endl;
 		m_stack.push_back(mode);
 	}
 
 	void Pop(Mode mode)
 	{
-//		std::cout << "popping " << mode << " " << m_stack.back() << std::endl;
 		if (m_stack.back() != mode)
 			throw -1;
 		
 		m_stack.pop_back();
 	}
 
+	void OnNone(const char *)
+	{
+	}
+	
+	void OnStartObject(const char *)
+	{
+		Push(Mode::key);
+		m_callback(Event::object_start);
+	}
+	
+	void OnEndObject(const char *)
+	{
+		Pop(Mode::object);
+		m_callback(Event::object_end);
+	}
+	
+	void OnEndEmptyObject(const char *)
+	{
+		Pop (Mode::key);
+		m_callback(Event::object_end);
+	}
+	
+	void OnStartArray(const char *)
+	{
+		Push(Mode::array);
+		m_callback(Event::array_start);
+	}
+	
+	void OnEndArray(const char *)
+	{
+		Pop (Mode::array);
+		m_callback(Event::array_end);
+	}
+	
+	void OnKeyToValue(const char *)
+	{
+		Pop (Mode::key);
+		Push(Mode::object);
+	}
+	
+	void OnNextValue(const char *)
+	{
+		if (m_stack.back() == Mode::object)
+		{
+			Pop(Mode::object);
+			Push(Mode::key);
+		}
+	}
+	void OnStartString(const char *p)
+	{
+		if (m_stack.back() == Mode::key)
+			m_callback(Event::object_key);
+	
+		m_callback(Event::string_start);
+	}
+	
+	void OnEndString(const char *p)
+	{
+		m_callback(Event::string_data);
+		m_callback(Event::string_end);
+	}
+	
 	class Edge
 	{
 	public:
@@ -291,9 +352,11 @@ private:
 	void EndObjObject();
 	
 private :
-	int m_state;
+	state::Code			m_state;
+	
 	std::vector<Mode>	m_stack;
 	std::string 		m_token;
+	const Callback		m_callback;
 };
 
 
@@ -341,41 +404,31 @@ Automaton::Impl::Edge Automaton::Impl::Edge::Next(state::Code current, chars::Ty
 	return transition[current][input] ;
 }
 
-void Automaton::Impl::Char(char c)
+void Automaton::Impl::Parse(const char *str, std::size_t len)
 {
-	Edge next = Edge::Next(static_cast<state::Code>(m_state), chars::DeduceType(c));
-
-	state::Code dest = next.Dest(m_stack.back());
-	
-//	std::cout << c << ": next action = " << (int)next.Action() << std::endl;
-//	std::cout << c << ": m_state = " << state::code_str[(int)m_state] << std::endl;
-	
-	switch (next.Action())
+	for (std::size_t i = 0 ; i < len ; i++)
 	{
-		case action::soj:	Push(Mode::key);	break;
-		case action::eoj:	Pop (Mode::object);	break;
-		case action::noj:	Pop (Mode::key);	break;
-		case action::sar:	Push(Mode::array);	break;
-		case action::ear:	Pop (Mode::array);	break;
-		case action::ktv:	Pop (Mode::key);
-							Push(Mode::object);	break;
-		case action::nxt:
-			if (m_stack.back() == Mode::object)
-			{
-				Pop(Mode::object);
-				Push(Mode::key);
-			}
-			break;
+		Edge next = Edge::Next(m_state, chars::DeduceType(str[i]));
 		
-		case action::sos:
-		case action::eos:
-	
-		// default should be none
-		default:	break;
+		static void (Impl::*actions[])(const char*) =
+		{
+			&Impl::OnNone,
+			&Impl::OnStartObject,
+			&Impl::OnEndObject,
+			&Impl::OnEndEmptyObject,
+			&Impl::OnStartArray,
+			&Impl::OnEndArray,
+			&Impl::OnKeyToValue,
+			&Impl::OnNextValue,
+			&Impl::OnStartString,
+			&Impl::OnEndString,
+		};
+
+		assert(next.Action() < sizeof(actions)/sizeof(actions[0]));
+		(this->*actions[next.Action()])(&str[i]);
+		
+		m_state = next.Dest(m_stack.back());
 	}
-	
-//	std::cout << c << ": next state = " << state::code_str[(int)dest] << std::endl;
-	m_state = dest;
 }
 
 bool Automaton::Impl::Result() const
@@ -383,20 +436,42 @@ bool Automaton::Impl::Result() const
 	return m_stack.size() == 1 && m_stack.back() == Mode::done;
 }
 
-Automaton::Automaton(std::size_t depth) : m_impl(new Impl)
+Automaton::Automaton(Callback&& callback, std::size_t depth) :
+	m_impl(new Impl(std::move(callback)))
 {
 }
 
 Automaton::~Automaton() = default ;
 
-void Automaton::Char(char c)
+void Automaton::Parse(const char *str, std::size_t len)
 {
-	m_impl->Char(c);
+	m_impl->Parse(str, len);
 }
 
 bool Automaton::Result() const
 {
 	return m_impl->Result();
 }
+
+std::ostream& operator<<(std::ostream& os, Event ev)
+{
+	switch (ev)
+	{
+		case Event::array_start:	os << "array_start"; break;
+		case Event::array_end:		os << "array_end"; break;
+		case Event::object_start:	os << "object_start"; break;
+		case Event::object_key:		os << "object_key"; break;
+		case Event::object_end:		os << "object_end"; break;
+		case Event::string_start:	os << "string_start"; break;
+		case Event::string_data:	os << "string_data"; break;
+		case Event::string_end:		os << "string_end"; break;
+		case Event::number:			os << "number"; break;
+		case Event::null_:			os << "null"; break;
+		case Event::true_:			os << "true"; break;
+		case Event::false_:			os << "false"; break;
+	}
+	return os;
+}
+
 
 } // end of namespace json
