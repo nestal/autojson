@@ -28,8 +28,21 @@ Exception::Exception(const std::string& errmsg ) :
 {
 }
 
-ParseError::ParseError() : Exception("parse error")
+ParseError::ParseError(std::size_t line, std::size_t index) :
+	Exception("parse error"),
+	m_line(line),
+	m_index(index)
 {
+}
+
+std::size_t ParseError::Line() const
+{
+	return m_line;
+}
+
+std::size_t ParseError::Index() const
+{
+	return m_index;
 }
 
 TypeMismatch::TypeMismatch(const std::type_index& expect, const std::type_index& actual) :
@@ -40,6 +53,17 @@ TypeMismatch::TypeMismatch(const std::type_index& expect, const std::type_index&
 		return oss.str();
 	}())
 {
+}
+
+InvalidChar::InvalidChar(char ch) :
+	Exception("invalid character"),
+	m_ch(ch)
+{
+}
+
+char InvalidChar::Get() const
+{
+	return m_ch;
 }
 
 } // end of namespace

@@ -32,9 +32,17 @@ public :
 	Exception(const std::string& errmsg) ;
 };
 
-struct ParseError : public Exception
+class ParseError : public Exception
 {
-	ParseError() ;
+public:
+	ParseError(std::size_t line, std::size_t index) ;
+
+	std::size_t Line() const;
+	std::size_t Index() const;
+	
+private:
+	std::size_t	m_line;
+	std::size_t m_index;
 };
 
 /**	Indicates an error caused by type mismatch
@@ -44,6 +52,17 @@ struct ParseError : public Exception
 struct TypeMismatch : public Exception
 {
 	TypeMismatch(const std::type_index& expect, const std::type_index& actual);
+};
+
+class InvalidChar : public Exception
+{
+public:
+	InvalidChar(char ch);
+	
+	char Get() const;
+	
+private:
+	char m_ch;
 };
 
 } // end of namespace

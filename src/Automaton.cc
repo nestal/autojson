@@ -19,6 +19,7 @@
 */
 
 #include "Automaton.hh"
+#include "Exception.hh"
 
 #include <vector>
 
@@ -102,7 +103,7 @@ namespace chars
 		
 		// invalid character
 		if (ch < 0)
-			throw -1;
+			throw InvalidChar(ch);
 		
 		return ch >= sizeof(ascii) ? etc : ascii[ch];
 	}
@@ -294,19 +295,24 @@ private:
 			m_callback(Event::object_key, nullptr, 0);
 	
 		m_callback(Event::string_start, nullptr, 0);
+		
+		// save pointer to the start of the string
+		// it points to the double quote character
+		// so it needs to be adjusted in OnEndString()
+		assert(m_token == nullptr);
 		m_token = p;
 	}
 	
 	void OnEndString(const char *p)
 	{
+		// m_token points to the double quote character
+		// so it needs to be bumped
 		m_token++;
-		
-		std::string tok(m_token, p);
-		std::cout << "tok = " << tok << std::endl;
 		
 		m_callback(Event::string_data, m_token, p-m_token);
 		m_callback(Event::string_end, nullptr, 0);
 		
+		// reset token pointer for next use
 		m_token = nullptr;
 	}
 	
@@ -335,7 +341,7 @@ private:
 				case nxt:	return mode == Mode::object ? key : arr;
 				case sos:	return str;
 				case eos:	return mode == Mode::key    ? col : ok;
-				default:	throw -1;
+				default:	throw ParseError(0,0);
 			}
 		}
 
