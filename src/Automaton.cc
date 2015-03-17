@@ -202,6 +202,8 @@ namespace action
 		nxt,	// next element in array or object
 		sos,	// start of string
 		eos,	// end of string
+		sep,	// start of escape sequence
+		eep,	// end of escape sequence
 	};
 }
 
@@ -320,6 +322,10 @@ private:
 		m_token = nullptr;
 	}
 	
+	void OnStartEscape(const char *p)
+	{
+	}
+
 	class Edge
 	{
 	public:
@@ -345,6 +351,7 @@ private:
 				case nxt:	return mode == Mode::object ? key : arr;
 				case sos:	return str;
 				case eos:	return mode == Mode::key    ? col : ok;
+				case sep:	return esp;
 				default:	throw ParseError(0,0);
 			}
 		}
@@ -396,7 +403,7 @@ Automaton::Impl::Edge Automaton::Impl::Edge::Next(state::Code current, chars::Ty
 /*colon  col*/ {{col},{col},_____,_____,_____,_____,{ktv},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
 /*value  val*/ {{val},{val},{soj},_____,{sar},_____,_____,_____,{sos},_____,_____,_____,{mi_},_____,{ze0},{inT},_____,_____,_____,_____,_____,{fe1},_____,{n01},_____,_____,{tr1},_____,_____,_____,_____},
 /*array  arr*/ {{arr},{arr},{soj},_____,{sar},{ear},_____,_____,{sos},_____,_____,_____,{mi_},_____,{ze0},{inT},_____,_____,_____,_____,_____,{fe1},_____,{n01},_____,_____,{tr1},_____,_____,_____,_____},
-/*string str*/ {{str},_____,{str},{str},{str},{str},{str},{str},{eos},{esp},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str}},
+/*string str*/ {{str},_____,{str},{str},{str},{str},{str},{str},{eos},{sep},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str}},
 /*escape esp*/ {_____,_____,_____,_____,_____,_____,_____,_____,{str},{str},{str},_____,_____,_____,_____,_____,_____,{str},_____,_____,_____,{str},_____,{str},{str},_____,{str},{u1} ,_____,_____,_____},
 /*u1     U1*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{u2} ,{u2} ,{u2} ,{u2} ,{u2} ,{u2} ,{u2} ,{u2} ,_____,_____,_____,_____,_____,_____,{u2} ,{u2} ,_____},
 /*u2     U2*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{u3} ,{u3} ,{u3} ,{u3} ,{u3} ,{u3} ,{u3} ,{u3} ,_____,_____,_____,_____,_____,_____,{u3} ,{u3} ,_____},
@@ -441,6 +448,7 @@ void Automaton::Impl::Parse(const char *str, std::size_t len)
 			&Impl::OnNextValue,
 			&Impl::OnStartString,
 			&Impl::OnEndString,
+			&Impl::OnStartEscape
 		};
 
 		assert(next.Action() < sizeof(actions)/sizeof(actions[0]));
