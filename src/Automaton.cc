@@ -248,31 +248,31 @@ private:
 	void OnStartObject(const char *)
 	{
 		Push(Mode::key);
-		m_callback(Event::object_start, nullptr, 0);
+		m_callback(Event::start, DataType::object, nullptr, 0);
 	}
 	
 	void OnEndObject(const char *)
 	{
 		Pop(Mode::object);
-		m_callback(Event::object_end, nullptr, 0);
+		m_callback(Event::end, DataType::object, nullptr, 0);
 	}
 	
 	void OnEndEmptyObject(const char *)
 	{
 		Pop (Mode::key);
-		m_callback(Event::object_end, nullptr, 0);
+		m_callback(Event::end, DataType::object, nullptr, 0);
 	}
 	
 	void OnStartArray(const char *)
 	{
 		Push(Mode::array);
-		m_callback(Event::array_start, nullptr, 0);
+		m_callback(Event::start, DataType::array, nullptr, 0);
 	}
 	
 	void OnEndArray(const char *)
 	{
 		Pop (Mode::array);
-		m_callback(Event::array_end, nullptr, 0);
+		m_callback(Event::end, DataType::array, nullptr, 0);
 	}
 	
 	void OnKeyToValue(const char *)
@@ -291,11 +291,11 @@ private:
 	}
 	void OnStartString(const char *p)
 	{
-		if (m_stack.back() == Mode::key)
-			m_callback(Event::object_key, nullptr, 0);
+		m_callback(
+			Event::start,
+			m_stack.back() == Mode::key ? DataType::key : DataType::string,
+			nullptr, 0);
 	
-		m_callback(Event::string_start, nullptr, 0);
-		
 		// save pointer to the start of the string
 		// it points to the double quote character
 		// so it needs to be adjusted in OnEndString()
@@ -309,8 +309,12 @@ private:
 		// so it needs to be bumped
 		m_token++;
 		
-		m_callback(Event::string_data, m_token, p-m_token);
-		m_callback(Event::string_end, nullptr, 0);
+		DataType type = (m_stack.back() == Mode::key) ? DataType::key : DataType::string;
+		m_callback(
+			Event::data,
+			type,
+			m_token, p-m_token);
+		m_callback(Event::end, type, nullptr, 0);
 		
 		// reset token pointer for next use
 		m_token = nullptr;
@@ -472,7 +476,7 @@ bool Automaton::Result() const
 
 std::ostream& operator<<(std::ostream& os, Event ev)
 {
-	switch (ev)
+/*	switch (ev)
 	{
 		case Event::array_start:	os << "array_start"; break;
 		case Event::array_end:		os << "array_end"; break;
@@ -486,7 +490,7 @@ std::ostream& operator<<(std::ostream& os, Event ev)
 		case Event::null_:			os << "null"; break;
 		case Event::true_:			os << "true"; break;
 		case Event::false_:			os << "false"; break;
-	}
+	}*/
 	return os;
 }
 

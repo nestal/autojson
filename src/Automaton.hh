@@ -28,24 +28,23 @@
 
 namespace json {
 
+enum class DataType
+{
+	key,
+	string,
+	number,
+	boolean_true,
+	boolean_false,
+	null_value,
+	array,
+	object
+};
+
 enum class Event
 {
-	array_start,	//!< Start of a JSON array
-	array_end,		//!< End of a JSON array
-	object_start,	//!< Start of a JSON object
-	object_key,		//!< A key inside a JSON object.
-					//!< The value of the key is given by \c data with
-					//!< \c len bytes.
-	object_end,		//!< End of a JSON object
-	string_start,	//!< Start of a string. Does not have any data
-	string_data,	//!< String as a value. The value is given by \c data
-	string_end,		//!< End of a string. Does not have any data
-					//!< and \c len.
-	number,			//!< Number as a value. It's provided as a string.
-					//!< You need to call atoi() to obtain the real number.
-	null_,			//!< Literal value "null"
-	true_,			//!< Literal value "true"
-	false_			//!< Literal value "false"
+	start,
+	end,
+	data,
 } ;
 
 std::ostream& operator<<(std::ostream& os, Event ev);
@@ -55,7 +54,7 @@ std::ostream& operator<<(std::ostream& os, Event ev);
 class Automaton
 {
 public :
-	using Callback = std::function<void (Event, const char *, std::size_t)>;
+	using Callback = std::function<void (Event, DataType, const char *, std::size_t)>;
 	
 	Automaton(Callback&& callback, std::size_t depth=0);
 	~Automaton();
