@@ -25,14 +25,34 @@
 
 using namespace json;
 
+struct Entry
+{
+	DataType	type;
+	Event		ev;
+	std::string	data;
+	
+	template <typename T>
+	Entry(DataType t, Event e, T&& str) : type(t), ev(e), data(str)
+	{
+	}
+};
+
+bool operator==(const Entry& e1, const Entry& e2)
+{
+	return e1.type == e2.type && e1.ev == e2.ev && e1.data == e2.data;
+}
+
+std::ostream& operator<<(std::ostream& os, const Entry& e)
+{
+	return os << e.type << ' ' << e.ev << " \"" << e.data << '\"';
+}
+
 TEST(Simple, AutomatonTest)
 {
-	std::vector<DataType> dt_actual;
-	std::vector<Event> ev_actual;
+	std::vector<Entry> actual;
 	
-	Automaton sub([&](Event v, DataType t, const char *, std::size_t){
-		ev_actual.push_back(v);
-		dt_actual.push_back(t);
+	Automaton sub([&](Event v, DataType t, const char *s, std::size_t l){
+		actual.emplace_back(t, v, std::string{s,l});
 	});
 
 	const char js[] = "{ \"hello\": \"1234567890abcdefghijk\","
@@ -42,47 +62,27 @@ TEST(Simple, AutomatonTest)
 	
 	ASSERT_TRUE(sub.Result());
 	
-	std::vector<DataType> dt_expect {
-		DataType::object,
-			DataType::key,
-			DataType::key,
-			DataType::key,
+	std::vector<Entry> expect {
+		{DataType::object,	Event::start, ""},
+			{DataType::key,	Event::start, ""},
+			{DataType::key,	Event::data, "hello"},
+			{DataType::key,	Event::end, ""},
 			
-			DataType::string,
-			DataType::string,
-			DataType::string,
+			{DataType::string,	Event::start, ""},
+			{DataType::string,	Event::data, "1234567890abcdefghijk"},
+			{DataType::string,	Event::end, ""},
 		
-			DataType::key,
-			DataType::key,
-			DataType::key,
-
-			DataType::string,
-			DataType::string,
-			DataType::string,
-		DataType::object
+			{DataType::key,	Event::start, ""},
+			{DataType::key,	Event::data, "hello2"},
+			{DataType::key,	Event::end, ""},
+			
+			{DataType::string,	Event::start, ""},
+			{DataType::string,	Event::data, "1234567890abcdefghijk"},
+			{DataType::string,	Event::end, ""},
+		{DataType::object,	Event::end, ""},
 	};
-	ASSERT_EQ(dt_expect, dt_actual);
-	std::vector<Event> ev_expect{
-		Event::start,
-			Event::start,
-			Event::data,
-			Event::end,
 
-			Event::start,
-			Event::data,
-			Event::end,
-
-			Event::start,
-			Event::data,
-			Event::end,
-
-			Event::start,
-			Event::data,
-			Event::end,
-
-		Event::end
-	};
-	ASSERT_EQ(ev_expect, ev_actual);
+	ASSERT_EQ(expect, actual);
 }
 
 TEST(SimpleError, AutomatonTest)

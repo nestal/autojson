@@ -101,11 +101,10 @@ namespace chars
 			etc,	etc,	etc,	lcurb,	etc,	rcurb,	etc,	etc
 		};
 		
-		// invalid character
-		if (ch < 0)
-			throw InvalidChar(ch);
+		// prevent sign extension
+		std::uint8_t uch = static_cast<std::uint8_t>(ch);
 		
-		return ch >= sizeof(ascii) ? etc : ascii[ch];
+		return uch >= sizeof(ascii)/sizeof(ascii[0]) ? etc : ascii[uch];
 	}
 	
 } // end of namespace chars
@@ -291,21 +290,8 @@ private:
 			Push(Mode::key);
 		}
 	}
-	void OnStartString(const char *p)
-	{
-		m_callback(
-			Event::start,
-			m_stack.back() == Mode::key ? DataType::key : DataType::string,
-			nullptr, 0);
 	
-		// save pointer to the start of the string
-		// it points to the double quote character
-		// so it needs to be adjusted in OnEndString()
-		assert(m_token == nullptr);
-		m_token = p;
-	}
-	
-	void OnEndString(const char *p)
+	void EmitString(const char *p)
 	{
 		// m_token points to the double quote character
 		// so it needs to be bumped
@@ -322,8 +308,34 @@ private:
 		m_token = nullptr;
 	}
 	
+	void OnStartString(const char *p)
+	{
+		m_callback(
+			Event::start,
+			m_stack.back() == Mode::key ? DataType::key : DataType::string,
+			nullptr, 0);
+	
+		// save pointer to the start of the string
+		// it points to the double quote character
+		// so it needs to be adjusted in EmitString()
+		assert(m_token == nullptr);
+		m_token = p;
+	}
+	
+	void OnEndString(const char *p)
+	{
+		EmitString(p);
+	}
+	
 	void OnStartEscape(const char *p)
 	{
+		EmitString(p);
+	}
+	
+	void OnEndEscape(const char *p)
+	{
+		std::cout << "escape sequence = " << std::string(++m_token, p) << std::endl;
+		m_token = p;
 	}
 
 	class Edge
@@ -352,6 +364,7 @@ private:
 				case sos:	return str;
 				case eos:	return mode == Mode::key    ? col : ok;
 				case sep:	return esp;
+				case eep:	return str;
 				default:	throw ParseError(0,0);
 			}
 		}
@@ -404,11 +417,11 @@ Automaton::Impl::Edge Automaton::Impl::Edge::Next(state::Code current, chars::Ty
 /*value  val*/ {{val},{val},{soj},_____,{sar},_____,_____,_____,{sos},_____,_____,_____,{mi_},_____,{ze0},{inT},_____,_____,_____,_____,_____,{fe1},_____,{n01},_____,_____,{tr1},_____,_____,_____,_____},
 /*array  arr*/ {{arr},{arr},{soj},_____,{sar},{ear},_____,_____,{sos},_____,_____,_____,{mi_},_____,{ze0},{inT},_____,_____,_____,_____,_____,{fe1},_____,{n01},_____,_____,{tr1},_____,_____,_____,_____},
 /*string str*/ {{str},_____,{str},{str},{str},{str},{str},{str},{eos},{sep},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str},{str}},
-/*escape esp*/ {_____,_____,_____,_____,_____,_____,_____,_____,{str},{str},{str},_____,_____,_____,_____,_____,_____,{str},_____,_____,_____,{str},_____,{str},{str},_____,{str},{u1} ,_____,_____,_____},
+/*escape esp*/ {_____,_____,_____,_____,_____,_____,_____,_____,{eep},{eep},{eep},_____,_____,_____,_____,_____,_____,{eep},_____,_____,_____,{eep},_____,{eep},{eep},_____,{eep},{u1} ,_____,_____,_____},
 /*u1     U1*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{u2} ,{u2} ,{u2} ,{u2} ,{u2} ,{u2} ,{u2} ,{u2} ,_____,_____,_____,_____,_____,_____,{u2} ,{u2} ,_____},
 /*u2     U2*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{u3} ,{u3} ,{u3} ,{u3} ,{u3} ,{u3} ,{u3} ,{u3} ,_____,_____,_____,_____,_____,_____,{u3} ,{u3} ,_____},
 /*u3     U3*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{u4} ,{u4} ,{u4} ,{u4} ,{u4} ,{u4} ,{u4} ,{u4} ,_____,_____,_____,_____,_____,_____,{u4} ,{u4} ,_____},
-/*u4     U4*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{str},{str},{str},{str},{str},{str},{str},{str},_____,_____,_____,_____,_____,_____,{str},{str},_____},
+/*u4     U4*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{eep},{eep},{eep},{eep},{eep},{eep},{eep},{eep},_____,_____,_____,_____,_____,_____,{eep},{eep},_____},
 /*minus  mi_*/ {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{ze0},{inT},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
 /*zero   ze0*/ {{ok} ,{ok} ,_____,{eoj},_____,{ear},_____,{nxt},_____,_____,_____,_____,_____,{frt},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
 /*int    inT*/ {{ok} ,{ok} ,_____,{eoj},_____,{ear},_____,{nxt},_____,_____,_____,_____,_____,{frt},{inT},{inT},_____,_____,_____,_____,{ex1},_____,_____,_____,_____,_____,_____,_____,_____,{ex1},_____},
@@ -448,7 +461,8 @@ void Automaton::Impl::Parse(const char *str, std::size_t len)
 			&Impl::OnNextValue,
 			&Impl::OnStartString,
 			&Impl::OnEndString,
-			&Impl::OnStartEscape
+			&Impl::OnStartEscape,
+			&Impl::OnEndEscape
 		};
 
 		assert(next.Action() < sizeof(actions)/sizeof(actions[0]));
@@ -493,5 +507,16 @@ std::ostream& operator<<(std::ostream& os, Event ev)
 	return os;
 }
 
+std::ostream& operator<<(std::ostream& os, DataType type)
+{
+	switch (type)
+	{
+		case DataType::array:	os << "array"; break;
+		case DataType::object:	os << "object"; break;
+		case DataType::key:		os << "key"; break;
+		case DataType::string:	os << "string"; break;
+	}
+	return os;
+}
 
 } // end of namespace json

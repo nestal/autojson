@@ -48,6 +48,7 @@ enum class Event
 } ;
 
 std::ostream& operator<<(std::ostream& os, Event ev);
+std::ostream& operator<<(std::ostream& os, DataType ev);
 
 /**	The state machine of the JSON parser.
 
