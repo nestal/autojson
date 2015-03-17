@@ -291,29 +291,27 @@ private:
 		}
 	}
 	
+	DataType Current() const
+	{
+		assert(!m_stack.empty());
+		return m_stack.back() == Mode::key ? DataType::key : DataType::string;
+	}
+	
 	void EmitString(const char *p)
 	{
 		// m_token points to the double quote character
 		// so it needs to be bumped
 		m_token++;
 		
-		DataType type = (m_stack.back() == Mode::key) ? DataType::key : DataType::string;
-		m_callback(
-			Event::data,
-			type,
-			m_token, p-m_token);
-		m_callback(Event::end, type, nullptr, 0);
-		
+		m_callback(Event::data, Current(), m_token, p-m_token);
+	
 		// reset token pointer for next use
 		m_token = nullptr;
 	}
 	
 	void OnStartString(const char *p)
 	{
-		m_callback(
-			Event::start,
-			m_stack.back() == Mode::key ? DataType::key : DataType::string,
-			nullptr, 0);
+		m_callback(Event::start, Current(), nullptr, 0);
 	
 		// save pointer to the start of the string
 		// it points to the double quote character
@@ -325,16 +323,31 @@ private:
 	void OnEndString(const char *p)
 	{
 		EmitString(p);
+		m_callback(Event::end, Current(), nullptr, 0);
 	}
 	
 	void OnStartEscape(const char *p)
 	{
 		EmitString(p);
+
+		// similarly, points to the \ character
+		assert(m_token == nullptr);
+		m_token = p;
 	}
 	
 	void OnEndEscape(const char *p)
 	{
-		std::cout << "escape sequence = " << std::string(++m_token, p) << std::endl;
+		std::cout << "escape sequence = " << *m_token << *p << std::endl;
+		
+		static const char newline = '\n';
+		
+		switch (*p)
+		{
+			case 'n':
+				m_callback(Event::data, Current(), &newline, sizeof(newline));
+				break;
+		}
+		
 		m_token = p;
 	}
 
@@ -515,6 +528,10 @@ std::ostream& operator<<(std::ostream& os, DataType type)
 		case DataType::object:	os << "object"; break;
 		case DataType::key:		os << "key"; break;
 		case DataType::string:	os << "string"; break;
+		case DataType::boolean_true:	os << "true"; break;
+		case DataType::boolean_false:	os << "false"; break;
+		case DataType::number:		os << "number"; break;
+		case DataType::null_value:	os << "null"; break;
 	}
 	return os;
 }

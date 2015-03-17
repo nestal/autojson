@@ -70,7 +70,7 @@ void Callback(void *pvec, JSON_event type, const char *data, size_t len)
 	assert(vec->back().value.size() == len);
 }
 
-TEST(ParsedOutputInCallback, JsonTest)
+TEST(JsonTest, ParsedOutputInCallback)
 {
 	JSON_checker jc = new_JSON_checker(5);
 
@@ -105,7 +105,7 @@ TEST(ParsedOutputInCallback, JsonTest)
 	ASSERT_EQ(expect, actual);
 }
 
-TEST(PartialJsonCanBeParsed, JsonTest)
+TEST(JsonTest, PartialJsonCanBeParsed)
 {
 	JSON_checker jc = new_JSON_checker(5);
 

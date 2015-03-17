@@ -47,20 +47,33 @@ std::ostream& operator<<(std::ostream& os, const Entry& e)
 	return os << e.type << ' ' << e.ev << " \"" << e.data << '\"';
 }
 
-TEST(Simple, AutomatonTest)
+class AutomatonTest : public ::testing::Test
 {
-	std::vector<Entry> actual;
+protected:
+	virtual void SetUp()
+	{
+		m_sub = new Automaton([&](Event v, DataType t, const char *s, std::size_t l){
+			m_actual.emplace_back(t, v, std::string{s,l});
+		});
+	}
 	
-	Automaton sub([&](Event v, DataType t, const char *s, std::size_t l){
-		actual.emplace_back(t, v, std::string{s,l});
-	});
+	virtual void TearDown()
+	{
+		delete m_sub;
+	}
+	
+	Automaton	*m_sub;
+	std::vector<Entry> m_actual;
+};
 
+TEST_F(AutomatonTest, Simple)
+{
 	const char js[] = "{ \"hello\": \"1234567890abcdefghijk\","
 		"\"hello2\": \"1234567890abcdefghijk\" "
 	" }";
-	sub.Parse(js, sizeof(js)-1);
+	m_sub->Parse(js, sizeof(js)-1);
 	
-	ASSERT_TRUE(sub.Result());
+	ASSERT_TRUE(m_sub->Result());
 	
 	std::vector<Entry> expect {
 		{DataType::object,	Event::start, ""},
@@ -82,18 +95,35 @@ TEST(Simple, AutomatonTest)
 		{DataType::object,	Event::end, ""},
 	};
 
-	ASSERT_EQ(expect, actual);
+	ASSERT_EQ(expect, m_actual);
 }
 
-TEST(SimpleError, AutomatonTest)
+TEST_F(AutomatonTest, SimpleError)
 {
-	Automaton sub([](Event v, DataType, const char *p, std::size_t s){
-//		if (v == Event::string_data)
-//			std::cout << std::string(p,s) << std::endl;
-	});
-
 	const char js[] = "{ \"hello\": \"1234567890abcdefghijk\"";
-	sub.Parse(js, sizeof(js)-1);
+	m_sub->Parse(js, sizeof(js)-1);
 	
-	ASSERT_FALSE(sub.Result());
+	ASSERT_FALSE(m_sub->Result());
+}
+
+TEST_F(AutomatonTest, TestEscape)
+{
+	const char js[] = "{\"1234\": \"a\\n1234\" }";
+	m_sub->Parse(js, sizeof(js)-1);
+	ASSERT_TRUE(m_sub->Result());
+	
+	std::vector<Entry> expect {
+		{DataType::object,	Event::start, ""},
+		{DataType::key,	Event::start, ""},
+		{DataType::key,	Event::data, "1234"},
+		{DataType::key,	Event::end, ""},
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "a"},
+		{DataType::string,	Event::data, "\n"},
+		{DataType::string,	Event::data, "1234"},
+		{DataType::string,	Event::end, ""},
+		{DataType::object,	Event::end, ""},
+	};
+	
+	ASSERT_EQ(expect, m_actual);
 }

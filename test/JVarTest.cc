@@ -32,7 +32,7 @@
 
 using namespace json;
 
-TEST(AssignmentOpCanChangeType, JVarTest)
+TEST(JVarTest, AssignmentOpCanChangeType)
 {
 	JVar target(100);
 	target = "this is a string";
@@ -43,7 +43,7 @@ TEST(AssignmentOpCanChangeType, JVarTest)
 	ASSERT_EQ("this is a string", target.As<std::string>());
 }
 
-TEST(AsReturnByReference, JVarTest)
+TEST(JVarTest, AsReturnByReference)
 {
 	JVar target;
 	target = 100;
@@ -59,7 +59,7 @@ TEST(AsReturnByReference, JVarTest)
 	ASSERT_EQ(20, ref);
 }
 
-TEST(ArrayAddInteger, JVarTest)
+TEST(JVarTest, ArrayAddInteger)
 {
 	JVar target((JVar::Array())), in(1001);
 	ASSERT_EQ(1001, in);
@@ -68,7 +68,7 @@ TEST(ArrayAddInteger, JVarTest)
 	ASSERT_EQ(1001, target[0]);
 }
 
-TEST(AddWillConvertNullToArrayOrHash, JVarTest)
+TEST(JVarTest, AddWillConvertNullToArrayOrHash)
 {
 	JVar target;
 	ASSERT_TRUE(target.IsNull());
@@ -78,7 +78,7 @@ TEST(AddWillConvertNullToArrayOrHash, JVarTest)
 	ASSERT_EQ("target", target[0]);
 }
 
-TEST(OpSqBracketCanBeNested, JVarTest)
+TEST(JVarTest, OpSqBracketCanBeNested)
 {
 	JVar target;
 	target.Add("key", std::move(JVar().
@@ -88,7 +88,7 @@ TEST(OpSqBracketCanBeNested, JVarTest)
 	ASSERT_EQ("value2", target["key"]["subkey2"]);
 }
 
-TEST(PrintToStdOut, JVarTest)
+TEST(JVarTest, PrintToStdOut)
 {
 	JVar target;
 	target.Add("abc", "def");

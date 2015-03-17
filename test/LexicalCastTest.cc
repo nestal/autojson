@@ -27,21 +27,21 @@
 
 using namespace json;
 
-TEST(Cast_integer, LevelTest)
+TEST(LexicalCastTest, Cast_integer)
 {
 	ASSERT_EQ(100,  LexicalCast<std::int32_t>("100", 3) );
 	ASSERT_EQ(100L, LexicalCast<std::int32_t>("100", 3));
 	ASSERT_EQ(123UL, LexicalCast<std::uint64_t>("123", 3));
 }
 
-TEST(Cast_double, LevelTest)
+TEST(LexicalCastTest, Cast_double)
 {
 	ASSERT_EQ(100.0,   LexicalCast<double>("100", 3) );
 	ASSERT_EQ(101.0,   LexicalCast<double>("101", 3) );
 	ASSERT_EQ(123.123, LexicalCast<double>("123.123", 7) );
 }
 
-TEST(Unescape_normal, LevelTest)
+TEST(LexicalCastTest, Unescape_normal)
 {
 	ASSERT_EQ("ABC\n",	Unescape("ABC\\n"));
 }

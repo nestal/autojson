@@ -27,7 +27,7 @@
 
 using namespace json;
 
-TEST(Get_pointer_with_the_wrong_type_will_throw, CursorTest)
+TEST(CursorTest, Get_pointer_with_the_wrong_type_will_throw)
 {
 	SimpleTypeBuilder<int> iv;
 	
@@ -37,7 +37,7 @@ TEST(Get_pointer_with_the_wrong_type_will_throw, CursorTest)
 	ASSERT_THROW(sub.Target<double>(), TypeMismatch);
 }
 
-TEST(Get_pointer_with_the_right_type_will_return_it, CursorTest)
+TEST(CursorTest, Get_pointer_with_the_right_type_will_return_it)
 {
 	SimpleTypeBuilder<std::string> iv;
 	
