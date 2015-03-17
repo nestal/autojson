@@ -49,7 +49,10 @@ enum class Event
 
 std::ostream& operator<<(std::ostream& os, Event ev);
 
-/**	Brief description of Automaton
+/**	The state machine of the JSON parser.
+
+	The Automaton is the JSON state machine. It takes a stream of characters as input
+	and emit events when it encourter certain constructs, such as objects and arrays.
 */
 class Automaton
 {

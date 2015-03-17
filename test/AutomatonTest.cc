@@ -27,10 +27,12 @@ using namespace json;
 
 TEST(Simple, AutomatonTest)
 {
-	std::vector<Event> actual;
+	std::vector<DataType> dt_actual;
+	std::vector<Event> ev_actual;
 	
-	Automaton sub([&](Event v, const char *, std::size_t){
-		actual.push_back(v);
+	Automaton sub([&](Event v, DataType t, const char *, std::size_t){
+		ev_actual.push_back(v);
+		dt_actual.push_back(t);
 	});
 
 	const char js[] = "{ \"hello\": \"1234567890abcdefghijk\","
@@ -40,36 +42,54 @@ TEST(Simple, AutomatonTest)
 	
 	ASSERT_TRUE(sub.Result());
 	
-	std::vector<Event> expect {
-		Event::object_start,
-			Event::object_key,
-				Event::string_start,
-				Event::string_data,
-				Event::string_end,
+	std::vector<DataType> dt_expect {
+		DataType::object,
+			DataType::key,
+			DataType::key,
+			DataType::key,
 			
-			Event::string_start,
-			Event::string_data,
-			Event::string_end,
+			DataType::string,
+			DataType::string,
+			DataType::string,
+		
+			DataType::key,
+			DataType::key,
+			DataType::key,
 
-			Event::object_key,
-				Event::string_start,
-				Event::string_data,
-				Event::string_end,
-			
-			Event::string_start,
-			Event::string_data,
-			Event::string_end,
-
-		Event::object_end
+			DataType::string,
+			DataType::string,
+			DataType::string,
+		DataType::object
 	};
-	ASSERT_EQ(expect, actual);
+	ASSERT_EQ(dt_expect, dt_actual);
+	std::vector<Event> ev_expect{
+		Event::start,
+			Event::start,
+			Event::data,
+			Event::end,
+
+			Event::start,
+			Event::data,
+			Event::end,
+
+			Event::start,
+			Event::data,
+			Event::end,
+
+			Event::start,
+			Event::data,
+			Event::end,
+
+		Event::end
+	};
+	ASSERT_EQ(ev_expect, ev_actual);
 }
 
 TEST(SimpleError, AutomatonTest)
 {
-	Automaton sub([](Event v, const char *p, std::size_t s){
-		if (v == Event::string_data)
-			std::cout << std::string(p,s) << std::endl;
+	Automaton sub([](Event v, DataType, const char *p, std::size_t s){
+//		if (v == Event::string_data)
+//			std::cout << std::string(p,s) << std::endl;
 	});
 
 	const char js[] = "{ \"hello\": \"1234567890abcdefghijk\"";

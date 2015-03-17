@@ -476,21 +476,12 @@ bool Automaton::Result() const
 
 std::ostream& operator<<(std::ostream& os, Event ev)
 {
-/*	switch (ev)
+	switch (ev)
 	{
-		case Event::array_start:	os << "array_start"; break;
-		case Event::array_end:		os << "array_end"; break;
-		case Event::object_start:	os << "object_start"; break;
-		case Event::object_key:		os << "object_key"; break;
-		case Event::object_end:		os << "object_end"; break;
-		case Event::string_start:	os << "string_start"; break;
-		case Event::string_data:	os << "string_data"; break;
-		case Event::string_end:		os << "string_end"; break;
-		case Event::number:			os << "number"; break;
-		case Event::null_:			os << "null"; break;
-		case Event::true_:			os << "true"; break;
-		case Event::false_:			os << "false"; break;
-	}*/
+		case Event::start:	os << "start"; break;
+		case Event::end:	os << "end"; break;
+		case Event::data:	os << "start"; break;
+	}
 	return os;
 }
 
