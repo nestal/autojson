@@ -227,9 +227,66 @@ private:
 		array,
 		done,
 		key,
-		object
+		object,
+		escape
 	};
 	
+	struct Buf
+	{
+		const char	*str;
+		std::size_t	len;
+	};
+
+	class EmitData
+	{
+	public:
+		EmitData() : m_start(nullptr) {}
+
+		void Save(const char *p)
+		{
+			assert(p);
+			assert(!m_start);
+			m_tmp.clear();
+			m_start = p;
+		}
+
+		Buf Flush(const char *p)
+		{
+			assert(p);
+			assert(m_start);
+			if (m_tmp.empty())
+			{
+				Buf b{ m_start, p - m_start };
+				m_start = nullptr;
+				return b;
+			}
+			else
+			{
+				Stash(p);
+				return Buf{ m_tmp.c_str(), m_tmp.size() };
+			}
+		}
+		
+		void Stash(const char *p)
+		{
+			assert(p);
+			assert(m_start);
+			m_tmp.insert(m_tmp.end(), p, m_start);
+			m_start = nullptr;
+		}
+
+		void Unstash(const char *p)
+		{
+			assert(!m_start);
+			assert(!m_tmp.empty());
+			m_start = p;
+		}
+
+	private:
+		const char	*m_start;
+		std::string	m_tmp;
+	};
+
 	void Push(Mode mode)
 	{
 		m_stack.push_back(mode);
@@ -297,14 +354,17 @@ private:
 		assert(!m_stack.empty());
 		return m_stack.back() == Mode::key ? DataType::key : DataType::string;
 	}
-	
+
+	///	\pre (m_token,p) denotes the string captured
 	void EmitString(const char *p)
 	{
 		// m_token points to the double quote character
 		// so it needs to be bumped
+		assert(m_token);
 		m_token++;
 		
-		m_callback(Event::data, Current(), m_token, p-m_token);
+		assert(p);
+		m_callback(Event::data, Current(), m_token, p - m_token);
 	
 		// reset token pointer for next use
 		m_token = nullptr;
@@ -317,7 +377,7 @@ private:
 		// save pointer to the start of the string
 		// it points to the double quote character
 		// so it needs to be adjusted in EmitString()
-		assert(m_token == nullptr);
+		assert(!m_token);
 		m_token = p;
 	}
 	
@@ -329,9 +389,11 @@ private:
 	
 	void OnStartEscape(const char *p)
 	{
+		Push(Mode::escape);
 		EmitString(p);
 
 		// similarly, points to the \ character
+		assert(*p == '\\');
 		assert(m_token == nullptr);
 		m_token = p;
 	}
@@ -339,6 +401,8 @@ private:
 	void OnEndEscape(const char *p)
 	{
 		assert(p);
+		assert(m_token);
+		assert(*m_token == '\\');
 
 		std::cout << "escape sequence = " << *m_token << *p << std::endl;
 
@@ -352,6 +416,7 @@ private:
 			throw InvalidChar(*p);
 
 		m_token = p;
+		Pop(Mode::escape);
 	}
 
 	class Edge
