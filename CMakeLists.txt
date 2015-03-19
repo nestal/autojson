@@ -46,6 +46,9 @@ add_library(autojson
 	src/JsonProcessor.hh
 	src/TypeBuilder.hh
 	src/VectorBuilder.hh
+	src/EmitData.hh
+	src/EmitData.cc
+	src/Range.hh
 )
 
 include(CheckCXXCompilerFlag)
@@ -71,6 +74,7 @@ if (GTEST_FOUND)
 		test/JVarTest.cc
 		test/LexicalCastTest.cc
 		test/AutomatonTest.cc
+		test/EmitDataTest.cc
 	)
 	target_link_libraries(unittest autojson ${GTEST_BOTH_LIBRARIES})
 endif (GTEST_FOUND)

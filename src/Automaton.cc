@@ -23,6 +23,7 @@
 
 #include <vector>
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -237,55 +238,6 @@ private:
 		std::size_t	len;
 	};
 
-	class EmitData
-	{
-	public:
-		EmitData() : m_start(nullptr) {}
-
-		void Save(const char *p)
-		{
-			assert(p);
-			assert(!m_start);
-			m_tmp.clear();
-			m_start = p;
-		}
-
-		Buf Flush(const char *p)
-		{
-			assert(p);
-			assert(m_start);
-			if (m_tmp.empty())
-			{
-				Buf b{ m_start, p - m_start };
-				m_start = nullptr;
-				return b;
-			}
-			else
-			{
-				Stash(p);
-				return Buf{ m_tmp.c_str(), m_tmp.size() };
-			}
-		}
-		
-		void Stash(const char *p)
-		{
-			assert(p);
-			assert(m_start);
-			m_tmp.insert(m_tmp.end(), p, m_start);
-			m_start = nullptr;
-		}
-
-		void Unstash(const char *p)
-		{
-			assert(!m_start);
-			assert(!m_tmp.empty());
-			m_start = p;
-		}
-
-	private:
-		const char	*m_start;
-		std::string	m_tmp;
-	};
 
 	void Push(Mode mode)
 	{
@@ -465,6 +417,7 @@ private:
 			case Mode::key:		os << "key"; break;
 			case Mode::done:	os << "done"; break;
 			case Mode::object:	os << "object"; break;
+			case Mode::escape:	os << "escape"; break;
 		}
 		return os;
 	}

@@ -1,0 +1,72 @@
+/*
+	songbits: A cloud-base music player
+	Copyright (C) 2015  Wan Wai Ho
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation version 2
+	of the License.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+	02110-1301, USA.
+*/
+
+#include "EmitData.hh"
+#include "Range.hh"
+
+#include <cassert>
+
+namespace json {
+
+EmitData::EmitData() : m_start(nullptr)
+{
+}
+
+void EmitData::Save(const char *p)
+{
+	assert(p);
+	assert(!m_start);
+	m_tmp.clear();
+	m_start = p;
+}
+
+EmitData::Buf EmitData::Flush(const char *p)
+{
+	assert(p);
+	assert(m_start);
+	if (m_tmp.empty())
+	{
+		Buf b{ m_start, p };
+		m_start = nullptr;
+		return b;
+	}
+	else
+	{
+		Stash(p);
+		return Buf{ &*m_tmp.begin(), &*m_tmp.end() };
+	}
+}
+
+void EmitData::Stash(const char *p)
+{
+	assert(p);
+	assert(m_start);
+	m_tmp.insert(m_tmp.end(), p, m_start);
+	m_start = nullptr;
+}
+
+void EmitData::Unstash(const char *p)
+{
+	assert(!m_start);
+	assert(!m_tmp.empty());
+	m_start = p;
+}
+
+} // end of namespace
