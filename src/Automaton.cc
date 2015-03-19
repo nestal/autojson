@@ -24,6 +24,7 @@
 #include <vector>
 
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 
 namespace json {
@@ -337,17 +338,19 @@ private:
 	
 	void OnEndEscape(const char *p)
 	{
+		assert(p);
+
 		std::cout << "escape sequence = " << *m_token << *p << std::endl;
-		
-		static const char newline = '\n';
-		
-		switch (*p)
-		{
-			case 'n':
-				m_callback(Event::data, Current(), &newline, sizeof(newline));
-				break;
-		}
-		
+
+		static const char out[]	= "\"\\/\b\f\n\r\t";
+		static const char in[]	= "\"\\/bfnrt";
+
+		auto pos = std::find(std::begin(in), std::end(in), *p);
+		if (pos != std::end(in))
+			m_callback(Event::data, Current(), &out[pos - in], sizeof(out[pos - in]));
+		else
+			throw InvalidChar(*p);
+
 		m_token = p;
 	}
 
@@ -394,7 +397,7 @@ private:
 		switch (m)
 		{
 			case Mode::array:	os << "array"; break;
-			case Mode::key:	os << "key"; break;
+			case Mode::key:		os << "key"; break;
 			case Mode::done:	os << "done"; break;
 			case Mode::object:	os << "object"; break;
 		}
