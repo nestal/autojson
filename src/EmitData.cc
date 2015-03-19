@@ -41,9 +41,11 @@ EmitData::Buf EmitData::Flush(const char *p)
 {
 	assert(p);
 	assert(m_start);
+	assert(p != m_start);
+	
 	if (m_tmp.empty())
 	{
-		Buf b{ m_start, p };
+		Buf b{ m_start+1, p };
 		m_start = nullptr;
 		return b;
 	}
@@ -58,14 +60,18 @@ void EmitData::Stash(const char *p)
 {
 	assert(p);
 	assert(m_start);
-	m_tmp.insert(m_tmp.end(), p, m_start);
+	assert(p != m_start);
+	
+	m_tmp.insert(m_tmp.end(), m_start+1, p);
 	m_start = nullptr;
 }
 
 void EmitData::Unstash(const char *p)
 {
+	assert(p);
 	assert(!m_start);
 	assert(!m_tmp.empty());
+	
 	m_start = p;
 }
 

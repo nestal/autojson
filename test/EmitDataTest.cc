@@ -27,11 +27,57 @@ using namespace json;
 
 TEST(EmitDataTest, Flush_can_get_back_Saved_data)
 {
-	const char str[] = "hello world";
+	const char str[] = "\"hello world";
 	
 	EmitData sub;
 	sub.Save(str);
 	
-	EmitData::Buf b = sub.Flush(std::end(str));
-	ASSERT_TRUE(std::equal(b.begin(), b.end(), str));
+	EmitData::Buf b = sub.Flush(std::end(str)-1);
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("hello world")));
+}
+
+TEST(EmitDataTest, Stash_and_unstash)
+{
+	const char str[] = "hello world";
+	
+	EmitData sub;
+	sub.Save(str);
+	sub.Stash(std::end(str)-1);
+	
+	sub.Unstash(str);
+	EmitData::Buf b = sub.Flush(std::end(str)-1);
+	
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("ello worldello world")));
+}
+
+TEST(EmitDataTest, Stash_and_unstash_twice)
+{
+	const char str[] = "\\n123";
+	
+	EmitData sub;
+	sub.Save(str);
+	sub.Stash(std::end(str)-1);
+	
+	sub.Unstash(str);
+	sub.Stash(std::end(str)-1);
+	
+	sub.Unstash(str);
+	EmitData::Buf b = sub.Flush(std::end(str)-2);
+	
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("n123n123n12")));
+}
+
+TEST(EmitDataTest, Save_will_clear_stash_data)
+{
+	const char str[] = "*sample";
+	
+	EmitData sub;
+	sub.Save(str);
+	sub.Stash(std::end(str)-1);
+	
+	const char str2[] = "$other";
+	sub.Save(str2);		// re-save. will clear previously stashed data
+	EmitData::Buf b = sub.Flush(std::end(str2)-1);
+	
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("other")));
 }
