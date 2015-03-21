@@ -43,6 +43,9 @@ public:
 	void Stash(const char *p);
 	void Unstash(const char *p);
 
+	void Clear();
+	bool IsSaved() const;
+	
 private:
 	const char	*m_start;
 	std::string	m_tmp;

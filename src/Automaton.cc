@@ -19,7 +19,10 @@
 */
 
 #include "Automaton.hh"
+
+#include "EmitData.hh"
 #include "Exception.hh"
+#include "Range.hh"
 
 #include <vector>
 
@@ -214,8 +217,7 @@ public:
 	Impl(Callback&& callback)
 	:	m_state(state::go),
 		m_stack(1, Mode::done),
-		m_callback(std::move(callback)),
-		m_token(nullptr)
+		m_callback(std::move(callback))
 	{
 	}	
 
@@ -312,14 +314,15 @@ private:
 	{
 		// m_token points to the double quote character
 		// so it needs to be bumped
-		assert(m_token);
-		m_token++;
+		assert(m_token.IsSaved());
+//		m_token++;
+		EmitData::Buf buf = m_token.Flush(p);
 		
 		assert(p);
-		m_callback(Event::data, Current(), m_token, p - m_token);
+		m_callback(Event::data, Current(), buf.begin(), buf.size());
 	
 		// reset token pointer for next use
-		m_token = nullptr;
+//		m_token = nullptr;
 	}
 	
 	void OnStartString(const char *p)
@@ -329,8 +332,8 @@ private:
 		// save pointer to the start of the string
 		// it points to the double quote character
 		// so it needs to be adjusted in EmitString()
-		assert(!m_token);
-		m_token = p;
+		assert(!m_token.IsSaved());
+		m_token.Save(p);
 	}
 	
 	void OnEndString(const char *p)
@@ -346,17 +349,16 @@ private:
 
 		// similarly, points to the \ character
 		assert(*p == '\\');
-		assert(m_token == nullptr);
-		m_token = p;
+		assert(!m_token.IsSaved());
+		m_token.Save(p);
 	}
 	
 	void OnEndEscape(const char *p)
 	{
 		assert(p);
-		assert(m_token);
-		assert(*m_token == '\\');
+		assert(m_token.IsSaved());
 
-		std::cout << "escape sequence = " << *m_token << *p << std::endl;
+//		std::cout << "escape sequence = " << *m_token << *p << std::endl;
 
 		static const char out[]	= "\"\\/\b\f\n\r\t";
 		static const char in[]	= "\"\\/bfnrt";
@@ -367,7 +369,8 @@ private:
 		else
 			throw InvalidChar(*p);
 
-		m_token = p;
+		m_token.Clear();
+		m_token.Save(p);
 		Pop(Mode::escape);
 	}
 
@@ -426,7 +429,7 @@ private:
 	
 private :
 	state::Code			m_state;
-	const char			*m_token;
+	EmitData			m_token;
 	
 	std::vector<Mode>	m_stack;
 	const Callback		m_callback;

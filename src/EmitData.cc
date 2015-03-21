@@ -29,6 +29,12 @@ EmitData::EmitData() : m_start(nullptr)
 {
 }
 
+void EmitData::Clear()
+{
+	m_tmp.clear();
+	m_start = nullptr;
+}
+
 void EmitData::Save(const char *p)
 {
 	assert(p);
@@ -74,5 +80,11 @@ void EmitData::Unstash(const char *p)
 	
 	m_start = p;
 }
+
+bool EmitData::IsSaved() const
+{
+	return m_start != nullptr;
+}
+
 
 } // end of namespace
