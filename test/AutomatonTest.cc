@@ -162,7 +162,7 @@ TEST_F(AutomatonTest, TestResume)
 	ASSERT_EQ(expect, m_actual);
 }
 
-TEST_F(AutomatonTest, TestParseError)
+TEST_F(AutomatonTest, TestParseErrorException)
 {
 	const char js1[] = "{\n\n\"1234\": 9\"part one\", \"56";
 
@@ -184,4 +184,47 @@ TEST_F(AutomatonTest, TestParseError)
 
 TEST_F(AutomatonTest, TestSimpleArray)
 {
+	const char js[] = "[ \"hello\", \"1234567890abcdefghijk\"]";
+	m_sub->Parse(js, sizeof(js)-1);
+	ASSERT_TRUE(m_sub->Result());
+
+	std::vector<Entry> expect {
+		{DataType::array,	Event::start, ""},
+		
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "hello"},
+		{DataType::string,	Event::end, ""},
+		
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "1234567890abcdefghijk"},
+		{DataType::string,	Event::end, ""},
+		
+		{DataType::array,	Event::end, ""},
+	};
+	ASSERT_EQ(expect, m_actual);
+}
+
+TEST_F(AutomatonTest, TestEmptyObjectInArray)
+{
+	const char js[] = "[ \"hello\", {}, \"1234567890abcdefghijk\"]";
+	m_sub->Parse(js, sizeof(js)-1);
+	ASSERT_TRUE(m_sub->Result());
+
+	std::vector<Entry> expect {
+		{DataType::array,	Event::start, ""},
+		
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "hello"},
+		{DataType::string,	Event::end, ""},
+
+		{DataType::object,	Event::start, ""},
+		{DataType::object,	Event::end, ""},
+		
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "1234567890abcdefghijk"},
+		{DataType::string,	Event::end, ""},
+		
+		{DataType::array,	Event::end, ""},
+	};
+	ASSERT_EQ(expect, m_actual);
 }

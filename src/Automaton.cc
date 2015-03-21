@@ -396,15 +396,15 @@ private:
 			switch (m_action)
 			{
 				case none:	return m_dest;
-				case soj:	return key;
+				case soj:	return obj;
 				case eoj:	return ok;
 				case noj:	return ok;
 				case sar:	return arr;
 				case ear:	return ok;
 				case ktv:	return val;
-				case nxt:	return mode == Mode::object ? key : arr;
+				case nxt:	return (mode == Mode::object) ? key : arr;
 				case sos:	return str;
-				case eos:	return mode == Mode::key    ? col : ok;
+				case eos:	return (mode == Mode::key)    ? col : ok;
 				case sep:	return esp;
 				case eep:	return str;
 				default:	throw ParseError(0,0);
