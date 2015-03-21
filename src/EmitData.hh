@@ -44,6 +44,7 @@ public:
 
 	void Clear();
 	bool IsSaved() const;
+	bool IsStashed() const;
 	
 private:
 	const char	*m_start;

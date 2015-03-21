@@ -327,8 +327,7 @@ private:
 		// so it needs to be bumped
 		assert(m_token.IsSaved());
 		EmitData::Buf buf = m_token.Get(p);
-		
-		m_callback(Event::data, Current(), buf.begin(), buf.size());
+		m_callback(Event::data, Current(), buf.begin()+1, buf.size()-1);
 	
 		// reset token pointer for next use
 		m_token.Clear();
@@ -494,6 +493,10 @@ void Automaton::Impl::Parse(const char *str, std::size_t len)
 {
 	assert(str != nullptr);
 	assert(len > 0);
+	assert(!m_token.IsSaved());
+	
+	if (m_token.IsStashed())
+		m_token.Save(str);
 	
 	for (std::size_t i = 0 ; i < len ; i++)
 	{
@@ -559,7 +562,7 @@ std::ostream& operator<<(std::ostream& os, Event ev)
 	{
 		case Event::start:	os << "start"; break;
 		case Event::end:	os << "end"; break;
-		case Event::data:	os << "start"; break;
+		case Event::data:	os << "data"; break;
 	}
 	return os;
 }

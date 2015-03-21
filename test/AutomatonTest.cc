@@ -158,6 +158,8 @@ TEST_F(AutomatonTest, TestResume)
 		
 		{DataType::object,	Event::end, ""},
 	};
+
+	ASSERT_EQ(expect, m_actual);
 }
 
 TEST_F(AutomatonTest, TestParseError)
@@ -178,4 +180,8 @@ TEST_F(AutomatonTest, TestParseError)
 	{
 		ASSERT_TRUE(false);
 	}
+}
+
+TEST_F(AutomatonTest, TestSimpleArray)
+{
 }

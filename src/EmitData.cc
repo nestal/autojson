@@ -22,6 +22,7 @@
 #include "Range.hh"
 
 #include <cassert>
+#include <iostream>
 
 namespace json {
 
@@ -51,7 +52,7 @@ EmitData::Buf EmitData::Get(const char *p)
 	if (m_tmp.empty())
 	{
 		assert(m_start);
-		Buf b{ m_start+1, p };
+		Buf b{ m_start, p };
 		return b;
 	}
 	else
@@ -68,15 +69,19 @@ void EmitData::Stash(const char *p)
 	assert(p);
 	assert(m_start);
 	assert(p != m_start);
-	
-	m_tmp.insert(m_tmp.end(), m_start+1, p);
+
+	m_tmp.insert(m_tmp.end(), m_start, p);
 	m_start = nullptr;
 }
 
 bool EmitData::IsSaved() const
 {
-	return m_start || !m_tmp.empty();
+	return m_start ;
 }
 
+bool EmitData::IsStashed() const
+{
+	return !m_tmp.empty();
+}
 
 } // end of namespace

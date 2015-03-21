@@ -27,7 +27,7 @@ using namespace json;
 
 TEST(EmitDataTest, Flush_can_get_back_Saved_data)
 {
-	const char str[] = "\"hello world";
+	const char str[] = "hello world";
 	
 	EmitData sub;
 	sub.Save(str);
@@ -47,7 +47,7 @@ TEST(EmitDataTest, Stash_and_unstash)
 	sub.Save(str);
 	EmitData::Buf b = sub.Get(std::end(str)-1);
 	
-	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("ello worldello world")));
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("hello worldhello world")));
 }
 
 TEST(EmitDataTest, Stash_and_unstash_twice)
@@ -64,7 +64,7 @@ TEST(EmitDataTest, Stash_and_unstash_twice)
 	sub.Save(str);
 	EmitData::Buf b = sub.Get(std::end(str)-2);
 	
-	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("n123n123n12")));
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("\\n123\\n123\\n12")));
 }
 
 TEST(EmitDataTest, Clear_will_clear_stash_data)
@@ -82,7 +82,7 @@ TEST(EmitDataTest, Clear_will_clear_stash_data)
 	sub.Save(str2);		// re-save. will clear previously stashed data
 	EmitData::Buf b = sub.Get(std::end(str2)-1);
 	
-	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("other")));
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("$other")));
 }
 
 TEST(EmitDataTest, Get_will_not_clear_data)
@@ -92,15 +92,12 @@ TEST(EmitDataTest, Get_will_not_clear_data)
 	EmitData sub;
 	sub.Save(str);
 	EmitData::Buf b = sub.Get(std::end(str)-1);
-	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("sample")));
-
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("*sample")));
 	sub.Stash(std::end(str)-1);
-	b = sub.Get(std::end(str)-1);
-	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("sample")));
 
 	const char str2[] = "$other";
 	sub.Save(str2);		// re-save. will clear previously stashed data
 	EmitData::Buf b2 = sub.Get(std::end(str2)-1);
 	
-	ASSERT_TRUE(std::equal(b2.begin(), b2.end(), std::begin("sampleother")));
+	ASSERT_TRUE(std::equal(b2.begin(), b2.end(), std::begin("*sample$other")));
 }
