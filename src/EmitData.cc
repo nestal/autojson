@@ -42,21 +42,23 @@ void EmitData::Save(const char *p)
 	m_start = p;
 }
 
-EmitData::Buf EmitData::Flush(const char *p)
+EmitData::Buf EmitData::Get(const char *p)
 {
 	assert(p);
-	assert(m_start);
 	assert(p != m_start);
+	assert(IsSaved());
 	
 	if (m_tmp.empty())
 	{
+		assert(m_start);
 		Buf b{ m_start+1, p };
-		m_start = nullptr;
 		return b;
 	}
 	else
 	{
-		Stash(p);
+		if (m_start)
+			Stash(p);
+		
 		return Buf{ &*m_tmp.begin(), &*m_tmp.end() };
 	}
 }
@@ -73,7 +75,7 @@ void EmitData::Stash(const char *p)
 
 bool EmitData::IsSaved() const
 {
-	return m_start != nullptr;
+	return m_start || !m_tmp.empty();
 }
 
 

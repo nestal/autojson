@@ -38,7 +38,7 @@ public:
 	using Buf = Range<const char*>;
 	
 	void Save(const char *p);
-	Buf Flush(const char *p);
+	Buf Get(const char *p);
 	
 	void Stash(const char *p);
 

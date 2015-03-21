@@ -316,13 +316,14 @@ private:
 		// so it needs to be bumped
 		assert(m_token.IsSaved());
 //		m_token++;
-		EmitData::Buf buf = m_token.Flush(p);
+		EmitData::Buf buf = m_token.Get(p);
 		
 		assert(p);
 		m_callback(Event::data, Current(), buf.begin(), buf.size());
 	
 		// reset token pointer for next use
 //		m_token = nullptr;
+		m_token.Clear();
 	}
 	
 	void OnStartString(const char *p)

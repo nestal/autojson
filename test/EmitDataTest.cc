@@ -32,7 +32,7 @@ TEST(EmitDataTest, Flush_can_get_back_Saved_data)
 	EmitData sub;
 	sub.Save(str);
 	
-	EmitData::Buf b = sub.Flush(std::end(str)-1);
+	EmitData::Buf b = sub.Get(std::end(str)-1);
 	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("hello world")));
 }
 
@@ -45,7 +45,7 @@ TEST(EmitDataTest, Stash_and_unstash)
 	sub.Stash(std::end(str)-1);
 	
 	sub.Save(str);
-	EmitData::Buf b = sub.Flush(std::end(str)-1);
+	EmitData::Buf b = sub.Get(std::end(str)-1);
 	
 	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("ello worldello world")));
 }
@@ -62,7 +62,7 @@ TEST(EmitDataTest, Stash_and_unstash_twice)
 	sub.Stash(std::end(str)-1);
 	
 	sub.Save(str);
-	EmitData::Buf b = sub.Flush(std::end(str)-2);
+	EmitData::Buf b = sub.Get(std::end(str)-2);
 	
 	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("n123n123n12")));
 }
@@ -80,7 +80,27 @@ TEST(EmitDataTest, Clear_will_clear_stash_data)
 	
 	const char str2[] = "$other";
 	sub.Save(str2);		// re-save. will clear previously stashed data
-	EmitData::Buf b = sub.Flush(std::end(str2)-1);
+	EmitData::Buf b = sub.Get(std::end(str2)-1);
 	
 	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("other")));
+}
+
+TEST(EmitDataTest, Get_will_not_clear_data)
+{
+	const char str[] = "*sample";
+	
+	EmitData sub;
+	sub.Save(str);
+	EmitData::Buf b = sub.Get(std::end(str)-1);
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("sample")));
+
+	sub.Stash(std::end(str)-1);
+	b = sub.Get(std::end(str)-1);
+	ASSERT_TRUE(std::equal(b.begin(), b.end(), std::begin("sample")));
+
+	const char str2[] = "$other";
+	sub.Save(str2);		// re-save. will clear previously stashed data
+	EmitData::Buf b2 = sub.Get(std::end(str2)-1);
+	
+	ASSERT_TRUE(std::equal(b2.begin(), b2.end(), std::begin("sampleother")));
 }

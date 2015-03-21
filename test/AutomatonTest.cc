@@ -130,8 +130,8 @@ TEST_F(AutomatonTest, TestEscape)
 
 TEST_F(AutomatonTest, TestResume)
 {
-	const char js1[] = "{\"1234\": \"part one\",";
-	const char js2[] = " \"5678\": \"part two\"}";
+	const char js1[] = "{\"1234\": \"part one\", \"56";
+	const char js2[] = "78\": \"part two\"}";
 
 	m_sub->Parse(js1, sizeof(js1)-1);
 	m_sub->Parse(js2, sizeof(js2)-1);
@@ -156,5 +156,4 @@ TEST_F(AutomatonTest, TestResume)
 		
 		{DataType::object,	Event::end, ""},
 	};
-
 }
