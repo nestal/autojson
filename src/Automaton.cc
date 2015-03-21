@@ -151,8 +151,8 @@ namespace state
 		n02,  /* nul      */
 		n03,  /* null     */
 		
-		state_count,
-		bad = state_count,
+		bad,
+		state_count = bad,
 	};
 
 	bool IsNumber(Code c)
@@ -194,6 +194,11 @@ namespace state
 		
 		"bad",
 	};
+	
+	std::ostream& operator<<(std::ostream& os, Code state)
+	{
+		return os << code_str[state] ;
+	}
 } ;
 
 namespace action
@@ -216,6 +221,9 @@ namespace action
 		
 		son,	// start of number
 		eon,	// end of number
+		enj,	// end of number and object
+		ena,	// end of number and array
+		enx,	// end of number and next element in array or object
 	};
 }
 
@@ -297,10 +305,37 @@ private:
 	
 	void OnStartNumber(const char *p)
 	{
+		m_token.Save(p);
+		m_callback(Event::start, DataType::number, nullptr, 0);
 	}
 	
 	void OnEndNumber(const char *p)
 	{
+		assert(m_token.IsSaved());
+		EmitData::Buf buf = m_token.Get(p);
+		m_callback(Event::data, DataType::number, buf.begin(), buf.size());
+		m_callback(Event::end, DataType::number, nullptr, 0);
+	
+		// reset token pointer for next use
+		m_token.Clear();
+	}
+	
+	void OnEndNumberAndObject(const char *p)
+	{
+		OnEndNumber(p);
+		OnEndObject(p);
+	}
+	
+	void OnEndNumberAndArray(const char *p)
+	{
+		OnEndNumber(p);
+		OnEndArray(p);
+	}
+	
+	void OnEndNumberAndNextValue(const char *p)
+	{
+		OnEndNumber(p);
+		OnNextValue(p);
 	}
 	
 	void OnStartArray(const char *)
@@ -411,20 +446,32 @@ private:
 			using namespace state;
 			switch (m_action)
 			{
-				case son:
-				case eon:
 				case none:	return m_dest;
+				
+				// start of object and array
 				case soj:	return obj;
-				case eoj:	return ok;
-				case noj:	return ok;
 				case sar:	return arr;
+				
+				// end of object
+				case enj:
+				case eoj:
+				case noj:	return ok;
+				
+				// end of array
+				case ena:
 				case ear:	return ok;
-				case ktv:	return val;
+				
+				// next element
+				case enx:
 				case nxt:	return (mode == Mode::object) ? key : arr;
+				
+				case ktv:	return val;
 				case sos:	return str;
 				case eos:	return (mode == Mode::key)    ? col : ok;
 				case sep:	return esp;
 				case eep:	return str;
+				case son:	return m_dest;
+				case eon:	return ok;
 				default:	assert(false);
 			}
 		}
@@ -449,7 +496,7 @@ private:
 		return os;
 	}
 	
-	void EndObjObject();
+	action::Code NextAction(state::Code current, chars::Type input);
 	
 private :
 	state::Code			m_state;
@@ -487,12 +534,12 @@ Automaton::Impl::Edge Automaton::Impl::Edge::Next(state::Code current, chars::Ty
 /*u3     U3*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{u4} ,{u4} ,{u4} ,{u4} ,{u4} ,{u4} ,{u4} ,{u4} ,_____,_____,_____,_____,_____,_____,{u4} ,{u4} ,_____},
 /*u4     U4*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{eep},{eep},{eep},{eep},{eep},{eep},{eep},{eep},_____,_____,_____,_____,_____,_____,{eep},{eep},_____},
 /*minus  mi_*/ {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{ze0},{inT},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
-/*zero   ze0*/ {{ok} ,{ok} ,_____,{eoj},_____,{ear},_____,{nxt},_____,_____,_____,_____,_____,{frt},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
-/*int    inT*/ {{ok} ,{ok} ,_____,{eoj},_____,{ear},_____,{nxt},_____,_____,_____,_____,_____,{frt},{inT},{inT},_____,_____,_____,_____,{ex1},_____,_____,_____,_____,_____,_____,_____,_____,{ex1},_____},
-/*frac   frt*/ {{ok} ,{ok} ,_____,{eoj},_____,{ear},_____,{nxt},_____,_____,_____,_____,_____,_____,{frt},{frt},_____,_____,_____,_____,{ex1},_____,_____,_____,_____,_____,_____,_____,_____,{ex1},_____},
+/*zero   ze0*/ {{eon},{eon},_____,{enj},_____,{ena},_____,{enx},_____,_____,_____,_____,_____,{frt},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
+/*int    inT*/ {{eon},{eon},_____,{enj},_____,{ena},_____,{enx},_____,_____,_____,_____,_____,{frt},{inT},{inT},_____,_____,_____,_____,{ex1},_____,_____,_____,_____,_____,_____,_____,_____,{ex1},_____},
+/*frac   frt*/ {{eon},{eon},_____,{enj},_____,{ena},_____,{enx},_____,_____,_____,_____,_____,_____,{frt},{frt},_____,_____,_____,_____,{ex1},_____,_____,_____,_____,_____,_____,_____,_____,{ex1},_____},
 /*e      ex1*/ {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{ex2},{ex2},_____,{ex3},{ex3},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
 /*ex     ex2*/ {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{ex3},{ex3},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
-/*exp    ex3*/ {{ok} ,{ok} ,_____,{eoj},_____,{ear},_____,{nxt},_____,_____,_____,_____,_____,_____,{ex3},{ex3},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
+/*exp    ex3*/ {{eon},{eon},_____,{enj},_____,{ena},_____,{enx},_____,_____,_____,_____,_____,_____,{ex3},{ex3},_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
 /*tr     tr1*/ {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{tr2},_____,_____,_____,_____,_____,_____},
 /*tru    tr2*/ {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{tr3},_____,_____,_____},
 /*true   tr3*/ {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{ok} ,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____},
@@ -509,10 +556,13 @@ Automaton::Impl::Edge Automaton::Impl::Edge::Next(state::Code current, chars::Ty
 	
 	// detect actionss start and end of numbers
 	if (!state::IsNumber(current) && state::IsNumber(result.m_dest))
+	{
+		assert(result.m_action == action::none);
 		result.m_action = son;
-	else if (state::IsNumber(current) && !state::IsNumber(result.m_dest))
+	}
+/*	else if (state::IsNumber(current) && !state::IsNumber(result.m_dest))
 		result.m_action = eon;
-		
+*/	
 	return result ;
 }
 
@@ -547,14 +597,21 @@ void Automaton::Impl::Parse(const char *str, std::size_t len)
 			&Impl::OnEndEscape,
 			&Impl::OnStartNumber,
 			&Impl::OnEndNumber,
+			&Impl::OnEndNumberAndObject,
+			&Impl::OnEndNumberAndArray,
+			&Impl::OnEndNumberAndNextValue,
 		};
 
 		assert(next.Action() < sizeof(actions)/sizeof(actions[0]));
 		(this->*actions[next.Action()])(&str[i]);
 		
-		m_state = next.Dest(m_stack.back());
-		if (m_state == state::bad)
+		state::Code nstate = next.Dest(m_stack.back());
+		if (nstate == state::bad)
+		{
+			std::cout << m_state << "->" << nstate << " " << str[i] << std::endl;
 			Throw<ParseError>();
+		}
+		m_state = nstate;
 	}
 	
 	// if we saved a token, stash it for later use because we will have a new
