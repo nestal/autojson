@@ -19,6 +19,8 @@
 */
 
 #include "Automaton.hh"
+#include "Exception.hh"
+
 #include <gtest/gtest.h>
 
 #include <iostream>
@@ -156,4 +158,24 @@ TEST_F(AutomatonTest, TestResume)
 		
 		{DataType::object,	Event::end, ""},
 	};
+}
+
+TEST_F(AutomatonTest, TestParseError)
+{
+	const char js1[] = "{\n\n\"1234\": 9\"part one\", \"56";
+
+	try
+	{
+		m_sub->Parse(js1, sizeof(js1)-1);
+		ASSERT_TRUE(false);
+	}
+	catch (ParseError& e)
+	{
+		ASSERT_EQ(2, e.Line());
+		ASSERT_EQ(10, e.Column());
+	}
+	catch (...)
+	{
+		ASSERT_TRUE(false);
+	}
 }

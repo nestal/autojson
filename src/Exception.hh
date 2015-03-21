@@ -35,14 +35,14 @@ public :
 class ParseError : public Exception
 {
 public:
-	ParseError(std::size_t line, std::size_t index) ;
+	ParseError(std::size_t line, std::size_t column) ;
 
 	std::size_t Line() const;
-	std::size_t Index() const;
+	std::size_t Column() const;
 	
 private:
 	std::size_t	m_line;
-	std::size_t m_index;
+	std::size_t m_column;
 };
 
 /**	Indicates an error caused by type mismatch

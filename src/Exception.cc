@@ -28,10 +28,10 @@ Exception::Exception(const std::string& errmsg ) :
 {
 }
 
-ParseError::ParseError(std::size_t line, std::size_t index) :
+ParseError::ParseError(std::size_t line, std::size_t column) :
 	Exception("parse error"),
 	m_line(line),
-	m_index(index)
+	m_column(column)
 {
 }
 
@@ -40,9 +40,9 @@ std::size_t ParseError::Line() const
 	return m_line;
 }
 
-std::size_t ParseError::Index() const
+std::size_t ParseError::Column() const
 {
-	return m_index;
+	return m_column;
 }
 
 TypeMismatch::TypeMismatch(const std::type_index& expect, const std::type_index& actual) :

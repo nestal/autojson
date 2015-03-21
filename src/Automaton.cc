@@ -216,6 +216,8 @@ class Automaton::Impl
 public:
 	Impl(Callback&& callback)
 	:	m_state(state::go),
+		m_line(0),
+		m_column(0),
 		m_stack(1, Mode::done),
 		m_callback(std::move(callback))
 	{
@@ -233,14 +235,13 @@ private:
 		object,
 		escape
 	};
-	
-	struct Buf
+
+	template <typename Expt, typename ... Ts>
+	void Throw(Ts... ts)
 	{
-		const char	*str;
-		std::size_t	len;
-	};
-
-
+		throw Expt(m_line, m_column, ts...);
+	}
+	
 	void Push(Mode mode)
 	{
 		m_stack.push_back(mode);
@@ -249,11 +250,21 @@ private:
 	void Pop(Mode mode)
 	{
 		if (m_stack.back() != mode)
-			throw -1;
+			Throw<ParseError>();
 		
 		m_stack.pop_back();
 	}
 
+	void UpdateLineNumber(char ch)
+	{
+		m_column++;
+		if (ch == '\n')
+		{
+			m_line++;
+			m_column = 0;
+		}
+	}
+	
 	void OnNone(const char *)
 	{
 	}
@@ -315,14 +326,11 @@ private:
 		// m_token points to the double quote character
 		// so it needs to be bumped
 		assert(m_token.IsSaved());
-//		m_token++;
 		EmitData::Buf buf = m_token.Get(p);
 		
-		assert(p);
 		m_callback(Event::data, Current(), buf.begin(), buf.size());
 	
 		// reset token pointer for next use
-//		m_token = nullptr;
 		m_token.Clear();
 	}
 	
@@ -358,8 +366,6 @@ private:
 	{
 		assert(p);
 		assert(m_token.IsSaved());
-
-//		std::cout << "escape sequence = " << *m_token << *p << std::endl;
 
 		static const char out[]	= "\"\\/\b\f\n\r\t";
 		static const char in[]	= "\"\\/bfnrt";
@@ -431,6 +437,9 @@ private:
 private :
 	state::Code			m_state;
 	EmitData			m_token;
+
+	std::size_t			m_line;
+	std::size_t			m_column;
 	
 	std::vector<Mode>	m_stack;
 	const Callback		m_callback;
@@ -483,8 +492,13 @@ Automaton::Impl::Edge Automaton::Impl::Edge::Next(state::Code current, chars::Ty
 
 void Automaton::Impl::Parse(const char *str, std::size_t len)
 {
+	assert(str != nullptr);
+	assert(len > 0);
+	
 	for (std::size_t i = 0 ; i < len ; i++)
 	{
+		UpdateLineNumber(str[i]);
+		
 		Edge next = Edge::Next(m_state, chars::DeduceType(str[i]));
 		
 		static void (Impl::*actions[])(const char*) =
@@ -508,7 +522,7 @@ void Automaton::Impl::Parse(const char *str, std::size_t len)
 		
 		m_state = next.Dest(m_stack.back());
 		if (m_state == state::bad)
-			throw -1;
+			Throw<ParseError>();
 	}
 	
 	// if we saved a token, stash it for later use because we will have a new
