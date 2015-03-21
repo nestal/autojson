@@ -46,7 +46,6 @@ void EmitData::Save(const char *p)
 EmitData::Buf EmitData::Get(const char *p)
 {
 	assert(p);
-	assert(p != m_start);
 	assert(IsSaved());
 	
 	if (m_tmp.empty())
@@ -68,7 +67,6 @@ void EmitData::Stash(const char *p)
 {
 	assert(p);
 	assert(m_start);
-	assert(p != m_start);
 
 	m_tmp.insert(m_tmp.end(), m_start, p);
 	m_start = nullptr;

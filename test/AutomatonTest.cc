@@ -24,6 +24,7 @@
 #include <gtest/gtest.h>
 
 #include <iostream>
+#include <fstream>
 
 using namespace json;
 
@@ -130,6 +131,47 @@ TEST_F(AutomatonTest, TestEscape)
 	ASSERT_EQ(expect, m_actual);
 }
 
+TEST_F(AutomatonTest, TestEscape2)
+{
+	const char js[] = "[\"\\\\\\\"zWM2D6P\"]";
+	m_sub->Parse(js, sizeof(js)-1);
+	ASSERT_TRUE(m_sub->Result());
+	
+	std::vector<Entry> expect {
+		{DataType::array,	Event::start, ""},
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "\\"},
+		{DataType::string,	Event::data, "\""},
+		{DataType::string,	Event::data, "zWM2D6P"},
+		{DataType::string,	Event::end, ""},
+		{DataType::array,	Event::end, ""},
+	};
+	
+	ASSERT_EQ(expect, m_actual);
+}
+
+TEST_F(AutomatonTest, TestEscapeInKey)
+{
+	const char js[] = "{\"\\t____\\n\": \"stone\" }";
+	m_sub->Parse(js, sizeof(js)-1);
+	ASSERT_TRUE(m_sub->Result());
+	
+	std::vector<Entry> expect {
+		{DataType::object,	Event::start, ""},
+		{DataType::key,	Event::start, ""},
+		{DataType::key,	Event::data, "\t"},
+		{DataType::key,	Event::data, "____"},
+		{DataType::key,	Event::data, "\n"},
+		{DataType::key,	Event::end, ""},
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "stone"},
+		{DataType::string,	Event::end, ""},
+		{DataType::object,	Event::end, ""},
+	};
+	
+	ASSERT_EQ(expect, m_actual);
+}
+
 TEST_F(AutomatonTest, TestResume)
 {
 	const char js1[] = "{\"1234\": \"part one\", \"56";
@@ -161,6 +203,41 @@ TEST_F(AutomatonTest, TestResume)
 
 	ASSERT_EQ(expect, m_actual);
 }
+
+TEST_F(AutomatonTest, TestResumeEscape)
+{
+	const char js1[] = "{\"1234\": \"part one\", \"56";
+	const char js2[] = "\\n78\": \"part two\"}";
+
+	m_sub->Parse(js1, sizeof(js1)-1);
+	m_sub->Parse(js2, sizeof(js2)-1);
+	ASSERT_TRUE(m_sub->Result());
+	
+	std::vector<Entry> expect {
+		{DataType::object,	Event::start, ""},
+		
+		{DataType::key,	Event::start, ""},
+		{DataType::key,	Event::data, "1234"},
+		{DataType::key,	Event::end, ""},
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "part one"},
+		{DataType::string,	Event::end, ""},
+		
+		{DataType::key,	Event::start, ""},
+		{DataType::key,	Event::data, "56"},
+		{DataType::key,	Event::data, "\n"},
+		{DataType::key,	Event::data, "78"},
+		{DataType::key,	Event::end, ""},
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "part two"},
+		{DataType::string,	Event::end, ""},
+		
+		{DataType::object,	Event::end, ""},
+	};
+
+	ASSERT_EQ(expect, m_actual);
+}
+
 
 TEST_F(AutomatonTest, TestParseErrorException)
 {
@@ -314,4 +391,16 @@ TEST_F(AutomatonTest, TestAllTypes)
 		{DataType::array,	Event::end, ""},
 	};
 	ASSERT_EQ(expect, m_actual);
+}
+
+TEST_F(AutomatonTest, TestGDriveFile)
+{
+	char buf[80];
+	std::size_t size = sizeof(buf);
+	
+	std::ifstream file(TEST_DATA "paddrive.json");
+	while ((size = file.rdbuf()->sgetn(buf, sizeof(buf))) > 0)
+		m_sub->Parse(buf, size);
+	
+	ASSERT_TRUE(m_sub->Result());
 }

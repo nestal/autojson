@@ -382,7 +382,8 @@ private:
 		// so it needs to be bumped
 		assert(m_token.IsSaved());
 		EmitData::Buf buf = m_token.Get(p);
-		m_callback(Event::data, Current(), buf.begin()+1, buf.size()-1);
+		if (buf.size() > 1)
+			m_callback(Event::data, Current(), buf.begin()+1, buf.size()-1);
 	
 		// reset token pointer for next use
 		m_token.Clear();
@@ -407,7 +408,7 @@ private:
 	
 	void OnStartEscape(const char *p)
 	{
-		Push(Mode::escape);
+//		Push(Mode::escape);
 		EmitString(p);
 
 		// similarly, points to the \ character
@@ -432,7 +433,7 @@ private:
 
 		m_token.Clear();
 		m_token.Save(p);
-		Pop(Mode::escape);
+//		Pop(Mode::escape);
 	}
 	
 	void OnNull(const char*)
