@@ -155,6 +155,11 @@ namespace state
 		bad = state_count,
 	};
 
+	bool IsNumber(Code c)
+	{
+		return c >= mi_ && c <= ex3;
+	}
+	
 	const char *code_str[] = {
 		"go",
 		"ok",
@@ -208,6 +213,9 @@ namespace action
 		eos,	// end of string
 		sep,	// start of escape sequence
 		eep,	// end of escape sequence
+		
+		son,	// start of number
+		eon,	// end of number
 	};
 }
 
@@ -285,6 +293,14 @@ private:
 	{
 		Pop (Mode::key);
 		m_callback(Event::end, DataType::object, nullptr, 0);
+	}
+	
+	void OnStartNumber(const char *p)
+	{
+	}
+	
+	void OnEndNumber(const char *p)
+	{
 	}
 	
 	void OnStartArray(const char *)
@@ -395,6 +411,8 @@ private:
 			using namespace state;
 			switch (m_action)
 			{
+				case son:
+				case eon:
 				case none:	return m_dest;
 				case soj:	return obj;
 				case eoj:	return ok;
@@ -407,7 +425,7 @@ private:
 				case eos:	return (mode == Mode::key)    ? col : ok;
 				case sep:	return esp;
 				case eep:	return str;
-				default:	throw ParseError(0,0);
+				default:	assert(false);
 			}
 		}
 
@@ -486,7 +504,16 @@ Automaton::Impl::Edge Automaton::Impl::Edge::Next(state::Code current, chars::Ty
 /*nul    N2*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{n03},_____,_____,_____,_____,_____,_____,_____,_____},
 /*null   N3*/  {_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,_____,{ok} ,_____,_____,_____,_____,_____,_____,_____,_____},
 	};
-	return transition[current][input] ;
+
+	Edge result = transition[current][input];
+	
+	// detect actionss start and end of numbers
+	if (!state::IsNumber(current) && state::IsNumber(result.m_dest))
+		result.m_action = son;
+	else if (state::IsNumber(current) && !state::IsNumber(result.m_dest))
+		result.m_action = eon;
+		
+	return result ;
 }
 
 void Automaton::Impl::Parse(const char *str, std::size_t len)
@@ -517,7 +544,9 @@ void Automaton::Impl::Parse(const char *str, std::size_t len)
 			&Impl::OnStartString,
 			&Impl::OnEndString,
 			&Impl::OnStartEscape,
-			&Impl::OnEndEscape
+			&Impl::OnEndEscape,
+			&Impl::OnStartNumber,
+			&Impl::OnEndNumber,
 		};
 
 		assert(next.Action() < sizeof(actions)/sizeof(actions[0]));
