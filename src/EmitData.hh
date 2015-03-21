@@ -41,7 +41,6 @@ public:
 	Buf Flush(const char *p);
 	
 	void Stash(const char *p);
-	void Unstash(const char *p);
 
 	void Clear();
 	bool IsSaved() const;

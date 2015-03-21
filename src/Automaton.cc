@@ -509,6 +509,11 @@ void Automaton::Impl::Parse(const char *str, std::size_t len)
 		if (m_state == state::bad)
 			throw -1;
 	}
+	
+	// if we saved a token, stash it for later use because we will have a new
+	// buffer the next time Parse() is called.
+	if (m_token.IsSaved())
+		m_token.Stash(str+len);
 }
 
 bool Automaton::Impl::Result() const

@@ -39,7 +39,6 @@ void EmitData::Save(const char *p)
 {
 	assert(p);
 	assert(!m_start);
-	m_tmp.clear();
 	m_start = p;
 }
 
@@ -70,15 +69,6 @@ void EmitData::Stash(const char *p)
 	
 	m_tmp.insert(m_tmp.end(), m_start+1, p);
 	m_start = nullptr;
-}
-
-void EmitData::Unstash(const char *p)
-{
-	assert(p);
-	assert(!m_start);
-	assert(!m_tmp.empty());
-	
-	m_start = p;
 }
 
 bool EmitData::IsSaved() const

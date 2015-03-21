@@ -127,3 +127,34 @@ TEST_F(AutomatonTest, TestEscape)
 	
 	ASSERT_EQ(expect, m_actual);
 }
+
+TEST_F(AutomatonTest, TestResume)
+{
+	const char js1[] = "{\"1234\": \"part one\",";
+	const char js2[] = " \"5678\": \"part two\"}";
+
+	m_sub->Parse(js1, sizeof(js1)-1);
+	m_sub->Parse(js2, sizeof(js2)-1);
+	ASSERT_TRUE(m_sub->Result());
+	
+	std::vector<Entry> expect {
+		{DataType::object,	Event::start, ""},
+		
+		{DataType::key,	Event::start, ""},
+		{DataType::key,	Event::data, "1234"},
+		{DataType::key,	Event::end, ""},
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "part one"},
+		{DataType::string,	Event::end, ""},
+		
+		{DataType::key,	Event::start, ""},
+		{DataType::key,	Event::data, "5678"},
+		{DataType::key,	Event::end, ""},
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "part two"},
+		{DataType::string,	Event::end, ""},
+		
+		{DataType::object,	Event::end, ""},
+	};
+
+}
