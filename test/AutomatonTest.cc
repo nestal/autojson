@@ -250,3 +250,68 @@ TEST_F(AutomatonTest, TestSimpleNumber)
 	};
 	ASSERT_EQ(expect, m_actual);
 }
+
+TEST_F(AutomatonTest, TestBoolNull)
+{
+	const char js[] = "[ {}, true, null, false]";
+	m_sub->Parse(js, sizeof(js)-1);
+	ASSERT_TRUE(m_sub->Result());
+
+	std::vector<Entry> expect {
+		{DataType::array,	Event::start, ""},
+		
+		{DataType::object,	Event::start, ""},
+		{DataType::object,	Event::end, ""},
+		
+		{DataType::boolean_true,	Event::data, ""},
+		{DataType::null_value,		Event::data, ""},
+		{DataType::boolean_false,	Event::data, ""},
+		
+		{DataType::array,	Event::end, ""},
+	};
+	ASSERT_EQ(expect, m_actual);
+}
+
+TEST_F(AutomatonTest, TestAllTypes)
+{
+	const char js[] = "[ {\"key\": 99.1}, true, 21, [\"more than \\n one line\", {}], null, false, {}]";
+	m_sub->Parse(js, sizeof(js)-1);
+	ASSERT_TRUE(m_sub->Result());
+
+	std::vector<Entry> expect {
+		{DataType::array,	Event::start, ""},
+
+		{DataType::object,	Event::start, ""},
+		{DataType::key,	Event::start, ""},
+		{DataType::key,	Event::data, "key"},
+		{DataType::key,	Event::end, ""},
+		{DataType::number,	Event::start, ""},
+		{DataType::number,	Event::data, "99.1"},
+		{DataType::number,	Event::end, ""},
+		{DataType::object,	Event::end, ""},
+
+		{DataType::boolean_true,	Event::data, ""},
+		
+		{DataType::number,	Event::start, ""},
+		{DataType::number,	Event::data, "21"},
+		{DataType::number,	Event::end, ""},
+
+		{DataType::array,	Event::start, ""},
+		{DataType::string,	Event::start, ""},
+		{DataType::string,	Event::data, "more than "},
+		{DataType::string,	Event::data, "\n"},
+		{DataType::string,	Event::data, " one line"},
+		{DataType::string,	Event::end, ""},
+		{DataType::object,	Event::start, ""},
+		{DataType::object,	Event::end, ""},
+		{DataType::array,	Event::end, ""},
+		
+		{DataType::null_value,		Event::data, ""},
+		{DataType::boolean_false,	Event::data, ""},
+		{DataType::object,	Event::start, ""},
+		{DataType::object,	Event::end, ""},
+		
+		{DataType::array,	Event::end, ""},
+	};
+	ASSERT_EQ(expect, m_actual);
+}
