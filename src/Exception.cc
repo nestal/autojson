@@ -55,8 +55,8 @@ TypeMismatch::TypeMismatch(const std::type_index& expect, const std::type_index&
 {
 }
 
-InvalidChar::InvalidChar(char ch) :
-	Exception("invalid character"),
+InvalidChar::InvalidChar(std::size_t line, std::size_t column, char ch) :
+	ParseError(line, column),
 	m_ch(ch)
 {
 }

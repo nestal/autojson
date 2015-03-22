@@ -408,7 +408,6 @@ private:
 	
 	void OnStartEscape(const char *p)
 	{
-//		Push(Mode::escape);
 		EmitString(p);
 
 		// similarly, points to the \ character
@@ -429,11 +428,10 @@ private:
 		if (pos != std::end(in))
 			m_callback(Event::data, Current(), &out[pos - in], sizeof(out[pos - in]));
 		else
-			throw InvalidChar(*p);
+			Throw<InvalidChar>(*p);
 
 		m_token.Clear();
 		m_token.Save(p);
-//		Pop(Mode::escape);
 	}
 	
 	void OnNull(const char*)

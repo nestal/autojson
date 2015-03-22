@@ -54,10 +54,10 @@ struct TypeMismatch : public Exception
 	TypeMismatch(const std::type_index& expect, const std::type_index& actual);
 };
 
-class InvalidChar : public Exception
+class InvalidChar : public ParseError
 {
 public:
-	InvalidChar(char ch);
+	InvalidChar(std::size_t line, std::size_t column, char ch);
 	
 	char Get() const;
 	
