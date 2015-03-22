@@ -256,10 +256,10 @@ private:
 		escape
 	};
 
-	template <typename Expt, typename ... Ts>
-	void Throw(Ts... ts)
+	template <typename Expt>
+	void Throw()
 	{
-		throw Expt(m_line, m_column, ts...);
+		throw Expt() << LineNumInfo(m_line) << ColumnNumInfo(m_column);
 	}
 	
 	void Push(Mode mode)
@@ -428,7 +428,7 @@ private:
 		if (pos != std::end(in))
 			m_callback(Event::data, Current(), &out[pos - in], sizeof(out[pos - in]));
 		else
-			Throw<InvalidChar>(*p);
+			Throw<InvalidChar>();
 
 		m_token.Clear();
 		m_token.Save(p);

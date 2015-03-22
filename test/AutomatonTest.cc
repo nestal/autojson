@@ -250,7 +250,8 @@ TEST_F(AutomatonTest, TestParseErrorException)
 	}
 	catch (ParseError& e)
 	{
-		ASSERT_EQ(2, e.Line());
+		std::cout << e.what() << std::endl;
+		ASSERT_EQ(2, e.Get<LineNumInfo>()->Value());
 //		ASSERT_EQ(10, e.Column());
 	}
 	catch (...)

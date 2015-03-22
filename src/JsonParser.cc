@@ -48,7 +48,7 @@ void JsonParser::Parse(const char *data, size_t len)
 {
 	assert(m_root);
 	if (::JSON_checker_char(m_json, data, len, &JsonParser::Callback, this) == JSON_error)
-		throw ParseError(0,0) ;
+		throw ParseError() << LineNumInfo(0) << ColumnNumInfo(0) ;
 }
 
 void JsonParser::Callback(void *pvthis, JSON_event type, const char *data, size_t len)

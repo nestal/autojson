@@ -23,47 +23,98 @@
 
 #include <stdexcept>
 #include <typeindex>
+#include <map>
+#include <memory>
 
 namespace json {
 
-class Exception : public std::runtime_error
-{
-public :
-	Exception(const std::string& errmsg) ;
-};
-
-class ParseError : public Exception
+class ErrInfoBase
 {
 public:
-	ParseError(std::size_t line, std::size_t column) ;
+	virtual ~ErrInfoBase() = default;
+	virtual void Write(std::ostream& os) const = 0;
+};
 
-	std::size_t Line() const;
-	std::size_t Column() const;
+template <typename Tag>
+struct ErrInfoTag {};
+
+template <class Tag, typename T>
+class ErrInfo : public ErrInfoBase
+{
+public :
+	typedef Tag TagType;
+	typedef T   ValueType;
+	
+	ErrInfo(const T& t) : m_val(t) {}
+	void Write(std::ostream& os) const override
+	{
+//		os << m_val;
+	}
+
+	const ValueType& Value() const
+	{
+		return m_val;
+	}
 	
 private:
-	std::size_t	m_line;
-	std::size_t m_column;
+	T m_val;
 };
+
+class Exception : public std::exception
+{
+public :
+	Exception() = default;
+	Exception(const Exception& rhs) = default;
+
+	const char* what() const noexcept override;
+
+	template <typename Tag, typename T>
+	void Add(const ErrInfo<Tag,T>& info) const
+	{
+		m_data.emplace(typeid(ErrInfoTag<Tag>), ErrInfoPtr(new ErrInfo<Tag,T>(info)));
+	}
+
+	template <typename TheErrInfo>
+	const TheErrInfo* Get() const
+	{
+		auto i = m_data.find(typeid(ErrInfoTag<typename TheErrInfo::TagType>));
+		return i != m_data.end() ? dynamic_cast<TheErrInfo*>(i->second.get()) : nullptr;
+	}
+	
+private :
+	typedef std::shared_ptr<ErrInfoBase> ErrInfoPtr;
+	typedef std::map<std::type_index, ErrInfoPtr> Map;
+	
+	mutable Map			m_data;
+	mutable std::string	m_what;
+};
+
+template <typename Tag, typename T, typename E>
+const E& operator<<(const E& expt, const ErrInfo<Tag,T>& info)
+{
+	expt.Add(info);
+	return expt;
+}
+
+// line number and column number
+using LineNumInfo	= ErrInfo<struct Line, std::size_t>;
+using ColumnNumInfo	= ErrInfo<struct Column, std::size_t>;
+
+struct ParseError : public Exception {};
+
+using ExpectedTypeInfo	= ErrInfo<struct ExpectedType, std::type_index>;
+using ActualTypeInfo	= ErrInfo<struct ExpectedType, std::type_index>;
+
 
 /**	Indicates an error caused by type mismatch
 
 	The two attributes are expected and actual types. They are stored as std::type_index.
 */
-struct TypeMismatch : public Exception
-{
-	TypeMismatch(const std::type_index& expect, const std::type_index& actual);
-};
+struct TypeMismatch : public Exception {};
 
-class InvalidChar : public ParseError
-{
-public:
-	InvalidChar(std::size_t line, std::size_t column, char ch);
-	
-	char Get() const;
-	
-private:
-	char m_ch;
-};
+using InvalidCharInfo	= ErrInfo<struct InvalidChar_, char>;
+
+struct InvalidChar : public ParseError {};
 
 } // end of namespace
 

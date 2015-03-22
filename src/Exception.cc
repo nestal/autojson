@@ -19,51 +19,25 @@
 */
 
 #include "Exception.hh"
+
 #include <sstream>
+#include <string>
+#include <cxxabi.h>
 
 namespace json {
 
-Exception::Exception(const std::string& errmsg ) :
-	runtime_error(errmsg)
+const char* Exception::what() const noexcept
 {
-}
-
-ParseError::ParseError(std::size_t line, std::size_t column) :
-	Exception("parse error"),
-	m_line(line),
-	m_column(column)
-{
-}
-
-std::size_t ParseError::Line() const
-{
-	return m_line;
-}
-
-std::size_t ParseError::Column() const
-{
-	return m_column;
-}
-
-TypeMismatch::TypeMismatch(const std::type_index& expect, const std::type_index& actual) :
-	Exception([&]{
-		std::ostringstream oss;
-		oss << "type mismatch: expect(" << expect.name() << ") "
-			<< "actual: (" << actual.name() << ")";
-		return oss.str();
-	}())
-{
-}
-
-InvalidChar::InvalidChar(std::size_t line, std::size_t column, char ch) :
-	ParseError(line, column),
-	m_ch(ch)
-{
-}
-
-char InvalidChar::Get() const
-{
-	return m_ch;
+	std::ostringstream ss;
+	for (const auto& p : m_data)
+	{
+		int status;
+		ss << abi::__cxa_demangle(p.first.name(), 0, 0, &status) << ": ";
+		p.second->Write(ss);
+		ss << std::endl;
+	}
+	m_what = ss.str();
+	return m_what.c_str();
 }
 
 } // end of namespace

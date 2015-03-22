@@ -88,7 +88,9 @@ public :
 		if (m_type == typeid(TargetType))
 			return static_cast<TargetType*>(m_obj);
 	
-		throw TypeMismatch(typeid(TargetType), m_type);
+		throw TypeMismatch()
+			<< ExpectedTypeInfo(typeid(TargetType))
+			<< ActualTypeInfo(m_type);
 	}
 	
 	explicit operator bool() const;
