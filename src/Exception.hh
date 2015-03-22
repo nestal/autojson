@@ -28,6 +28,38 @@
 
 namespace json {
 
+namespace detail
+{
+	struct Any
+	{
+		template <typename T>
+		Any(T) {}
+	};
+	char operator<<(std::ostream&, const Any&);
+	
+	std::ostream& s();
+	
+	template <typename T>
+	struct IsStreamable
+	{
+		static const bool result = (sizeof(s() << *static_cast<T*>(0)) > sizeof(char));
+	};
+	
+	template <typename T,
+		typename std::enable_if<IsStreamable<T>::result, T>::type* =nullptr>
+	void Print(std::ostream& os, const T& val)
+	{
+		os << val;
+	}
+
+	template <typename T,
+		typename std::enable_if<!IsStreamable<T>::result, T>::type* =nullptr>
+	void Print(std::ostream& os, const T& val)
+	{
+		os << "oops";
+	}
+}
+	
 class ErrInfoBase
 {
 public:
@@ -48,7 +80,7 @@ public :
 	ErrInfo(const T& t) : m_val(t) {}
 	void Write(std::ostream& os) const override
 	{
-//		os << m_val;
+		detail::Print(os, m_val);
 	}
 
 	const ValueType& Value() const
